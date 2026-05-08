@@ -8,159 +8,187 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#F4F6FA;--surface:#fff;--surface2:#EEF1F7;--border:rgba(0,54,114,0.08);--border2:rgba(0,54,114,0.16);
+  --bg:#F4F6FA;--surface:#fff;--surface2:#EEF1F7;
+  --border:rgba(0,54,114,0.08);--border2:rgba(0,54,114,0.18);
   --text:#0D1B2E;--text2:#4A5A72;--text3:#9AAABF;
   --nibo1:#002d72;--nibo2:#0072ce;--nibo3:#41b6e6;--nibo4:#b8ccea;
   --green:#065F46;--red:#991B1B;--amber:#92400E;
   --radius:10px;--radius-lg:14px;--radius-xl:18px;
 }
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:2rem 1.5rem 5rem}
-.container{max-width:1000px;margin:0 auto}
+.container{max-width:1060px;margin:0 auto}
 
-/* sync bar */
-.sync-bar{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);margin-bottom:1rem;padding:6px 12px;background:var(--surface);border-radius:99px;border:.5px solid var(--border);width:fit-content}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);transition:background .3s}
-.sync-dot.ok{background:#1D9E75}
-.sync-dot.saving{background:#F59E0B;animation:pulse .8s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* sync */
+.sync-bar{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);padding:5px 12px;background:var(--surface);border-radius:99px;border:.5px solid var(--border);width:fit-content}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);transition:background .3s;flex-shrink:0}
+.sync-dot.ok{background:#1D9E75}.sync-dot.saving{background:#F59E0B;animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 
-.page-tabs{display:flex;gap:0;border-bottom:1.5px solid var(--border2);margin-bottom:2rem}
-.page-tab{font-size:13px;font-weight:500;padding:10px 20px;cursor:pointer;color:var(--text2);border:none;background:none;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:all .15s;font-family:'DM Sans',sans-serif}
+/* tabs */
+.page-tabs{display:flex;gap:0;border-bottom:1.5px solid var(--border2);margin-bottom:2rem;margin-top:1rem}
+.page-tab{font-size:13px;font-weight:500;padding:10px 18px;cursor:pointer;color:var(--text2);border:none;background:none;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:all .15s;font-family:'DM Sans',sans-serif;white-space:nowrap}
 .page-tab:hover{color:var(--nibo2)}
 .page-tab.active{color:var(--nibo1);border-bottom-color:var(--nibo1)}
 .page{display:none}.page.active{display:block}
 
-.header{margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.header h1{font-size:21px;font-weight:600;color:var(--nibo1)}
-.header p{font-size:12px;color:var(--text2);margin-top:3px}
-.logo-dots{display:flex;gap:5px;align-items:center;margin-top:6px}
-.logo-dot{width:10px;height:10px;border-radius:50%}
+/* header */
+.header{margin-bottom:.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.header h1{font-size:20px;font-weight:600;color:var(--nibo1)}
+.header p{font-size:12px;color:var(--text2);margin-top:2px}
+.logo-dots{display:flex;gap:5px;align-items:center;margin-top:5px}
+.logo-dot{width:9px;height:9px;border-radius:50%}
 
-.section-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;margin-top:2rem}
+.section-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;margin-top:1.8rem}
 
+/* tipos */
 .tipos-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.tipo-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);padding:12px}
-.tipo-dot{width:8px;height:8px;border-radius:50%;margin-bottom:8px}
-.tipo-day{font-size:10px;color:var(--text3);margin-bottom:3px;font-family:'DM Mono',monospace}
+.tipo-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);padding:11px}
+.tipo-dot{width:8px;height:8px;border-radius:50%;margin-bottom:7px}
+.tipo-day{font-size:10px;color:var(--text3);margin-bottom:2px;font-family:'DM Mono',monospace}
 .tipo-name{font-size:12px;font-weight:500;line-height:1.3}
 
+/* cores config */
 .cores-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.cor-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);padding:10px;display:flex;flex-direction:column;gap:6px}
-.cor-swatch{height:36px;border-radius:6px;cursor:pointer;position:relative;overflow:hidden;border:.5px solid var(--border)}
+.cor-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);padding:10px;display:flex;flex-direction:column;gap:5px}
+.cor-swatch{height:34px;border-radius:6px;cursor:pointer;position:relative;overflow:hidden;border:.5px solid var(--border)}
 .cor-swatch input[type=color]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:none}
 .cor-name-input{font-size:12px;font-weight:500;color:var(--text);border:none;background:transparent;width:100%;outline:none;padding:0;font-family:'DM Sans',sans-serif}
 .cor-name-input:focus{color:var(--nibo2)}
 .cor-hex{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
 
-.month-bar{display:flex;align-items:center;justify-content:space-between;margin-top:2rem;margin-bottom:8px;flex-wrap:wrap;gap:8px}
-.month-tabs{display:flex;gap:5px;flex-wrap:wrap}
-.tab{font-size:12px;padding:5px 14px;border-radius:99px;border:.5px solid var(--border2);cursor:pointer;background:var(--surface);color:var(--text2);font-family:'DM Sans',sans-serif;transition:all .15s}
-.tab:hover{border-color:var(--text3);color:var(--text)}
+/* month management */
+.month-bar{display:flex;align-items:center;justify-content:space-between;margin-top:1.8rem;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.month-tabs{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.tab{font-size:12px;padding:5px 12px;border-radius:99px;border:.5px solid var(--border2);cursor:pointer;background:var(--surface);color:var(--text2);font-family:'DM Sans',sans-serif;transition:all .15s;display:flex;align-items:center;gap:4px}
+.tab:hover{border-color:var(--nibo3);color:var(--text)}
 .tab.active{background:var(--nibo1);color:#fff;border-color:var(--nibo1)}
+.tab-del{font-size:13px;line-height:1;opacity:.6;cursor:pointer;margin-left:2px}
+.tab.active .tab-del{opacity:.8;color:#fff}
+.tab-del:hover{opacity:1}
+.add-month-btn{font-size:12px;padding:5px 12px;border-radius:99px;border:.5px dashed var(--nibo3);cursor:pointer;background:transparent;color:var(--nibo2);font-family:'DM Sans',sans-serif;font-weight:500;transition:all .15s}
+.add-month-btn:hover{background:var(--nibo4);border-style:solid}
+
+.bar-right{display:flex;gap:8px;align-items:center}
 .add-row-btn{font-size:12px;padding:5px 14px;border-radius:99px;border:.5px dashed var(--nibo3);cursor:pointer;background:transparent;color:var(--nibo2);font-family:'DM Sans',sans-serif;font-weight:500;transition:all .15s}
 .add-row-btn:hover{background:var(--nibo4);border-style:solid}
 
-.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+/* legend */
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
 
-.table-header{display:grid;grid-template-columns:90px 108px 1fr 1fr 88px 108px 32px;gap:6px;padding:0 10px 6px;border-bottom:.5px solid var(--border2);margin-bottom:6px}
-.th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+/* table */
+.table-header{display:grid;grid-template-columns:82px 106px 1fr 1fr 82px 110px 30px;gap:5px;padding:0 10px 6px;border-bottom:.5px solid var(--border2);margin-bottom:6px}
+.th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
 
-.week-block{margin-bottom:1.4rem}
-.week-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.week-title{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;font-family:'DM Mono',monospace}
+/* week */
+.week-block{margin-bottom:1.2rem;border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;background:var(--surface)}
+.week-header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border-bottom:.5px solid var(--border)}
+.week-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace}
 .trial-badge{font-size:10px;padding:2px 8px;border-radius:99px;background:#FEF3C7;color:var(--amber);font-weight:500}
 
-.post-row{display:grid;grid-template-columns:90px 108px 1fr 1fr 88px 108px 32px;gap:6px;align-items:center;padding:8px 10px;border-radius:var(--radius);border:.5px solid var(--border);background:var(--surface);margin-bottom:5px;transition:border-color .15s}
-.post-row:hover{border-color:var(--border2)}
-.post-row.trial{background:#FFFBEB;border-color:#FDE68A}
+/* post row */
+.post-row{display:grid;grid-template-columns:82px 106px 1fr 1fr 82px 110px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s}
+.post-row:last-child{border-bottom:none}
+.post-row:hover{background:#FAFBFD}
+.post-row.trial{background:#FFFDF0}
+.post-row.trial:hover{background:#FFFBEB}
 
-.post-date-input{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;border:none;background:transparent;outline:none;width:100%}
-.post-date-input:focus{background:var(--surface2);border-radius:4px;padding:2px 4px}
+.post-date-wrap{display:flex;flex-direction:column;gap:1px}
+.post-date-input{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;border:none;background:transparent;outline:none;width:76px}
+.post-date-input:focus{background:var(--surface2);border-radius:4px;padding:1px 4px}
 .post-date-input::placeholder{color:var(--text3)}
+.post-dow{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace}
 
 .post-tipo{display:flex;align-items:center;gap:5px}
 .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .tipo-select{font-size:12px;font-weight:500;border:none;background:transparent;outline:none;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--text);max-width:100%}
 
-.idea-cell{font-size:12px;color:var(--text3);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:italic;padding:3px 5px;border-radius:5px;transition:background .1s}
+.idea-cell{font-size:11.5px;color:var(--text3);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:italic;padding:3px 5px;border-radius:5px;transition:background .1s}
 .idea-cell.filled{font-style:normal;color:var(--text2)}
 .idea-cell:hover{background:var(--surface2);color:var(--nibo2)}
 
-.cor-selector{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
-.cor-btn{width:18px;height:18px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all .15s;flex-shrink:0;padding:0}
-.cor-btn:hover{transform:scale(1.15)}
+.cor-selector{display:flex;gap:3px;align-items:center;flex-wrap:wrap}
+.cor-btn{width:17px;height:17px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all .15s;flex-shrink:0;padding:0}
+.cor-btn:hover{transform:scale(1.18)}
 .cor-btn.selected{border-color:var(--text);box-shadow:0 0 0 1.5px var(--text)}
 
 .status-cell{display:flex;align-items:center;justify-content:center}
-.status-badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:99px;cursor:pointer;white-space:nowrap;border:1px solid transparent;transition:all .15s;user-select:none;font-family:'DM Sans',sans-serif}
+.status-badge{font-size:10px;font-weight:600;padding:3px 7px;border-radius:99px;cursor:pointer;white-space:nowrap;border:1px solid transparent;transition:all .15s;user-select:none;font-family:'DM Sans',sans-serif;text-align:center}
 .status-badge.pendente{background:#F1F0EC;color:var(--text3);border-color:var(--border2)}
-.status-badge.pendente:hover{color:var(--text2)}
 .status-badge.aprovado{background:#D1FAE5;color:var(--green);border-color:#6EE7B7}
 .status-badge.reprovado{background:#FEE2E2;color:var(--red);border-color:#FCA5A5}
 
-.del-btn{width:22px;height:22px;border-radius:50%;border:.5px solid var(--border);cursor:pointer;background:transparent;color:var(--text3);font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;line-height:1;font-family:'DM Sans',sans-serif}
+.del-btn{width:22px;height:22px;border-radius:50%;border:.5px solid var(--border);cursor:pointer;background:transparent;color:var(--text3);font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;line-height:1;font-family:'DM Sans',sans-serif}
 .del-btn:hover{background:#FEE2E2;color:var(--red);border-color:#FCA5A5}
 
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:100;align-items:center;justify-content:center}
-.modal-overlay.open{display:flex}
-.modal{background:var(--surface);border-radius:var(--radius-xl);width:500px;max-width:94vw;box-shadow:0 12px 40px rgba(0,45,114,.18);overflow:hidden}
-.modal-head{padding:1.25rem 1.5rem 0}
-.modal-head h3{font-size:15px;font-weight:600;color:var(--nibo1)}
-.modal-head p{font-size:12px;color:var(--text2);margin-top:2px}
-.modal-tabs{display:flex;border-bottom:.5px solid var(--border2);margin-top:1rem;padding:0 1.5rem}
-.modal-tab{font-size:12px;font-weight:500;padding:8px 14px;cursor:pointer;color:var(--text2);border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-.5px;transition:all .15s;font-family:'DM Sans',sans-serif}
-.modal-tab.active{color:var(--nibo1);border-bottom-color:var(--nibo1)}
-.modal-body{padding:1rem 1.5rem 0}
-.modal-pane{display:none}.modal-pane.active{display:block}
-.modal-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
-.modal textarea{width:100%;border:.5px solid var(--border2);border-radius:var(--radius);padding:10px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);resize:vertical;min-height:100px;outline:none;background:var(--bg);line-height:1.6}
-.modal textarea:focus{border-color:var(--nibo2)}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end;padding:1rem 1.5rem}
-.btn{font-size:12px;padding:7px 18px;border-radius:var(--radius);border:.5px solid var(--border2);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:all .15s}
-.btn-primary{background:var(--nibo1);color:#fff;border-color:var(--nibo1)}
-.btn-primary:hover{background:var(--nibo2)}
-.btn-ghost{background:transparent;color:var(--text2)}
-.btn-ghost:hover{background:var(--surface2)}
-
-.maris-wrap{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;margin-top:1.5rem}
+/* maris */
+.maris-wrap{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.2rem 1.4rem;margin-top:1.4rem}
 .maris-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
-.maris-title{font-size:14px;font-weight:600;color:var(--nibo1);margin-bottom:6px}
-.maris-pct{font-size:32px;font-weight:700;color:var(--green);line-height:1}
-.maris-bar-bg{height:10px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.maris-title{font-size:14px;font-weight:600;color:var(--nibo1);margin-bottom:5px}
+.maris-pct{font-size:30px;font-weight:700;color:var(--green);line-height:1}
+.maris-bar-bg{height:9px;background:var(--surface2);border-radius:99px;overflow:hidden}
 .maris-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--nibo2),var(--nibo3));transition:width .6s ease}
-.maris-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.maris-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
 .chip{font-size:11px;padding:3px 10px;border-radius:99px}
 .chip-ok{background:#D1FAE5;color:var(--green)}
 .chip-no{background:#FEE2E2;color:var(--red)}
 .chip-pend{background:#F1F0EC;color:var(--text2)}
 
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:1rem}
-.stat-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+.stat-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);padding:11px 13px}
 .stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
-.stat-value{font-size:22px;font-weight:700}
+.stat-value{font-size:21px;font-weight:700}
 
+/* modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius-xl);width:520px;max-width:95vw;box-shadow:0 12px 40px rgba(0,45,114,.18);overflow:hidden}
+.modal-head{padding:1.2rem 1.4rem 0}
+.modal-head h3{font-size:15px;font-weight:600;color:var(--nibo1)}
+.modal-head p{font-size:12px;color:var(--text2);margin-top:2px}
+.modal-tabs{display:flex;border-bottom:.5px solid var(--border2);margin-top:.9rem;padding:0 1.4rem}
+.modal-tab{font-size:12px;font-weight:500;padding:7px 13px;cursor:pointer;color:var(--text2);border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-.5px;transition:all .15s;font-family:'DM Sans',sans-serif}
+.modal-tab.active{color:var(--nibo1);border-bottom-color:var(--nibo1)}
+.modal-body{padding:.9rem 1.4rem 0}
+.modal-pane{display:none}.modal-pane.active{display:block}
+.modal-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.modal textarea{width:100%;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);resize:vertical;min-height:90px;outline:none;background:var(--bg);line-height:1.6}
+.modal textarea:focus{border-color:var(--nibo2)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;padding:.9rem 1.4rem}
+.btn{font-size:12px;padding:7px 17px;border-radius:var(--radius);border:.5px solid var(--border2);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:all .15s}
+.btn-primary{background:var(--nibo1);color:#fff;border-color:var(--nibo1)}
+.btn-primary:hover{background:var(--nibo2)}
+.btn-ghost{background:transparent;color:var(--text2)}
+.btn-ghost:hover{background:var(--surface2)}
+
+/* desc page */
 .desc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:1rem}
-.desc-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem}
-.desc-card h3{font-size:13px;font-weight:600;color:var(--nibo1);margin-bottom:4px}
-.desc-card p{font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.5}
-.desc-card textarea{width:100%;border:.5px solid var(--border2);border-radius:var(--radius);padding:10px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);resize:vertical;min-height:140px;outline:none;background:var(--bg);line-height:1.6}
+.desc-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.2rem}
+.desc-card h3{font-size:13px;font-weight:600;color:var(--nibo1);margin-bottom:3px}
+.desc-card p{font-size:12px;color:var(--text2);margin-bottom:9px;line-height:1.5}
+.desc-card textarea{width:100%;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);resize:vertical;min-height:130px;outline:none;background:var(--bg);line-height:1.6}
 .desc-card textarea:focus{border-color:var(--nibo2)}
-.saved-note{font-size:11px;color:var(--green);margin-top:6px;height:16px}
+.saved-note{font-size:11px;color:var(--green);margin-top:5px;height:15px}
 
-.footer-hint{text-align:center;margin-top:2rem;font-size:11px;color:var(--text3)}
+/* add month modal */
+.add-month-panel{background:var(--surface);border:.5px solid var(--border2);border-radius:var(--radius-lg);padding:1.2rem;margin-top:1rem;display:none}
+.add-month-panel.open{display:block}
+.month-grid-picker{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:.8rem}
+.mpick{font-size:12px;padding:6px 4px;border-radius:var(--radius);border:.5px solid var(--border2);cursor:pointer;background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;text-align:center;transition:all .15s}
+.mpick:hover{background:var(--nibo4);color:var(--nibo1);border-color:var(--nibo3)}
+.mpick.taken{background:var(--surface2);color:var(--text3);cursor:default;border-color:var(--border)}
+.year-row{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;color:var(--text)}
+.year-btn{width:26px;height:26px;border-radius:50%;border:.5px solid var(--border2);cursor:pointer;background:transparent;color:var(--text2);font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.year-btn:hover{background:var(--surface2)}
 
-/* ── GRID INSTAGRAM ── */
-.grid-toolbar{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:1.5rem}
-.grid-month-tabs{display:flex;gap:4px}
+/* grid instagram */
+.grid-toolbar{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:1.4rem}
 .grid-add-btn{font-size:12px;padding:6px 14px;border-radius:99px;border:.5px dashed var(--nibo3);cursor:pointer;background:transparent;color:var(--nibo2);font-family:'DM Sans',sans-serif;font-weight:500;transition:all .15s}
 .grid-add-btn:hover{background:var(--nibo4);border-style:solid}
 .grid-clear-btn{font-size:12px;padding:6px 14px;border-radius:99px;border:.5px solid #FCA5A5;cursor:pointer;background:transparent;color:var(--red);font-family:'DM Sans',sans-serif;font-weight:500;transition:all .15s}
 .grid-clear-btn:hover{background:#FEE2E2}
-
 .phone-frame{display:flex;justify-content:center;margin:0 auto}
 .phone-screen{width:360px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 8px 40px rgba(0,45,114,.15);border:.5px solid var(--border2)}
-
 .ig-header{padding:12px;display:flex;gap:12px;align-items:flex-start;border-bottom:.5px solid #efefef}
 .ig-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--nibo2),var(--nibo3));flex-shrink:0;border:2px solid #fff;box-shadow:0 0 0 2px var(--nibo2)}
 .ig-profile-info{flex:1}
@@ -168,35 +196,36 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .ig-stats{display:flex;gap:10px;font-size:10px;color:#333;margin-bottom:4px}
 .ig-stats b{display:block;font-size:12px;font-weight:700;color:#000}
 .ig-bio{font-size:10px;color:#333;line-height:1.4}
-
 .ig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5px;background:#efefef}
 .ig-cell{aspect-ratio:3/4;background:#f5f5f5;position:relative;overflow:hidden;cursor:pointer;transition:opacity .15s}
 .ig-cell:hover .ig-cell-overlay{opacity:1}
 .ig-cell.drag-over{outline:2px solid var(--nibo2);outline-offset:-2px;opacity:.7}
-.ig-cell.dragging{opacity:.4}
+.ig-cell.dragging{opacity:.35}
 .ig-cell img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none}
-.ig-cell-empty{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--text3)}
-.ig-cell-empty-icon{font-size:20px;opacity:.4}
-.ig-cell-empty-label{font-size:9px;text-align:center;opacity:.6}
-.ig-cell-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);opacity:0;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.ig-cell-empty{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--text3)}
+.ig-cell-empty-icon{font-size:18px;opacity:.35}
+.ig-cell-empty-label{font-size:9px;text-align:center;opacity:.55}
+.ig-cell-overlay{position:absolute;inset:0;background:rgba(0,0,0,.48);opacity:0;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:8px}
 .ig-cell-btn{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.9);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s}
 .ig-cell-btn:hover{background:#fff;transform:scale(1.1)}
-.ig-cell-num{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.5);color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:99px;font-family:'DM Mono',monospace}
-
-.grid-legend{text-align:center;margin-top:1rem;font-size:11px;color:var(--text3)}
-
-/* image options popup */
-.cell-popup{position:absolute;inset:0;background:rgba(0,0,0,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;z-index:10}
-.cell-popup-btn{font-size:11px;padding:5px 14px;border-radius:99px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;width:110px;text-align:center}
+.ig-cell-num{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.48);color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:99px;font-family:'DM Mono',monospace}
+.cell-popup{position:absolute;inset:0;background:rgba(0,0,0,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;z-index:10}
+.cell-popup-btn{font-size:11px;padding:5px 14px;border-radius:99px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;width:120px;text-align:center}
 .cell-popup-upload{background:#fff;color:var(--text)}
 .cell-popup-delete{background:#ef4444;color:#fff}
-.cell-popup-cancel{background:transparent;color:rgba(255,255,255,.7);border:.5px solid rgba(255,255,255,.3)!important;border:none}
+.cell-popup-cancel{background:transparent;color:rgba(255,255,255,.7);border:.5px solid rgba(255,255,255,.3)!important}
+.grid-legend{text-align:center;margin-top:1rem;font-size:11px;color:var(--text3)}
 
+.footer-hint{text-align:center;margin-top:1.5rem;font-size:11px;color:var(--text3)}
+
+@media(max-width:760px){
   .tipos-grid{grid-template-columns:repeat(3,1fr)}
   .cores-grid{grid-template-columns:repeat(2,1fr)}
-  .table-header,.post-row{grid-template-columns:68px 90px 1fr 60px 80px 24px}
+  .table-header,.post-row{grid-template-columns:70px 88px 1fr 56px 80px 24px}
+  .table-header .th:nth-child(4),.post-row>*:nth-child(4){display:none}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .desc-grid{grid-template-columns:1fr}
+  .month-grid-picker{grid-template-columns:repeat(4,1fr)}
 }
 </style>
 </head>
@@ -227,27 +256,41 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <button class="page-tab" onclick="showPage('configuracoes',this)">Configurações</button>
 </nav>
 
-<!-- CALENDÁRIO -->
+<!-- ══ CALENDÁRIO ══ -->
 <div id="page-calendario" class="page active">
   <div class="section-label" style="margin-top:0">Tipos de post</div>
   <div class="tipos-grid" id="tipos"></div>
 
   <div class="month-bar">
     <div>
-      <div class="section-label" style="margin:0 0 8px">Mês</div>
+      <div class="section-label" style="margin:0 0 7px">Mês</div>
       <div class="month-tabs" id="month-tabs"></div>
     </div>
-    <button class="add-row-btn" onclick="addRow()">+ adicionar post</button>
+    <div class="bar-right">
+      <button class="add-month-btn" onclick="toggleAddMonth()">+ mês</button>
+      <button class="add-row-btn" onclick="addRow()">+ post</button>
+    </div>
   </div>
 
-  <div class="legend">
+  <!-- add month picker -->
+  <div class="add-month-panel" id="add-month-panel">
+    <div class="year-row">
+      <button class="year-btn" onclick="pickerYear--; renderPicker()">‹</button>
+      <span id="picker-year">2025</span>
+      <button class="year-btn" onclick="pickerYear++; renderPicker()">›</button>
+      <span style="font-size:12px;color:var(--text3);margin-left:4px">Clique no mês para adicionar</span>
+    </div>
+    <div class="month-grid-picker" id="month-picker"></div>
+  </div>
+
+  <div class="legend" style="margin-top:10px">
     <div class="legend-item"><span style="width:8px;height:8px;border-radius:50%;background:#D1FAE5;border:1px solid #6EE7B7;display:inline-block"></span>Aprovado pela Maris</div>
     <div class="legend-item"><span style="width:8px;height:8px;border-radius:50%;background:#F1F0EC;border:1px solid #ccc;display:inline-block"></span>Pendente</div>
     <div class="legend-item"><span style="width:8px;height:8px;border-radius:50%;background:#FEE2E2;border:1px solid #FCA5A5;display:inline-block"></span>Reprovado</div>
     <div class="legend-item" style="background:#FFFBEB;padding:2px 8px;border-radius:4px;border:.5px solid #FDE68A">⭐ trial financeiro</div>
   </div>
 
-  <div class="table-header">
+  <div class="table-header" style="margin-top:8px">
     <div class="th">Data</div>
     <div class="th">Tipo</div>
     <div class="th">Social media</div>
@@ -269,25 +312,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
     <div class="maris-bar-bg"><div class="maris-bar-fill" id="maris-fill" style="width:0%"></div></div>
   </div>
-
   <div class="stats-grid" id="stats"></div>
   <p class="footer-hint">🔄 Dados sincronizados em tempo real para todo o time.</p>
 </div>
 
-<!-- DESCRIÇÕES -->
+<!-- ══ DESCRIÇÕES ══ -->
 <div id="page-descricoes" class="page">
   <div class="section-label" style="margin-top:0">Briefings gerais</div>
   <div class="desc-grid">
     <div class="desc-card">
       <h3>📱 Social Media</h3>
       <p>Tom de voz, objetivo, público-alvo e estratégia geral de conteúdo.</p>
-      <textarea id="desc-social" placeholder="Ex: tom descontraído e educativo, foco em PMEs, cada post com CTA claro..." oninput="saveDesc('social',this.value)"></textarea>
+      <textarea id="desc-social" placeholder="Ex: tom descontraído e educativo, foco em PMEs..." oninput="saveDesc('social',this.value)"></textarea>
       <div class="saved-note" id="note-social"></div>
     </div>
     <div class="desc-card">
       <h3>🎨 Design</h3>
       <p>Estilo visual, tipografia, regras de cor e referências para o designer.</p>
-      <textarea id="desc-design" placeholder="Ex: sempre usar tipografia Nibo, fundo Azul Petróleo para produto, Gelo para curiosidade..." oninput="saveDesc('design',this.value)"></textarea>
+      <textarea id="desc-design" placeholder="Ex: sempre usar tipografia Nibo, fundo Azul Petróleo para produto..." oninput="saveDesc('design',this.value)"></textarea>
       <div class="saved-note" id="note-design"></div>
     </div>
   </div>
@@ -295,15 +337,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="desc-grid" id="tipo-descs"></div>
 </div>
 
-<!-- CONFIGURAÇÕES -->
-<div id="page-configuracoes" class="page">
-  <div class="section-label" style="margin-top:0">Cores da marca Nibo</div>
-  <div class="cores-grid" id="cores"></div>
-  <div class="section-label">Tipos de post</div>
-  <div class="tipos-grid" id="tipos-cfg"></div>
-</div>
-
-<!-- GRID INSTAGRAM -->
+<!-- ══ GRID INSTAGRAM ══ -->
 <div id="page-grid" class="page">
   <div class="grid-toolbar">
     <div>
@@ -311,42 +345,40 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div style="font-size:11px;color:var(--text3)">Proporção 3:4 · Arraste para reordenar · Clique para upload ou excluir</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <div class="grid-month-tabs" id="grid-month-tabs"></div>
-      <label class="grid-add-btn">
-        + adicionar imagem
-        <input type="file" accept="image/*" multiple style="display:none" onchange="gridAddImages(this)">
-      </label>
+      <div class="month-tabs" id="grid-month-tabs"></div>
+      <label class="grid-add-btn">+ imagem<input type="file" accept="image/*" multiple style="display:none" onchange="gridAddImages(this)"></label>
       <button class="grid-clear-btn" onclick="gridClearAll()">limpar tudo</button>
     </div>
   </div>
-
-  <!-- fake phone frame -->
   <div class="phone-frame">
     <div class="phone-screen">
-      <!-- profile header -->
       <div class="ig-header">
         <div class="ig-avatar"></div>
         <div class="ig-profile-info">
           <div class="ig-username">nibo.oficial</div>
           <div class="ig-stats">
-            <span><b id="ig-post-count">0</b> posts</span>
-            <span><b>12,4k</b> seguidores</span>
-            <span><b>842</b> seguindo</span>
+            <span><b id="ig-post-count">0</b>posts</span>
+            <span><b>12,4k</b>seguidores</span>
+            <span><b>842</b>seguindo</span>
           </div>
           <div class="ig-bio">Gestão financeira para pequenas empresas 🚀<br><span style="color:#0072ce;font-size:10px">nibo.com.br</span></div>
         </div>
       </div>
-      <!-- grid -->
       <div class="ig-grid" id="ig-grid"></div>
     </div>
   </div>
-
-  <div class="grid-legend">
-    <span>💡 <b>Arraste</b> para reordenar · <b>Clique</b> na imagem para ver opções · Novos posts aparecem no <b>topo esquerdo</b></span>
-  </div>
+  <div class="grid-legend">💡 <b>Arraste</b> para reordenar · <b>Clique</b> na imagem para opções · Novos posts aparecem no <b>topo esquerdo</b></div>
 </div>
 
+<!-- ══ CONFIGURAÇÕES ══ -->
+<div id="page-configuracoes" class="page">
+  <div class="section-label" style="margin-top:0">Cores da marca Nibo</div>
+  <div class="cores-grid" id="cores"></div>
+  <div class="section-label">Tipos de post</div>
+  <div class="tipos-grid" id="tipos-cfg"></div>
 </div>
+
+</div><!-- /container -->
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modal">
@@ -358,6 +390,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="modal-tabs">
       <button class="modal-tab active" onclick="switchMTab('social',this)">Social Media</button>
       <button class="modal-tab" onclick="switchMTab('design',this)">Design</button>
+      <button class="modal-tab" onclick="switchMTab('maris',this)">Obs. Maris</button>
     </div>
     <div class="modal-body">
       <div id="modal-pane-social" class="modal-pane active">
@@ -366,7 +399,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       </div>
       <div id="modal-pane-design" class="modal-pane">
         <div class="modal-label">Briefing para o designer</div>
-        <textarea id="modal-design" placeholder="Layout, referências visuais, elementos gráficos, imagens, formato..." rows="5"></textarea>
+        <textarea id="modal-design" placeholder="Layout, referências visuais, elementos gráficos, formato..." rows="5"></textarea>
+      </div>
+      <div id="modal-pane-maris" class="modal-pane">
+        <div class="modal-label">Observações da Maris</div>
+        <textarea id="modal-maris" placeholder="Feedback, ajustes solicitados, observações sobre aprovação..." rows="5"></textarea>
       </div>
     </div>
     <div class="modal-actions">
@@ -376,10 +413,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 
-<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getFirestore, doc, setDoc, onSnapshot, collection, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, onSnapshot, collection, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCucKm83A31gJ8_FNRvUpkvvGKs6W9ljB0",
@@ -391,24 +427,20 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db  = getFirestore(app);
 
-// ── CONSTANTES ──
+// ── CONSTANTS ──
 const TIPOS=[
-  {id:'produto',   name:'Produto',            color:'#002d72',day:'Seg'},
-  {id:'editorial', name:'Editorial',          color:'#0072ce',day:'Ter'},
-  {id:'webinar',   name:'Webinar',            color:'#41b6e6',day:'Qua'},
-  {id:'depoimento',name:'Depoimento',         color:'#185FA5',day:'Qui'},
-  {id:'curiosidade',name:'Curiosidade / Gelo',color:'#7b96c2',day:'Sex'},
+  {id:'produto',    name:'Produto',       color:'#002d72', day:'Seg'},
+  {id:'editorial',  name:'Editorial',     color:'#0072ce', day:'Ter'},
+  {id:'webinar',    name:'Webinar',       color:'#41b6e6', day:'Qua'},
+  {id:'depoimento', name:'Depoimento',    color:'#185FA5', day:'Qui'},
+  {id:'curiosidade',name:'Curiosidade',   color:'#7b96c2', day:'Sex'},
 ];
+const DAYS_PT=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const MES_NAMES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const STATUS_CYCLE=['pendente','aprovado','reprovado'];
 const STATUS_LABEL={pendente:'Pendente',aprovado:'✓ Aprovado',reprovado:'✗ Reprovado'};
-const MESES=[
-  {label:'Maio',   y:2025,m:4},
-  {label:'Junho',  y:2025,m:5},
-  {label:'Julho',  y:2025,m:6},
-  {label:'Agosto', y:2025,m:7},
-];
 const COR_DEF=[
   {name:'Azul Petróleo',hex:'#002d72'},
   {name:'Azul Escuro',  hex:'#0072ce'},
@@ -417,81 +449,133 @@ const COR_DEF=[
 ];
 
 // ── STATE ──
-let cores=COR_DEF.map(c=>({...c}));
-let rows=[];
-let descs={social:'',design:''};
-let tipoDesc={};
-let activeMonth=0;
-let editingKey=null;
-let mTab='social';
-let saveTimer=null;
+let cores   = COR_DEF.map(c=>({...c}));
+let rows    = [];         // all rows from firestore
+let months  = [];         // [{y,m}] sorted, from firestore config
+let descs   = {social:'',design:''};
+let tipoDesc= {};
+let activeMonthIdx = 0;  // index into months[]
+let editingKey = null;
+let mTab = 'social';
 
-// ── SYNC STATUS ──
-function setSyncing(){
-  document.getElementById('sync-dot').className='sync-dot saving';
-  document.getElementById('sync-label').textContent='Salvando...';
-}
-function setSynced(){
-  document.getElementById('sync-dot').className='sync-dot ok';
-  document.getElementById('sync-label').textContent='Sincronizado ✓';
-}
-function setConnected(){
-  document.getElementById('sync-dot').className='sync-dot ok';
-  document.getElementById('sync-label').textContent='Conectado · tempo real';
-}
+// ── SYNC UI ──
+function setSyncing(){document.getElementById('sync-dot').className='sync-dot saving';document.getElementById('sync-label').textContent='Salvando...';}
+function setSynced() {document.getElementById('sync-dot').className='sync-dot ok';  document.getElementById('sync-label').textContent='Sincronizado ✓';}
+function setConn()   {document.getElementById('sync-dot').className='sync-dot ok';  document.getElementById('sync-label').textContent='Conectado · tempo real';}
 
-// ── FIREBASE LISTENERS ──
+// ── FIRESTORE LISTENERS ──
 onSnapshot(doc(db,'config','cores'), snap=>{
   if(snap.exists()) cores=snap.data().list||COR_DEF.map(c=>({...c}));
-  else cores=COR_DEF.map(c=>({...c}));
-  renderCores(); renderCalendar(); setConnected();
+  renderCores(); renderCalendar(); setConn();
+});
+
+onSnapshot(doc(db,'config','months'), snap=>{
+  if(snap.exists()) months=(snap.data().list||[]).sort((a,b)=>a.y!==b.y?a.y-b.y:a.m-b.m);
+  else months=[{y:2025,m:4},{y:2025,m:5},{y:2025,m:6},{y:2025,m:7}];
+  if(activeMonthIdx>=months.length) activeMonthIdx=0;
+  renderTabs(); renderPicker();
 });
 
 onSnapshot(doc(db,'config','descs'), snap=>{
   if(snap.exists()){
     descs=snap.data();
-    const s=document.getElementById('desc-social');
-    const d=document.getElementById('desc-design');
+    const s=document.getElementById('desc-social'),d=document.getElementById('desc-design');
     if(s&&document.activeElement!==s) s.value=descs.social||'';
     if(d&&document.activeElement!==d) d.value=descs.design||'';
   }
 });
 
-onSnapshot(doc(db,'config','tipoDesc'), snap=>{
-  if(snap.exists()) tipoDesc=snap.data();
-});
+onSnapshot(doc(db,'config','tipoDesc'), snap=>{ if(snap.exists()) tipoDesc=snap.data(); });
 
 onSnapshot(collection(db,'rows'), snap=>{
   rows=[];
   snap.forEach(d=>rows.push({key:d.id,...d.data()}));
-  rows.sort((a,b)=>a.order-b.order||(a.key>b.key?1:-1));
+  rows.sort((a,b)=>(a.order||0)-(b.order||0));
   if(rows.length===0) generateDefaultRows();
-  else { renderCalendar(); setConnected(); }
+  else { renderCalendar(); setConn(); }
 });
 
 // ── GENERATE DEFAULT ROWS ──
 async function generateDefaultRows(){
-  const batch=[];
-  for(let mi=0;mi<4;mi++){
-    const {y,m}=MESES[mi];
+  if(!months.length) return;
+  const toWrite=[];
+  months.forEach((mo,mi)=>{
+    const {y,m}=mo;
     const dim=new Date(y,m+1,0).getDate();
-    let week=-1,order=mi*1000;
+    let week=-1, order=mi*1000, lastMon=-1;
     for(let day=1;day<=dim;day++){
       const dt=new Date(y,m,day);
       const dow=dt.getDay();
       if(dow===0||dow===6) continue;
-      if(dow===1) week++;
+      if(dow===1){week++;lastMon=day;}
       const di=dow-1;
       const dateStr=`${String(day).padStart(2,'0')}/${String(m+1).padStart(2,'0')}`;
       const corIdx=(week*5+di)%4;
       const isTrial=(week===1||week===3)&&di===4;
-      const key=`${mi}-${week}-${di}-${day}`;
-      batch.push({key,date:dateStr,tipoId:TIPOS[di].id,corIdx,status:'pendente',social:'',design:'',isTrial,order:order++});
+      toWrite.push({key:`${y}-${m}-w${week}-d${di}`,y,m,week,di,date:dateStr,tipoId:TIPOS[di].id,corIdx,status:'pendente',social:'',design:'',marisObs:'',isTrial,order:order++});
     }
+  });
+  for(const r of toWrite) await setDoc(doc(db,'rows',r.key),r);
+}
+
+// ── MONTH MANAGEMENT ──
+window.toggleAddMonth=function(){
+  const p=document.getElementById('add-month-panel');
+  p.classList.toggle('open');
+}
+
+let pickerYear=2025;
+window.pickerYear=pickerYear;
+
+window.renderPicker=function(){
+  pickerYear=window.pickerYear;
+  document.getElementById('picker-year').textContent=pickerYear;
+  const taken=new Set(months.map(mo=>`${mo.y}-${mo.m}`));
+  document.getElementById('month-picker').innerHTML=MES_NAMES.map((name,i)=>{
+    const key=`${pickerYear}-${i}`;
+    const isTaken=taken.has(key);
+    return `<button class="mpick${isTaken?' taken':''}" ${isTaken?'disabled':''} onclick="addMonth(${pickerYear},${i})">${name.slice(0,3)}</button>`;
+  }).join('');
+}
+
+window.addMonth=async function(y,m){
+  const already=months.some(mo=>mo.y===y&&mo.m===m);
+  if(already) return;
+  const newMonths=[...months,{y,m}].sort((a,b)=>a.y!==b.y?a.y-b.y:a.m-b.m);
+  await setDoc(doc(db,'config','months'),{list:newMonths});
+  // generate rows for new month
+  const dim=new Date(y,m+1,0).getDate();
+  let week=-1,order=(newMonths.findIndex(mo=>mo.y===y&&mo.m===m))*1000;
+  for(let day=1;day<=dim;day++){
+    const dt=new Date(y,m,day);
+    const dow=dt.getDay();
+    if(dow===0||dow===6) continue;
+    if(dow===1) week++;
+    const di=dow-1;
+    const dateStr=`${String(day).padStart(2,'0')}/${String(m+1).padStart(2,'0')}`;
+    const corIdx=(week*5+di)%4;
+    const isTrial=(week===1||week===3)&&di===4;
+    const key=`${y}-${m}-w${week}-d${di}`;
+    const exists=rows.find(r=>r.key===key);
+    if(!exists) await setDoc(doc(db,'rows',key),{key,y,m,week,di,date:dateStr,tipoId:TIPOS[di].id,corIdx,status:'pendente',social:'',design:'',marisObs:'',isTrial,order:order++});
   }
-  for(const r of batch){
-    await setDoc(doc(db,'rows',r.key),r);
-  }
+  document.getElementById('add-month-panel').classList.remove('open');
+  activeMonthIdx=newMonths.findIndex(mo=>mo.y===y&&mo.m===m);
+}
+
+window.deleteMonth=async function(idx,e){
+  e.stopPropagation();
+  const mo=months[idx];
+  if(!mo) return;
+  const label=`${MES_NAMES[mo.m]} ${mo.y}`;
+  if(!confirm(`Tem certeza que quer apagar ${label} e TODOS os posts deste mês? Esta ação não pode ser desfeita.`)) return;
+  // delete all rows of this month
+  const toDelete=rows.filter(r=>r.y===mo.y&&r.m===mo.m);
+  for(const r of toDelete) await deleteDoc(doc(db,'rows',r.key));
+  // remove from months list
+  const newMonths=months.filter((_,i)=>i!==idx);
+  await setDoc(doc(db,'config','months'),{list:newMonths});
+  if(activeMonthIdx>=newMonths.length) activeMonthIdx=Math.max(0,newMonths.length-1);
 }
 
 // ── SAVE HELPERS ──
@@ -500,22 +584,8 @@ async function saveRow(key,data){
   await setDoc(doc(db,'rows',key),data,{merge:true});
   setSynced();
 }
-
-async function saveCores(){
-  setSyncing();
-  await setDoc(doc(db,'config','cores'),{list:cores});
-  setSynced();
-}
-
-async function saveDescs(){
-  setSyncing();
-  await setDoc(doc(db,'config','descs'),descs);
-  setSynced();
-}
-
-async function saveTipoDesc(){
-  await setDoc(doc(db,'config','tipoDesc'),tipoDesc);
-}
+async function saveCores(){setSyncing();await setDoc(doc(db,'config','cores'),{list:cores});setSynced();}
+async function saveDescs(){setSyncing();await setDoc(doc(db,'config','descs'),descs);setSynced();}
 
 // ── PAGES ──
 window.showPage=function(id,btn){
@@ -540,19 +610,28 @@ function renderTipos(elId='tipos'){
 
 // ── TABS ──
 function renderTabs(){
-  document.getElementById('month-tabs').innerHTML=MESES.map((m,i)=>`
-    <button class="tab${i===activeMonth?' active':''}" onclick="window.setMonth(${i})">${m.label}</button>
-  `).join('');
+  if(!months.length){
+    document.getElementById('month-tabs').innerHTML='<span style="font-size:12px;color:var(--text3)">Nenhum mês — clique em "+ mês"</span>';
+    document.getElementById('calendar').innerHTML='';
+    return;
+  }
+  document.getElementById('month-tabs').innerHTML=months.map((mo,i)=>`
+    <button class="tab${i===activeMonthIdx?' active':''}" onclick="window.setMonth(${i})">
+      ${MES_NAMES[mo.m].slice(0,3)} ${mo.y}
+      <span class="tab-del" onclick="window.deleteMonth(${i},event)" title="Apagar mês">×</span>
+    </button>`).join('');
 }
-window.setMonth=function(i){activeMonth=i;renderCalendar();renderTabs();}
+
+window.setMonth=function(i){activeMonthIdx=i;renderCalendar();renderTabs();}
 
 // ── ADD ROW ──
 window.addRow=async function(){
-  const mi=activeMonth;
-  const key='e'+mi+'-'+Date.now();
-  const maxOrder=rows.filter(r=>r.key.startsWith(mi+'-')||r.key.startsWith('e'+mi+'-')).reduce((m,r)=>Math.max(m,r.order||0),mi*1000)+1;
-  const newRow={key,date:'',tipoId:TIPOS[0].id,corIdx:0,status:'pendente',social:'',design:'',isTrial:false,order:maxOrder};
-  await setDoc(doc(db,'rows',key),newRow);
+  if(!months.length) return;
+  const mo=months[activeMonthIdx];
+  const {y,m}=mo;
+  const key='extra-'+Date.now();
+  const maxOrder=rows.filter(r=>r.y===y&&r.m===m).reduce((mx,r)=>Math.max(mx,r.order||0),activeMonthIdx*1000)+1;
+  await setDoc(doc(db,'rows',key),{key,y,m,week:99,di:0,date:'',tipoId:TIPOS[0].id,corIdx:0,status:'pendente',social:'',design:'',marisObs:'',isTrial:false,order:maxOrder});
 }
 
 // ── DELETE ROW ──
@@ -562,40 +641,42 @@ window.deleteRow=async function(key){
 }
 
 // ── UPDATE ROW ──
-window.updRowField=async function(key,field,val){
-  await saveRow(key,{[field]:val});
-}
+window.updRowField=async function(key,field,val){await saveRow(key,{[field]:val});}
 
 // ── CYCLE STATUS ──
 window.cycleStatus=async function(key){
-  const r=rows.find(r=>r.key===key);
-  if(!r) return;
+  const r=rows.find(r=>r.key===key);if(!r) return;
   const i=STATUS_CYCLE.indexOf(r.status||'pendente');
-  const newStatus=STATUS_CYCLE[(i+1)%3];
-  await saveRow(key,{status:newStatus});
+  await saveRow(key,{status:STATUS_CYCLE[(i+1)%3]});
 }
 
 // ── SET COR ──
-window.setCor=async function(key,idx){
-  await saveRow(key,{corIdx:idx});
-}
+window.setCor=async function(key,idx){await saveRow(key,{corIdx:idx});}
 
 // ── RENDER CALENDAR ──
 function renderCalendar(){
-  const mr=rows.filter(r=>r.key.startsWith(activeMonth+'-')||r.key.startsWith('e'+activeMonth+'-'));
+  if(!months.length){document.getElementById('calendar').innerHTML='';renderStats();return;}
+  const mo=months[activeMonthIdx];
+  if(!mo){renderStats();return;}
+  const {y,m}=mo;
+  const mr=rows.filter(r=>r.y===y&&r.m===m).sort((a,b)=>(a.order||0)-(b.order||0));
   if(!mr.length){
     document.getElementById('calendar').innerHTML='<p style="color:var(--text3);font-size:13px;padding:1rem 0">Nenhum post neste mês.</p>';
     renderStats();return;
   }
-  const weeks={};
+
+  // group by week
+  const weekMap={};
   mr.forEach(p=>{
-    const wk=p.key.split('-')[1]||'x';
-    if(!weeks[wk]) weeks[wk]=[];
-    weeks[wk].push(p);
+    const wk=p.week!=null?p.week:99;
+    if(!weekMap[wk]) weekMap[wk]=[];
+    weekMap[wk].push(p);
   });
+
   let html='';
-  Object.entries(weeks).forEach(([wk,wRows])=>{
-    const wNum=isNaN(wk)?'Extra':parseInt(wk)+1;
+  Object.keys(weekMap).sort((a,b)=>+a-+b).forEach(wk=>{
+    const wRows=weekMap[wk];
+    const wNum=wk=='99'?'Extra':parseInt(wk)+1;
     const hasTrial=wRows.some(r=>r.isTrial);
     html+=`<div class="week-block"><div class="week-header">
       <span class="week-title">Semana ${wNum}</span>
@@ -605,11 +686,22 @@ function renderCalendar(){
       const tipo=TIPOS.find(t=>t.id===p.tipoId)||TIPOS[0];
       const tipoOpts=TIPOS.map(t=>`<option value="${t.id}"${t.id===p.tipoId?' selected':''}>${t.name}</option>`).join('');
       const corBtns=cores.map((c,i)=>`<button class="cor-btn${p.corIdx===i?' selected':''}" style="background:${c.hex}" title="${c.name}" onclick="window.setCor('${p.key}',${i})"></button>`).join('');
-      const sSnip=p.social?p.social.slice(0,36)+(p.social.length>36?'…':''):'adicionar...';
-      const dSnip=p.design?p.design.slice(0,36)+(p.design.length>36?'…':''):'briefing...';
+      const sSnip=p.social?p.social.slice(0,34)+(p.social.length>34?'…':''):'adicionar...';
+      const dSnip=p.design?p.design.slice(0,34)+(p.design.length>34?'…':''):'briefing...';
+      // day of week label
+      let dowLabel='';
+      if(p.date&&p.date.length===5){
+        const parts=p.date.split('/');
+        const dt=new Date(y,parseInt(parts[1])-1,parseInt(parts[0]));
+        dowLabel=DAYS_PT[dt.getDay()]||'';
+      }
+      const hasMaris=p.marisObs&&p.marisObs.trim();
       html+=`
       <div class="post-row${p.isTrial?' trial':''}">
-        <input class="post-date-input" type="text" value="${p.date||''}" placeholder="dd/mm" onchange="window.updRowField('${p.key}','date',this.value)">
+        <div class="post-date-wrap">
+          <input class="post-date-input" type="text" value="${p.date||''}" placeholder="dd/mm" onchange="window.updRowField('${p.key}','date',this.value)">
+          ${dowLabel?`<span class="post-dow">${dowLabel}</span>`:''}
+        </div>
         <div class="post-tipo">
           <span class="dot" style="background:${tipo.color}"></span>
           <select class="tipo-select" onchange="window.updRowField('${p.key}','tipoId',this.value)">${tipoOpts}</select>
@@ -617,7 +709,10 @@ function renderCalendar(){
         <span class="idea-cell${p.social?' filled':''}" onclick="window.openModal('${p.key}','social')" title="${(p.social||'').replace(/"/g,'&quot;')}">${sSnip}</span>
         <span class="idea-cell${p.design?' filled':''}" onclick="window.openModal('${p.key}','design')" title="${(p.design||'').replace(/"/g,'&quot;')}">${dSnip}</span>
         <div class="cor-selector">${corBtns}</div>
-        <div class="status-cell"><span class="status-badge ${p.status||'pendente'}" onclick="window.cycleStatus('${p.key}')">${STATUS_LABEL[p.status||'pendente']}</span></div>
+        <div class="status-cell">
+          <span class="status-badge ${p.status||'pendente'}" onclick="window.cycleStatus('${p.key}')">${STATUS_LABEL[p.status||'pendente']}</span>
+          ${hasMaris?`<span title="${(p.marisObs||'').replace(/"/g,'&quot;')}" style="margin-left:4px;font-size:13px;cursor:pointer" onclick="window.openModal('${p.key}','maris')">💬</span>`:''}
+        </div>
         <button class="del-btn" onclick="window.deleteRow('${p.key}')" title="Remover">×</button>
       </div>`;
     });
@@ -655,32 +750,29 @@ window.openModal=function(key,tab='social'){
   const r=rows.find(r=>r.key===key);if(!r) return;
   const tipo=TIPOS.find(t=>t.id===r.tipoId)||TIPOS[0];
   document.getElementById('modal-title').textContent=tipo.name;
-  document.getElementById('modal-sub').textContent=r.date||'sem data definida';
+  document.getElementById('modal-sub').textContent=r.date||'sem data';
   document.getElementById('modal-social').value=r.social||'';
   document.getElementById('modal-design').value=r.design||'';
-  switchMTab(tab);
+  document.getElementById('modal-maris').value=r.marisObs||'';
+  window.switchMTab(tab);
   document.getElementById('modal').classList.add('open');
   setTimeout(()=>document.getElementById('modal-'+tab).focus(),80);
 }
-
 window.switchMTab=function(tab){
   mTab=tab;
-  document.querySelectorAll('.modal-tab').forEach((b,i)=>b.classList.toggle('active',['social','design'][i]===tab));
+  document.querySelectorAll('.modal-tab').forEach((b,i)=>b.classList.toggle('active',['social','design','maris'][i]===tab));
   document.querySelectorAll('.modal-pane').forEach(p=>p.classList.remove('active'));
   document.getElementById('modal-pane-'+tab).classList.add('active');
 }
-function switchMTab(tab){ window.switchMTab(tab); }
-
 window.closeModal=function(){document.getElementById('modal').classList.remove('open');editingKey=null;}
-
 window.saveModal=async function(){
   if(!editingKey) return;
   const s=document.getElementById('modal-social').value.trim();
   const d=document.getElementById('modal-design').value.trim();
-  await saveRow(editingKey,{social:s,design:d});
+  const obs=document.getElementById('modal-maris').value.trim();
+  await saveRow(editingKey,{social:s,design:d,marisObs:obs});
   window.closeModal();
 }
-
 document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)window.closeModal();});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape') window.closeModal();
@@ -695,11 +787,10 @@ function renderDescPage(){
     <div class="desc-card">
       <h3><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${t.color};margin-right:6px;vertical-align:middle"></span>${t.name}</h3>
       <p>Referências e regras para posts do tipo ${t.name.toLowerCase()}.</p>
-      <textarea placeholder="Diretrizes específicas..." oninput="window.saveTipoDescField('${t.id}',this.value)">${tipoDesc[t.id]||''}</textarea>
+      <textarea placeholder="Diretrizes específicas..." oninput="window.saveTD('${t.id}',this.value)">${tipoDesc[t.id]||''}</textarea>
       <div class="saved-note"></div>
     </div>`).join('');
 }
-
 let descTimer;
 window.saveDesc=function(field,val){
   descs[field]=val;
@@ -710,75 +801,49 @@ window.saveDesc=function(field,val){
     if(el){el.textContent='Salvo ✓';setTimeout(()=>{el.textContent=''},2000);}
   },800);
 }
-
-window.saveTipoDescField=async function(id,val){
+window.saveTD=async function(id,val){
   tipoDesc[id]=val;
-  await saveTipoDesc();
+  await setDoc(doc(db,'config','tipoDesc'),tipoDesc);
 }
 
 // ── CONFIG ──
 function renderConfig(){
   document.getElementById('cores').innerHTML=cores.map((c,i)=>`
     <div class="cor-card">
-      <div class="cor-swatch" style="background:${c.hex}" title="Clique para trocar">
+      <div class="cor-swatch" style="background:${c.hex}">
         <input type="color" value="${c.hex}" oninput="window.updateCor(${i},'hex',this.value)">
       </div>
-      <input class="cor-name-input" value="${c.name}" placeholder="Nome da cor"
-        onchange="window.updateCor(${i},'name',this.value)">
+      <input class="cor-name-input" value="${c.name}" placeholder="Nome" onchange="window.updateCor(${i},'name',this.value)">
       <div class="cor-hex">${c.hex.toUpperCase()}</div>
     </div>`).join('');
   renderTipos('tipos-cfg');
 }
-
 window.updateCor=async function(i,field,val){
   cores[i][field]=val;
   await saveCores();
-  renderConfig();
-  renderCalendar();
+  renderConfig();renderCalendar();
 }
-
-// ── INIT ──
-renderTipos();
-renderTabs();
-renderCalendar();
 
 // ── GRID INSTAGRAM ──
-// gridData[month] = [{id, src (base64), label}]
-let gridData = JSON.parse(localStorage.getItem('nb_grid')||'{}');
-let gridMonth = 0;
-let dragSrcIdx = null;
+let gridData=JSON.parse(localStorage.getItem('nb_grid2')||'{}');
+let gridMonth=0;
+let dragSrcIdx=null;
 
-function saveGrid(){
-  try{localStorage.setItem('nb_grid',JSON.stringify(gridData));}catch(e){
-    // localStorage quota - images too large, warn user
-    alert('Imagens ocupam muito espaço no navegador. Tente usar imagens menores.');
-  }
-}
-
-function gridMonthKey(){ return 'm'+gridMonth; }
-
-function initGridMonth(){
-  const k=gridMonthKey();
-  if(!gridData[k]) gridData[k]=[];
-  // ensure 9 slots minimum (3 rows)
-  while(gridData[k].length<9) gridData[k].push(null);
-}
+function saveGrid(){try{localStorage.setItem('nb_grid2',JSON.stringify(gridData));}catch(e){alert('Imagens muito pesadas. Use imagens menores.');}}
+function gridKey(){return 'g'+gridMonth;}
+function initSlots(){const k=gridKey();if(!gridData[k])gridData[k]=[];while(gridData[k].length<9)gridData[k].push(null);}
 
 window.gridAddImages=function(input){
   const files=Array.from(input.files);
   if(!files.length) return;
-  const k=gridMonthKey();
-  initGridMonth();
+  const k=gridKey();initSlots();
   let loaded=0;
   files.forEach(file=>{
     const reader=new FileReader();
     reader.onload=e=>{
-      // insert at beginning (newest post = top left)
       gridData[k].unshift({id:Date.now()+Math.random(),src:e.target.result,label:file.name});
-      // ensure at least 9 slots
-      while(gridData[k].length<9) gridData[k].push(null);
-      loaded++;
-      if(loaded===files.length){saveGrid();renderGrid();}
+      while(gridData[k].length<9)gridData[k].push(null);
+      if(++loaded===files.length){saveGrid();renderGrid();}
     };
     reader.readAsDataURL(file);
   });
@@ -787,46 +852,26 @@ window.gridAddImages=function(input){
 
 window.gridClearAll=function(){
   if(!confirm('Limpar todas as imagens deste mês?')) return;
-  gridData[gridMonthKey()]=[];
-  initGridMonth();
-  saveGrid();renderGrid();
+  gridData[gridKey()]=[];initSlots();saveGrid();renderGrid();
 }
 
 function gridDeleteCell(idx){
-  const k=gridMonthKey();
+  const k=gridKey();
   gridData[k][idx]=null;
-  // trim trailing nulls but keep at least 9
-  while(gridData[k].length>9&&gridData[k][gridData[k].length-1]===null) gridData[k].pop();
-  while(gridData[k].length<9) gridData[k].push(null);
+  while(gridData[k].length>9&&!gridData[k][gridData[k].length-1])gridData[k].pop();
+  while(gridData[k].length<9)gridData[k].push(null);
   saveGrid();renderGrid();
 }
 
-function gridReplaceCell(idx){
-  const inp=document.createElement('input');
-  inp.type='file';inp.accept='image/*';
-  inp.onchange=e=>{
-    const file=e.target.files[0];if(!file)return;
-    const reader=new FileReader();
-    reader.onload=ev=>{
-      const k=gridMonthKey();
-      gridData[k][idx]={id:Date.now(),src:ev.target.result,label:file.name};
-      saveGrid();renderGrid();
-    };
-    reader.readAsDataURL(file);
-  };
-  inp.click();
-}
-
 function showCellPopup(idx){
-  // remove any existing popup
   document.querySelectorAll('.cell-popup').forEach(p=>p.remove());
   const grid=document.getElementById('ig-grid');
   const cell=grid.children[idx];
   if(!cell) return;
+  const k=gridKey();
+  const hasImg=gridData[k]&&gridData[k][idx];
   const popup=document.createElement('div');
   popup.className='cell-popup';
-  const k=gridMonthKey();
-  const hasImg=gridData[k]&&gridData[k][idx];
   popup.innerHTML=`
     <label class="cell-popup-btn cell-popup-upload" style="cursor:pointer">
       ${hasImg?'Trocar imagem':'Adicionar imagem'}
@@ -837,104 +882,60 @@ function showCellPopup(idx){
   popup.querySelector('input[type=file]').onchange=e=>{
     const file=e.target.files[0];if(!file)return;
     const reader=new FileReader();
-    reader.onload=ev=>{
-      gridData[k][idx]={id:Date.now(),src:ev.target.result,label:file.name};
-      saveGrid();renderGrid();
-    };
+    reader.onload=ev=>{gridData[k][idx]={id:Date.now(),src:ev.target.result,label:file.name};saveGrid();renderGrid();};
     reader.readAsDataURL(file);
   };
   cell.appendChild(popup);
 }
 
 function renderGrid(){
-  const k=gridMonthKey();
-  initGridMonth();
+  const k=gridKey();initSlots();
   const data=gridData[k];
   const grid=document.getElementById('ig-grid');
   if(!grid) return;
-
-  // count real images
   const imgCount=data.filter(Boolean).length;
-  const postCountEl=document.getElementById('ig-post-count');
-  if(postCountEl) postCountEl.textContent=imgCount;
-
-  // render cells
+  const el=document.getElementById('ig-post-count');
+  if(el) el.textContent=imgCount;
   grid.innerHTML='';
   data.forEach((item,idx)=>{
     const cell=document.createElement('div');
-    cell.className='ig-cell';
-    cell.draggable=true;
-    cell.dataset.idx=idx;
-
+    cell.className='ig-cell';cell.draggable=true;cell.dataset.idx=idx;
     if(item){
-      cell.innerHTML=`
-        <img src="${item.src}" alt="${item.label||''}">
-        <div class="ig-cell-num">${idx+1}</div>
-        <div class="ig-cell-overlay">
-          <button class="ig-cell-btn" title="Ver opções" onclick="showCellPopup(${idx})">⋯</button>
-        </div>`;
+      cell.innerHTML=`<img src="${item.src}" alt=""><div class="ig-cell-num">${idx+1}</div><div class="ig-cell-overlay"><button class="ig-cell-btn" onclick="showCellPopup(${idx})">⋯</button></div>`;
     } else {
-      cell.innerHTML=`
-        <div class="ig-cell-empty">
-          <div class="ig-cell-empty-icon">＋</div>
-          <div class="ig-cell-empty-label">post ${idx+1}</div>
-        </div>`;
+      cell.innerHTML=`<div class="ig-cell-empty"><div class="ig-cell-empty-icon">＋</div><div class="ig-cell-empty-label">post ${idx+1}</div></div>`;
       cell.onclick=()=>showCellPopup(idx);
     }
-
-    // drag events
-    cell.addEventListener('dragstart',e=>{
-      dragSrcIdx=idx;
-      cell.classList.add('dragging');
-      e.dataTransfer.effectAllowed='move';
-    });
-    cell.addEventListener('dragend',()=>{
-      cell.classList.remove('dragging');
-      document.querySelectorAll('.ig-cell').forEach(c=>c.classList.remove('drag-over'));
-    });
-    cell.addEventListener('dragover',e=>{
-      e.preventDefault();
-      e.dataTransfer.dropEffect='move';
-      document.querySelectorAll('.ig-cell').forEach(c=>c.classList.remove('drag-over'));
-      cell.classList.add('drag-over');
-    });
+    cell.addEventListener('dragstart',e=>{dragSrcIdx=idx;cell.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+    cell.addEventListener('dragend',()=>{cell.classList.remove('dragging');document.querySelectorAll('.ig-cell').forEach(c=>c.classList.remove('drag-over'));});
+    cell.addEventListener('dragover',e=>{e.preventDefault();document.querySelectorAll('.ig-cell').forEach(c=>c.classList.remove('drag-over'));cell.classList.add('drag-over');});
     cell.addEventListener('drop',e=>{
-      e.preventDefault();
-      cell.classList.remove('drag-over');
+      e.preventDefault();cell.classList.remove('drag-over');
       if(dragSrcIdx===null||dragSrcIdx===idx) return;
-      const arr=gridData[k];
-      // swap
-      [arr[dragSrcIdx],arr[idx]]=[arr[idx],arr[dragSrcIdx]];
-      dragSrcIdx=null;
-      saveGrid();renderGrid();
+      [data[dragSrcIdx],data[idx]]=[data[idx],data[dragSrcIdx]];
+      dragSrcIdx=null;saveGrid();renderGrid();
     });
-
     grid.appendChild(cell);
   });
-
-  // add "+" tile at end if last is filled
   if(data.every(Boolean)){
     const addCell=document.createElement('div');
     addCell.className='ig-cell';
-    addCell.innerHTML=`<label class="ig-cell-empty" style="cursor:pointer;width:100%;height:100%">
-      <div class="ig-cell-empty-icon">＋</div>
-      <div class="ig-cell-empty-label">novo post</div>
-      <input type="file" accept="image/*" multiple style="display:none" onchange="gridAddImages(this)">
-    </label>`;
+    addCell.innerHTML=`<label class="ig-cell-empty" style="cursor:pointer;width:100%;height:100%"><div class="ig-cell-empty-icon">＋</div><div class="ig-cell-empty-label">novo post</div><input type="file" accept="image/*" multiple style="display:none" onchange="gridAddImages(this)"></label>`;
     grid.appendChild(addCell);
   }
 }
 
 function renderGridTabs(){
-  const MESES=['Maio','Junho','Julho','Agosto'];
-  document.getElementById('grid-month-tabs').innerHTML=MESES.map((m,i)=>`
-    <button class="tab${i===gridMonth?' active':''}" onclick="gridMonth=${i};renderGrid();renderGridTabs()">${m}</button>
+  // use same months list as calendar
+  document.getElementById('grid-month-tabs').innerHTML=months.map((mo,i)=>`
+    <button class="tab${i===gridMonth?' active':''}" onclick="gridMonth=${i};renderGrid();renderGridTabs()">${MES_NAMES[mo.m].slice(0,3)} ${mo.y}</button>
   `).join('');
 }
 
-// init grid on load
-renderGridTabs();
-renderGrid();
+// ── INIT ──
+renderTipos();
+window.pickerYear=2025;
+window.renderPicker();
 </script>
 </body>
 </html>
