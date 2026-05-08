@@ -150,7 +150,48 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 .footer-hint{text-align:center;margin-top:2rem;font-size:11px;color:var(--text3)}
 
-@media(max-width:720px){
+/* ── GRID INSTAGRAM ── */
+.grid-toolbar{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:1.5rem}
+.grid-month-tabs{display:flex;gap:4px}
+.grid-add-btn{font-size:12px;padding:6px 14px;border-radius:99px;border:.5px dashed var(--nibo3);cursor:pointer;background:transparent;color:var(--nibo2);font-family:'DM Sans',sans-serif;font-weight:500;transition:all .15s}
+.grid-add-btn:hover{background:var(--nibo4);border-style:solid}
+.grid-clear-btn{font-size:12px;padding:6px 14px;border-radius:99px;border:.5px solid #FCA5A5;cursor:pointer;background:transparent;color:var(--red);font-family:'DM Sans',sans-serif;font-weight:500;transition:all .15s}
+.grid-clear-btn:hover{background:#FEE2E2}
+
+.phone-frame{display:flex;justify-content:center;margin:0 auto}
+.phone-screen{width:360px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 8px 40px rgba(0,45,114,.15);border:.5px solid var(--border2)}
+
+.ig-header{padding:12px;display:flex;gap:12px;align-items:flex-start;border-bottom:.5px solid #efefef}
+.ig-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--nibo2),var(--nibo3));flex-shrink:0;border:2px solid #fff;box-shadow:0 0 0 2px var(--nibo2)}
+.ig-profile-info{flex:1}
+.ig-username{font-size:13px;font-weight:700;color:#000;margin-bottom:4px}
+.ig-stats{display:flex;gap:10px;font-size:10px;color:#333;margin-bottom:4px}
+.ig-stats b{display:block;font-size:12px;font-weight:700;color:#000}
+.ig-bio{font-size:10px;color:#333;line-height:1.4}
+
+.ig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5px;background:#efefef}
+.ig-cell{aspect-ratio:3/4;background:#f5f5f5;position:relative;overflow:hidden;cursor:pointer;transition:opacity .15s}
+.ig-cell:hover .ig-cell-overlay{opacity:1}
+.ig-cell.drag-over{outline:2px solid var(--nibo2);outline-offset:-2px;opacity:.7}
+.ig-cell.dragging{opacity:.4}
+.ig-cell img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none}
+.ig-cell-empty{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--text3)}
+.ig-cell-empty-icon{font-size:20px;opacity:.4}
+.ig-cell-empty-label{font-size:9px;text-align:center;opacity:.6}
+.ig-cell-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);opacity:0;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.ig-cell-btn{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.9);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s}
+.ig-cell-btn:hover{background:#fff;transform:scale(1.1)}
+.ig-cell-num{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.5);color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:99px;font-family:'DM Mono',monospace}
+
+.grid-legend{text-align:center;margin-top:1rem;font-size:11px;color:var(--text3)}
+
+/* image options popup */
+.cell-popup{position:absolute;inset:0;background:rgba(0,0,0,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;z-index:10}
+.cell-popup-btn{font-size:11px;padding:5px 14px;border-radius:99px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;width:110px;text-align:center}
+.cell-popup-upload{background:#fff;color:var(--text)}
+.cell-popup-delete{background:#ef4444;color:#fff}
+.cell-popup-cancel{background:transparent;color:rgba(255,255,255,.7);border:.5px solid rgba(255,255,255,.3)!important;border:none}
+
   .tipos-grid{grid-template-columns:repeat(3,1fr)}
   .cores-grid{grid-template-columns:repeat(2,1fr)}
   .table-header,.post-row{grid-template-columns:68px 90px 1fr 60px 80px 24px}
@@ -182,6 +223,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <nav class="page-tabs">
   <button class="page-tab active" onclick="showPage('calendario',this)">Calendário</button>
   <button class="page-tab" onclick="showPage('descricoes',this)">Descrições</button>
+  <button class="page-tab" onclick="showPage('grid',this)">Grid Instagram</button>
   <button class="page-tab" onclick="showPage('configuracoes',this)">Configurações</button>
 </nav>
 
@@ -261,6 +303,49 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="tipos-grid" id="tipos-cfg"></div>
 </div>
 
+<!-- GRID INSTAGRAM -->
+<div id="page-grid" class="page">
+  <div class="grid-toolbar">
+    <div>
+      <div style="font-size:13px;font-weight:600;color:var(--nibo1);margin-bottom:2px">Mockup · Grid Instagram</div>
+      <div style="font-size:11px;color:var(--text3)">Proporção 3:4 · Arraste para reordenar · Clique para upload ou excluir</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <div class="grid-month-tabs" id="grid-month-tabs"></div>
+      <label class="grid-add-btn">
+        + adicionar imagem
+        <input type="file" accept="image/*" multiple style="display:none" onchange="gridAddImages(this)">
+      </label>
+      <button class="grid-clear-btn" onclick="gridClearAll()">limpar tudo</button>
+    </div>
+  </div>
+
+  <!-- fake phone frame -->
+  <div class="phone-frame">
+    <div class="phone-screen">
+      <!-- profile header -->
+      <div class="ig-header">
+        <div class="ig-avatar"></div>
+        <div class="ig-profile-info">
+          <div class="ig-username">nibo.oficial</div>
+          <div class="ig-stats">
+            <span><b id="ig-post-count">0</b> posts</span>
+            <span><b>12,4k</b> seguidores</span>
+            <span><b>842</b> seguindo</span>
+          </div>
+          <div class="ig-bio">Gestão financeira para pequenas empresas 🚀<br><span style="color:#0072ce;font-size:10px">nibo.com.br</span></div>
+        </div>
+      </div>
+      <!-- grid -->
+      <div class="ig-grid" id="ig-grid"></div>
+    </div>
+  </div>
+
+  <div class="grid-legend">
+    <span>💡 <b>Arraste</b> para reordenar · <b>Clique</b> na imagem para ver opções · Novos posts aparecem no <b>topo esquerdo</b></span>
+  </div>
+</div>
+
 </div>
 
 <!-- MODAL -->
@@ -314,7 +399,7 @@ const TIPOS=[
   {id:'editorial', name:'Editorial',          color:'#0072ce',day:'Ter'},
   {id:'webinar',   name:'Webinar',            color:'#41b6e6',day:'Qua'},
   {id:'depoimento',name:'Depoimento',         color:'#185FA5',day:'Qui'},
-  {id:'curiosidade',name:'Curiosidade',color:'#7b96c2',day:'Sex'},
+  {id:'curiosidade',name:'Curiosidade / Gelo',color:'#7b96c2',day:'Sex'},
 ];
 const STATUS_CYCLE=['pendente','aprovado','reprovado'];
 const STATUS_LABEL={pendente:'Pendente',aprovado:'✓ Aprovado',reprovado:'✗ Reprovado'};
@@ -440,6 +525,7 @@ window.showPage=function(id,btn){
   btn.classList.add('active');
   if(id==='descricoes') renderDescPage();
   if(id==='configuracoes') renderConfig();
+  if(id==='grid'){renderGridTabs();renderGrid();}
 }
 
 // ── TIPOS ──
@@ -655,6 +741,200 @@ window.updateCor=async function(i,field,val){
 renderTipos();
 renderTabs();
 renderCalendar();
+
+// ── GRID INSTAGRAM ──
+// gridData[month] = [{id, src (base64), label}]
+let gridData = JSON.parse(localStorage.getItem('nb_grid')||'{}');
+let gridMonth = 0;
+let dragSrcIdx = null;
+
+function saveGrid(){
+  try{localStorage.setItem('nb_grid',JSON.stringify(gridData));}catch(e){
+    // localStorage quota - images too large, warn user
+    alert('Imagens ocupam muito espaço no navegador. Tente usar imagens menores.');
+  }
+}
+
+function gridMonthKey(){ return 'm'+gridMonth; }
+
+function initGridMonth(){
+  const k=gridMonthKey();
+  if(!gridData[k]) gridData[k]=[];
+  // ensure 9 slots minimum (3 rows)
+  while(gridData[k].length<9) gridData[k].push(null);
+}
+
+window.gridAddImages=function(input){
+  const files=Array.from(input.files);
+  if(!files.length) return;
+  const k=gridMonthKey();
+  initGridMonth();
+  let loaded=0;
+  files.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      // insert at beginning (newest post = top left)
+      gridData[k].unshift({id:Date.now()+Math.random(),src:e.target.result,label:file.name});
+      // ensure at least 9 slots
+      while(gridData[k].length<9) gridData[k].push(null);
+      loaded++;
+      if(loaded===files.length){saveGrid();renderGrid();}
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value='';
+}
+
+window.gridClearAll=function(){
+  if(!confirm('Limpar todas as imagens deste mês?')) return;
+  gridData[gridMonthKey()]=[];
+  initGridMonth();
+  saveGrid();renderGrid();
+}
+
+function gridDeleteCell(idx){
+  const k=gridMonthKey();
+  gridData[k][idx]=null;
+  // trim trailing nulls but keep at least 9
+  while(gridData[k].length>9&&gridData[k][gridData[k].length-1]===null) gridData[k].pop();
+  while(gridData[k].length<9) gridData[k].push(null);
+  saveGrid();renderGrid();
+}
+
+function gridReplaceCell(idx){
+  const inp=document.createElement('input');
+  inp.type='file';inp.accept='image/*';
+  inp.onchange=e=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const k=gridMonthKey();
+      gridData[k][idx]={id:Date.now(),src:ev.target.result,label:file.name};
+      saveGrid();renderGrid();
+    };
+    reader.readAsDataURL(file);
+  };
+  inp.click();
+}
+
+function showCellPopup(idx){
+  // remove any existing popup
+  document.querySelectorAll('.cell-popup').forEach(p=>p.remove());
+  const grid=document.getElementById('ig-grid');
+  const cell=grid.children[idx];
+  if(!cell) return;
+  const popup=document.createElement('div');
+  popup.className='cell-popup';
+  const k=gridMonthKey();
+  const hasImg=gridData[k]&&gridData[k][idx];
+  popup.innerHTML=`
+    <label class="cell-popup-btn cell-popup-upload" style="cursor:pointer">
+      ${hasImg?'Trocar imagem':'Adicionar imagem'}
+      <input type="file" accept="image/*" style="display:none">
+    </label>
+    ${hasImg?`<button class="cell-popup-btn cell-popup-delete" onclick="gridDeleteCell(${idx})">Excluir</button>`:''}
+    <button class="cell-popup-btn cell-popup-cancel" onclick="this.closest('.cell-popup').remove()">Cancelar</button>`;
+  popup.querySelector('input[type=file]').onchange=e=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      gridData[k][idx]={id:Date.now(),src:ev.target.result,label:file.name};
+      saveGrid();renderGrid();
+    };
+    reader.readAsDataURL(file);
+  };
+  cell.appendChild(popup);
+}
+
+function renderGrid(){
+  const k=gridMonthKey();
+  initGridMonth();
+  const data=gridData[k];
+  const grid=document.getElementById('ig-grid');
+  if(!grid) return;
+
+  // count real images
+  const imgCount=data.filter(Boolean).length;
+  const postCountEl=document.getElementById('ig-post-count');
+  if(postCountEl) postCountEl.textContent=imgCount;
+
+  // render cells
+  grid.innerHTML='';
+  data.forEach((item,idx)=>{
+    const cell=document.createElement('div');
+    cell.className='ig-cell';
+    cell.draggable=true;
+    cell.dataset.idx=idx;
+
+    if(item){
+      cell.innerHTML=`
+        <img src="${item.src}" alt="${item.label||''}">
+        <div class="ig-cell-num">${idx+1}</div>
+        <div class="ig-cell-overlay">
+          <button class="ig-cell-btn" title="Ver opções" onclick="showCellPopup(${idx})">⋯</button>
+        </div>`;
+    } else {
+      cell.innerHTML=`
+        <div class="ig-cell-empty">
+          <div class="ig-cell-empty-icon">＋</div>
+          <div class="ig-cell-empty-label">post ${idx+1}</div>
+        </div>`;
+      cell.onclick=()=>showCellPopup(idx);
+    }
+
+    // drag events
+    cell.addEventListener('dragstart',e=>{
+      dragSrcIdx=idx;
+      cell.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+    });
+    cell.addEventListener('dragend',()=>{
+      cell.classList.remove('dragging');
+      document.querySelectorAll('.ig-cell').forEach(c=>c.classList.remove('drag-over'));
+    });
+    cell.addEventListener('dragover',e=>{
+      e.preventDefault();
+      e.dataTransfer.dropEffect='move';
+      document.querySelectorAll('.ig-cell').forEach(c=>c.classList.remove('drag-over'));
+      cell.classList.add('drag-over');
+    });
+    cell.addEventListener('drop',e=>{
+      e.preventDefault();
+      cell.classList.remove('drag-over');
+      if(dragSrcIdx===null||dragSrcIdx===idx) return;
+      const arr=gridData[k];
+      // swap
+      [arr[dragSrcIdx],arr[idx]]=[arr[idx],arr[dragSrcIdx]];
+      dragSrcIdx=null;
+      saveGrid();renderGrid();
+    });
+
+    grid.appendChild(cell);
+  });
+
+  // add "+" tile at end if last is filled
+  if(data.every(Boolean)){
+    const addCell=document.createElement('div');
+    addCell.className='ig-cell';
+    addCell.innerHTML=`<label class="ig-cell-empty" style="cursor:pointer;width:100%;height:100%">
+      <div class="ig-cell-empty-icon">＋</div>
+      <div class="ig-cell-empty-label">novo post</div>
+      <input type="file" accept="image/*" multiple style="display:none" onchange="gridAddImages(this)">
+    </label>`;
+    grid.appendChild(addCell);
+  }
+}
+
+function renderGridTabs(){
+  const MESES=['Maio','Junho','Julho','Agosto'];
+  document.getElementById('grid-month-tabs').innerHTML=MESES.map((m,i)=>`
+    <button class="tab${i===gridMonth?' active':''}" onclick="gridMonth=${i};renderGrid();renderGridTabs()">${m}</button>
+  `).join('');
+}
+
+// init grid on load
+renderGridTabs();
+renderGrid();
 </script>
 </body>
 </html>
