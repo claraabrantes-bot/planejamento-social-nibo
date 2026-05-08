@@ -84,6 +84,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .week-block{margin-bottom:1.2rem;border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;background:var(--surface)}
 .week-header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border-bottom:.5px solid var(--border)}
 .week-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace}
+.week-title-input{font-size:11px;font-weight:700;color:var(--text2);background:transparent;border:none;outline:none;cursor:text;font-family:'DM Sans',sans-serif;min-width:80px;max-width:200px;padding:1px 4px;border-radius:4px;transition:background .15s}
+.week-title-input:hover{background:rgba(0,114,206,.07)}
+.week-title-input:focus{background:rgba(0,114,206,.1);color:var(--nibo1);cursor:text}
 .trial-badge{font-size:10px;padding:2px 8px;border-radius:99px;background:#FEF3C7;color:var(--amber);font-weight:500}
 
 /* post row */
@@ -209,11 +212,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .ig-cell-btn{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.9);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s}
 .ig-cell-btn:hover{background:#fff;transform:scale(1.1)}
 .ig-cell-num{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.48);color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:99px;font-family:'DM Mono',monospace}
-.cell-popup{position:absolute;inset:0;background:rgba(0,0,0,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;z-index:10}
-.cell-popup-btn{font-size:11px;padding:5px 14px;border-radius:99px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;width:120px;text-align:center}
+.cell-popup{position:absolute;inset:0;background:rgba(0,0,0,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;z-index:20}
+.cell-popup-inner{display:flex;flex-direction:column;gap:7px;align-items:center;width:100%}
+.cell-popup-btn{font-size:11px;padding:6px 10px;border-radius:99px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;width:140px;text-align:center;display:block}
 .cell-popup-upload{background:#fff;color:var(--text)}
 .cell-popup-delete{background:#ef4444;color:#fff}
-.cell-popup-cancel{background:transparent;color:rgba(255,255,255,.7);border:.5px solid rgba(255,255,255,.3)!important}
+.cell-popup-cancel{background:transparent;color:rgba(255,255,255,.75);border:.5px solid rgba(255,255,255,.3)!important}
 .grid-legend{text-align:center;margin-top:1rem;font-size:11px;color:var(--text3)}
 
 .footer-hint{text-align:center;margin-top:1.5rem;font-size:11px;color:var(--text3)}
@@ -502,17 +506,23 @@ async function generateDefaultRows(){
   months.forEach((mo,mi)=>{
     const {y,m}=mo;
     const dim=new Date(y,m+1,0).getDate();
-    let week=-1, order=mi*1000, lastMon=-1;
+    // Find all Monday-Friday of this month, grouped by ISO week
+    let weekIdx=-1;
+    let lastMonday=-1;
+    let order=mi*1000;
     for(let day=1;day<=dim;day++){
       const dt=new Date(y,m,day);
-      const dow=dt.getDay();
-      if(dow===0||dow===6) continue;
-      if(dow===1){week++;lastMon=day;}
-      const di=dow-1;
+      const dow=dt.getDay(); // 0=Sun,1=Mon..5=Fri,6=Sat
+      if(dow===0||dow===6) continue; // skip weekends
+      if(dow===1){weekIdx++;lastMonday=day;} // new week starts on Monday
+      else if(weekIdx===-1){weekIdx=0;} // month starts mid-week
+      const di=dow-1; // 0=Mon..4=Fri
       const dateStr=`${String(day).padStart(2,'0')}/${String(m+1).padStart(2,'0')}`;
-      const corIdx=(week*5+di)%4;
-      const isTrial=(week===1||week===3)&&di===4;
-      toWrite.push({key:`${y}-${m}-w${week}-d${di}`,y,m,week,di,date:dateStr,tipoId:TIPOS[di].id,corIdx,status:'pendente',social:'',design:'',marisObs:'',isTrial,order:order++});
+      const corIdx=(weekIdx*5+di)%4;
+      // trial = week 1 (index 1) and week 3 (index 3), Friday (di=4)
+      const isTrial=(weekIdx===1||weekIdx===3)&&di===4;
+      const key=`${y}-${m}-w${weekIdx}-d${di}`;
+      toWrite.push({key,y,m,week:weekIdx,di,date:dateStr,tipoId:TIPOS[di]?TIPOS[di].id:TIPOS[0].id,corIdx,status:'pendente',social:'',design:'',marisObs:'',isTrial,order:order++});
     }
   });
   for(const r of toWrite) await setDoc(doc(db,'rows',r.key),r);
@@ -543,21 +553,22 @@ window.addMonth=async function(y,m){
   if(already) return;
   const newMonths=[...months,{y,m}].sort((a,b)=>a.y!==b.y?a.y-b.y:a.m-b.m);
   await setDoc(doc(db,'config','months'),{list:newMonths});
-  // generate rows for new month
+  // generate rows for new month with correct week detection
   const dim=new Date(y,m+1,0).getDate();
-  let week=-1,order=(newMonths.findIndex(mo=>mo.y===y&&mo.m===m))*1000;
+  let weekIdx=-1, order=(newMonths.findIndex(mo=>mo.y===y&&mo.m===m))*1000;
   for(let day=1;day<=dim;day++){
     const dt=new Date(y,m,day);
     const dow=dt.getDay();
     if(dow===0||dow===6) continue;
-    if(dow===1) week++;
+    if(dow===1) weekIdx++;
+    else if(weekIdx===-1) weekIdx=0;
     const di=dow-1;
     const dateStr=`${String(day).padStart(2,'0')}/${String(m+1).padStart(2,'0')}`;
-    const corIdx=(week*5+di)%4;
-    const isTrial=(week===1||week===3)&&di===4;
-    const key=`${y}-${m}-w${week}-d${di}`;
+    const corIdx=(weekIdx*5+di)%4;
+    const isTrial=(weekIdx===1||weekIdx===3)&&di===4;
+    const key=`${y}-${m}-w${weekIdx}-d${di}`;
     const exists=rows.find(r=>r.key===key);
-    if(!exists) await setDoc(doc(db,'rows',key),{key,y,m,week,di,date:dateStr,tipoId:TIPOS[di].id,corIdx,status:'pendente',social:'',design:'',marisObs:'',isTrial,order:order++});
+    if(!exists) await setDoc(doc(db,'rows',key),{key,y,m,week:weekIdx,di,date:dateStr,tipoId:TIPOS[di]?TIPOS[di].id:TIPOS[0].id,corIdx,status:'pendente',social:'',design:'',marisObs:'',isTrial,order:order++});
   }
   document.getElementById('add-month-panel').classList.remove('open');
   activeMonthIdx=newMonths.findIndex(mo=>mo.y===y&&mo.m===m);
@@ -678,8 +689,13 @@ function renderCalendar(){
     const wRows=weekMap[wk];
     const wNum=wk=='99'?'Extra':parseInt(wk)+1;
     const hasTrial=wRows.some(r=>r.isTrial);
+    // use custom label if saved, otherwise default
+    const weekLabelKey=`wl-${y}-${m}-${wk}`;
+    const savedLabel=localStorage.getItem(weekLabelKey)||`Semana ${wNum}`;
     html+=`<div class="week-block"><div class="week-header">
-      <span class="week-title">Semana ${wNum}</span>
+      <input class="week-title-input" value="${savedLabel.replace(/"/g,'&quot;')}" 
+        onchange="localStorage.setItem('wl-${y}-${m}-${wk}',this.value)" 
+        onclick="this.select()" title="Clique para editar o nome da semana">
       ${hasTrial?'<span class="trial-badge">⭐ trial financeiro</span>':''}
     </div>`;
     wRows.forEach(p=>{
@@ -864,27 +880,57 @@ function gridDeleteCell(idx){
 }
 
 function showCellPopup(idx){
+  // close any open popup first
   document.querySelectorAll('.cell-popup').forEach(p=>p.remove());
   const grid=document.getElementById('ig-grid');
   const cell=grid.children[idx];
   if(!cell) return;
   const k=gridKey();
-  const hasImg=gridData[k]&&gridData[k][idx];
+  const hasImg=!!(gridData[k]&&gridData[k][idx]);
+
   const popup=document.createElement('div');
   popup.className='cell-popup';
-  popup.innerHTML=`
-    <label class="cell-popup-btn cell-popup-upload" style="cursor:pointer">
-      ${hasImg?'Trocar imagem':'Adicionar imagem'}
-      <input type="file" accept="image/*" style="display:none">
-    </label>
-    ${hasImg?`<button class="cell-popup-btn cell-popup-delete" onclick="gridDeleteCell(${idx})">Excluir</button>`:''}
-    <button class="cell-popup-btn cell-popup-cancel" onclick="this.closest('.cell-popup').remove()">Cancelar</button>`;
-  popup.querySelector('input[type=file]').onchange=e=>{
-    const file=e.target.files[0];if(!file)return;
+  popup.onclick=e=>e.stopPropagation();
+
+  // Build buttons manually so event handlers work reliably
+  popup.innerHTML=`<div class="cell-popup-inner"></div>`;
+  const inner=popup.querySelector('.cell-popup-inner');
+
+  // Upload / trocar button
+  const upLabel=document.createElement('label');
+  upLabel.className='cell-popup-btn cell-popup-upload';
+  upLabel.style.cursor='pointer';
+  upLabel.textContent=hasImg?'🔄 Trocar imagem':'📷 Adicionar imagem';
+  const upInput=document.createElement('input');
+  upInput.type='file'; upInput.accept='image/*'; upInput.style.display='none';
+  upInput.onchange=e=>{
+    const file=e.target.files[0]; if(!file) return;
     const reader=new FileReader();
-    reader.onload=ev=>{gridData[k][idx]={id:Date.now(),src:ev.target.result,label:file.name};saveGrid();renderGrid();};
+    reader.onload=ev=>{
+      gridData[k][idx]={id:Date.now(),src:ev.target.result,label:file.name};
+      saveGrid(); renderGrid();
+    };
     reader.readAsDataURL(file);
   };
+  upLabel.appendChild(upInput);
+  inner.appendChild(upLabel);
+
+  // Delete button (only if has image)
+  if(hasImg){
+    const delBtn=document.createElement('button');
+    delBtn.className='cell-popup-btn cell-popup-delete';
+    delBtn.textContent='🗑️ Excluir imagem';
+    delBtn.onclick=()=>{ gridDeleteCell(idx); };
+    inner.appendChild(delBtn);
+  }
+
+  // Cancel
+  const cancelBtn=document.createElement('button');
+  cancelBtn.className='cell-popup-btn cell-popup-cancel';
+  cancelBtn.textContent='Cancelar';
+  cancelBtn.onclick=()=>popup.remove();
+  inner.appendChild(cancelBtn);
+
   cell.appendChild(popup);
 }
 
@@ -901,10 +947,12 @@ function renderGrid(){
     const cell=document.createElement('div');
     cell.className='ig-cell';cell.draggable=true;cell.dataset.idx=idx;
     if(item){
-      cell.innerHTML=`<img src="${item.src}" alt=""><div class="ig-cell-num">${idx+1}</div><div class="ig-cell-overlay"><button class="ig-cell-btn" onclick="showCellPopup(${idx})">⋯</button></div>`;
+      cell.innerHTML=`<img src="${item.src}" alt=""><div class="ig-cell-num">${idx+1}</div><div class="ig-cell-overlay"><button class="ig-cell-btn" title="Opções">⋯</button></div>`;
+      // attach click to the options button after innerHTML
+      cell.querySelector('.ig-cell-btn').addEventListener('click',e=>{e.stopPropagation();showCellPopup(idx);});
     } else {
       cell.innerHTML=`<div class="ig-cell-empty"><div class="ig-cell-empty-icon">＋</div><div class="ig-cell-empty-label">post ${idx+1}</div></div>`;
-      cell.onclick=()=>showCellPopup(idx);
+      cell.onclick=e=>{e.stopPropagation();showCellPopup(idx);};
     }
     cell.addEventListener('dragstart',e=>{dragSrcIdx=idx;cell.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
     cell.addEventListener('dragend',()=>{cell.classList.remove('dragging');document.querySelectorAll('.ig-cell').forEach(c=>c.classList.remove('drag-over'));});
