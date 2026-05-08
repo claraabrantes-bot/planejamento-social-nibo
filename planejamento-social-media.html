@@ -17,13 +17,20 @@
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:2rem 1.5rem 5rem}
 .container{max-width:1000px;margin:0 auto}
 
+/* sync bar */
+.sync-bar{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);margin-bottom:1rem;padding:6px 12px;background:var(--surface);border-radius:99px;border:.5px solid var(--border);width:fit-content}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);transition:background .3s}
+.sync-dot.ok{background:#1D9E75}
+.sync-dot.saving{background:#F59E0B;animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
 .page-tabs{display:flex;gap:0;border-bottom:1.5px solid var(--border2);margin-bottom:2rem}
 .page-tab{font-size:13px;font-weight:500;padding:10px 20px;cursor:pointer;color:var(--text2);border:none;background:none;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:all .15s;font-family:'DM Sans',sans-serif}
 .page-tab:hover{color:var(--nibo2)}
 .page-tab.active{color:var(--nibo1);border-bottom-color:var(--nibo1)}
 .page{display:none}.page.active{display:block}
 
-.header{margin-bottom:2rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.header{margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
 .header h1{font-size:21px;font-weight:600;color:var(--nibo1)}
 .header p{font-size:12px;color:var(--text2);margin-top:3px}
 .logo-dots{display:flex;gap:5px;align-items:center;margin-top:6px}
@@ -95,7 +102,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .del-btn{width:22px;height:22px;border-radius:50%;border:.5px solid var(--border);cursor:pointer;background:transparent;color:var(--text3);font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;line-height:1;font-family:'DM Sans',sans-serif}
 .del-btn:hover{background:#FEE2E2;color:var(--red);border-color:#FCA5A5}
 
-/* modal */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:100;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:var(--surface);border-radius:var(--radius-xl);width:500px;max-width:94vw;box-shadow:0 12px 40px rgba(0,45,114,.18);overflow:hidden}
@@ -117,7 +123,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .btn-ghost{background:transparent;color:var(--text2)}
 .btn-ghost:hover{background:var(--surface2)}
 
-/* maris */
 .maris-wrap{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;margin-top:1.5rem}
 .maris-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
 .maris-title{font-size:14px;font-weight:600;color:var(--nibo1);margin-bottom:6px}
@@ -135,7 +140,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
 .stat-value{font-size:22px;font-weight:700}
 
-/* desc page */
 .desc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:1rem}
 .desc-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem}
 .desc-card h3{font-size:13px;font-weight:600;color:var(--nibo1);margin-bottom:4px}
@@ -150,7 +154,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   .tipos-grid{grid-template-columns:repeat(3,1fr)}
   .cores-grid{grid-template-columns:repeat(2,1fr)}
   .table-header,.post-row{grid-template-columns:68px 90px 1fr 60px 80px 24px}
-  .th:nth-child(4),.post-row .idea-cell:nth-child(4){display:none}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .desc-grid{grid-template-columns:1fr}
 }
@@ -169,6 +172,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="logo-dot" style="background:#41b6e6"></div>
       <div class="logo-dot" style="background:#b8ccea"></div>
     </div>
+  </div>
+  <div class="sync-bar" id="sync-bar">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-label">Conectando...</span>
   </div>
 </div>
 
@@ -222,7 +229,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 
   <div class="stats-grid" id="stats"></div>
-  <p class="footer-hint">💾 Salve esta página (Ctrl+S / Cmd+S) para preservar seus dados localmente.</p>
+  <p class="footer-hint">🔄 Dados sincronizados em tempo real para todo o time.</p>
 </div>
 
 <!-- DESCRIÇÕES -->
@@ -232,13 +239,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="desc-card">
       <h3>📱 Social Media</h3>
       <p>Tom de voz, objetivo, público-alvo e estratégia geral de conteúdo.</p>
-      <textarea id="desc-social" placeholder="Ex: tom descontraído e educativo, foco em PMEs, cada post com CTA claro..." oninput="saveDescs()"></textarea>
+      <textarea id="desc-social" placeholder="Ex: tom descontraído e educativo, foco em PMEs, cada post com CTA claro..." oninput="saveDesc('social',this.value)"></textarea>
       <div class="saved-note" id="note-social"></div>
     </div>
     <div class="desc-card">
       <h3>🎨 Design</h3>
       <p>Estilo visual, tipografia, regras de cor e referências para o designer.</p>
-      <textarea id="desc-design" placeholder="Ex: sempre usar tipografia Nibo, fundo Azul Petróleo para produto, Gelo para curiosidade..." oninput="saveDescs()"></textarea>
+      <textarea id="desc-design" placeholder="Ex: sempre usar tipografia Nibo, fundo Azul Petróleo para produto, Gelo para curiosidade..." oninput="saveDesc('design',this.value)"></textarea>
       <div class="saved-note" id="note-design"></div>
     </div>
   </div>
@@ -284,7 +291,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 
-<script>
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot, collection, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCucKm83A31gJ8_FNRvUpkvvGKs6W9ljB0",
+  authDomain: "nibo-social-media.firebaseapp.com",
+  projectId: "nibo-social-media",
+  storageBucket: "nibo-social-media.firebasestorage.app",
+  messagingSenderId: "751339930495",
+  appId: "1:751339930495:web:87de815e30fc9b9180104a"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ── CONSTANTES ──
 const TIPOS=[
   {id:'produto',   name:'Produto',            color:'#002d72',day:'Seg'},
   {id:'editorial', name:'Editorial',          color:'#0072ce',day:'Ter'},
@@ -307,60 +331,118 @@ const COR_DEF=[
   {name:'Gelo',         hex:'#b8ccea'},
 ];
 
-function ld(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
-function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-
-let cores    = ld('nb_cores',   COR_DEF.map(c=>({...c})));
-let rows     = ld('nb_rows',    null);
-let dSocial  = ld('nb_dsocial','');
-let dDesign  = ld('nb_ddesign','');
-let tDesc    = ld('nb_tdesc',  {});
+// ── STATE ──
+let cores=COR_DEF.map(c=>({...c}));
+let rows=[];
+let descs={social:'',design:''};
+let tipoDesc={};
 let activeMonth=0;
 let editingKey=null;
+let mTab='social';
+let saveTimer=null;
 
-// generate default rows for a month (all weekdays of that month)
-function genMonth(mi){
-  const {y,m}=MESES[mi];
-  const out=[];
-  const dim=new Date(y,m+1,0).getDate();
-  let week=-1, lastMon=-1;
-  for(let day=1;day<=dim;day++){
-    const dt=new Date(y,m,day);
-    const dow=dt.getDay();
-    if(dow===0||dow===6) continue; // skip weekends
-    // determine week index (0-based, reset each Monday)
-    if(dow===1){week++;lastMon=day;}
-    const di=dow-1; // 0=Mon..4=Fri
-    const dateStr=`${String(day).padStart(2,'0')}/${String(m+1).padStart(2,'0')}`;
-    const corIdx=(week*5+di)%4;
-    const isTrial=(week===1||week===3)&&di===4;
-    out.push({key:`${mi}-${week}-${di}-${day}`,date:dateStr,tipoId:TIPOS[di].id,corIdx,status:'pendente',social:'',design:'',isTrial});
+// ── SYNC STATUS ──
+function setSyncing(){
+  document.getElementById('sync-dot').className='sync-dot saving';
+  document.getElementById('sync-label').textContent='Salvando...';
+}
+function setSynced(){
+  document.getElementById('sync-dot').className='sync-dot ok';
+  document.getElementById('sync-label').textContent='Sincronizado ✓';
+}
+function setConnected(){
+  document.getElementById('sync-dot').className='sync-dot ok';
+  document.getElementById('sync-label').textContent='Conectado · tempo real';
+}
+
+// ── FIREBASE LISTENERS ──
+onSnapshot(doc(db,'config','cores'), snap=>{
+  if(snap.exists()) cores=snap.data().list||COR_DEF.map(c=>({...c}));
+  else cores=COR_DEF.map(c=>({...c}));
+  renderCores(); renderCalendar(); setConnected();
+});
+
+onSnapshot(doc(db,'config','descs'), snap=>{
+  if(snap.exists()){
+    descs=snap.data();
+    const s=document.getElementById('desc-social');
+    const d=document.getElementById('desc-design');
+    if(s&&document.activeElement!==s) s.value=descs.social||'';
+    if(d&&document.activeElement!==d) d.value=descs.design||'';
   }
-  return out;
-}
+});
 
-function ensureRows(){
-  if(!rows){
-    rows=[];
-    for(let i=0;i<4;i++) rows.push(...genMonth(i));
-    sv('nb_rows',rows);
+onSnapshot(doc(db,'config','tipoDesc'), snap=>{
+  if(snap.exists()) tipoDesc=snap.data();
+});
+
+onSnapshot(collection(db,'rows'), snap=>{
+  rows=[];
+  snap.forEach(d=>rows.push({key:d.id,...d.data()}));
+  rows.sort((a,b)=>a.order-b.order||(a.key>b.key?1:-1));
+  if(rows.length===0) generateDefaultRows();
+  else { renderCalendar(); setConnected(); }
+});
+
+// ── GENERATE DEFAULT ROWS ──
+async function generateDefaultRows(){
+  const batch=[];
+  for(let mi=0;mi<4;mi++){
+    const {y,m}=MESES[mi];
+    const dim=new Date(y,m+1,0).getDate();
+    let week=-1,order=mi*1000;
+    for(let day=1;day<=dim;day++){
+      const dt=new Date(y,m,day);
+      const dow=dt.getDay();
+      if(dow===0||dow===6) continue;
+      if(dow===1) week++;
+      const di=dow-1;
+      const dateStr=`${String(day).padStart(2,'0')}/${String(m+1).padStart(2,'0')}`;
+      const corIdx=(week*5+di)%4;
+      const isTrial=(week===1||week===3)&&di===4;
+      const key=`${mi}-${week}-${di}-${day}`;
+      batch.push({key,date:dateStr,tipoId:TIPOS[di].id,corIdx,status:'pendente',social:'',design:'',isTrial,order:order++});
+    }
+  }
+  for(const r of batch){
+    await setDoc(doc(db,'rows',r.key),r);
   }
 }
 
-function monthRows(mi){
-  return rows.filter(r=>r.key.startsWith(mi+'-')||r.key.startsWith('e'+mi+'-'));
+// ── SAVE HELPERS ──
+async function saveRow(key,data){
+  setSyncing();
+  await setDoc(doc(db,'rows',key),data,{merge:true});
+  setSynced();
 }
 
-// pages
-function showPage(id,btn){
+async function saveCores(){
+  setSyncing();
+  await setDoc(doc(db,'config','cores'),{list:cores});
+  setSynced();
+}
+
+async function saveDescs(){
+  setSyncing();
+  await setDoc(doc(db,'config','descs'),descs);
+  setSynced();
+}
+
+async function saveTipoDesc(){
+  await setDoc(doc(db,'config','tipoDesc'),tipoDesc);
+}
+
+// ── PAGES ──
+window.showPage=function(id,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.page-tab').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   btn.classList.add('active');
-  if(id==='descricoes') renderDescs();
+  if(id==='descricoes') renderDescPage();
   if(id==='configuracoes') renderConfig();
 }
 
+// ── TIPOS ──
 function renderTipos(elId='tipos'){
   document.getElementById(elId).innerHTML=TIPOS.map(t=>`
     <div class="tipo-card">
@@ -370,63 +452,61 @@ function renderTipos(elId='tipos'){
     </div>`).join('');
 }
 
+// ── TABS ──
 function renderTabs(){
   document.getElementById('month-tabs').innerHTML=MESES.map((m,i)=>`
-    <button class="tab${i===activeMonth?' active':''}" onclick="activeMonth=${i};renderCalendar();renderTabs();">${m.label}</button>
+    <button class="tab${i===activeMonth?' active':''}" onclick="window.setMonth(${i})">${m.label}</button>
   `).join('');
 }
+window.setMonth=function(i){activeMonth=i;renderCalendar();renderTabs();}
 
-function addRow(){
+// ── ADD ROW ──
+window.addRow=async function(){
   const mi=activeMonth;
   const key='e'+mi+'-'+Date.now();
-  rows.push({key,date:'',tipoId:TIPOS[0].id,corIdx:0,status:'pendente',social:'',design:'',isTrial:false});
-  sv('nb_rows',rows);
-  renderCalendar();
+  const maxOrder=rows.filter(r=>r.key.startsWith(mi+'-')||r.key.startsWith('e'+mi+'-')).reduce((m,r)=>Math.max(m,r.order||0),mi*1000)+1;
+  const newRow={key,date:'',tipoId:TIPOS[0].id,corIdx:0,status:'pendente',social:'',design:'',isTrial:false,order:maxOrder};
+  await setDoc(doc(db,'rows',key),newRow);
 }
 
-function deleteRow(key){
+// ── DELETE ROW ──
+window.deleteRow=async function(key){
   if(!confirm('Remover este post?')) return;
-  rows=rows.filter(r=>r.key!==key);
-  sv('nb_rows',rows);
-  renderCalendar();
+  await deleteDoc(doc(db,'rows',key));
 }
 
-function updRow(key,field,val){
-  const r=rows.find(r=>r.key===key);
-  if(r){r[field]=val;sv('nb_rows',rows);}
+// ── UPDATE ROW ──
+window.updRowField=async function(key,field,val){
+  await saveRow(key,{[field]:val});
 }
 
-function cycleStatus(key){
+// ── CYCLE STATUS ──
+window.cycleStatus=async function(key){
   const r=rows.find(r=>r.key===key);
   if(!r) return;
-  const i=STATUS_CYCLE.indexOf(r.status);
-  r.status=STATUS_CYCLE[(i+1)%3];
-  sv('nb_rows',rows);
-  renderCalendar();
+  const i=STATUS_CYCLE.indexOf(r.status||'pendente');
+  const newStatus=STATUS_CYCLE[(i+1)%3];
+  await saveRow(key,{status:newStatus});
 }
 
-function setCor(key,idx){
-  updRow(key,'corIdx',idx);
-  // re-render just that row's cor buttons
-  document.querySelectorAll(`.cor-btn[data-key="${key}"]`).forEach((b,i)=>{
-    b.classList.toggle('selected',i===idx);
-  });
+// ── SET COR ──
+window.setCor=async function(key,idx){
+  await saveRow(key,{corIdx:idx});
 }
 
+// ── RENDER CALENDAR ──
 function renderCalendar(){
-  const mr=monthRows(activeMonth);
+  const mr=rows.filter(r=>r.key.startsWith(activeMonth+'-')||r.key.startsWith('e'+activeMonth+'-'));
   if(!mr.length){
     document.getElementById('calendar').innerHTML='<p style="color:var(--text3);font-size:13px;padding:1rem 0">Nenhum post neste mês.</p>';
     renderStats();return;
   }
-  // group into weeks
   const weeks={};
   mr.forEach(p=>{
     const wk=p.key.split('-')[1]||'x';
     if(!weeks[wk]) weeks[wk]=[];
     weeks[wk].push(p);
   });
-
   let html='';
   Object.entries(weeks).forEach(([wk,wRows])=>{
     const wNum=isNaN(wk)?'Extra':parseInt(wk)+1;
@@ -438,21 +518,21 @@ function renderCalendar(){
     wRows.forEach(p=>{
       const tipo=TIPOS.find(t=>t.id===p.tipoId)||TIPOS[0];
       const tipoOpts=TIPOS.map(t=>`<option value="${t.id}"${t.id===p.tipoId?' selected':''}>${t.name}</option>`).join('');
-      const corBtns=cores.map((c,i)=>`<button class="cor-btn${p.corIdx===i?' selected':''}" data-key="${p.key}" style="background:${c.hex}" title="${c.name}" onclick="setCor('${p.key}',${i})"></button>`).join('');
-      const sSnip=p.social?p.social.slice(0,38)+(p.social.length>38?'…':''):'adicionar...';
-      const dSnip=p.design?p.design.slice(0,38)+(p.design.length>38?'…':''):'briefing...';
+      const corBtns=cores.map((c,i)=>`<button class="cor-btn${p.corIdx===i?' selected':''}" style="background:${c.hex}" title="${c.name}" onclick="window.setCor('${p.key}',${i})"></button>`).join('');
+      const sSnip=p.social?p.social.slice(0,36)+(p.social.length>36?'…':''):'adicionar...';
+      const dSnip=p.design?p.design.slice(0,36)+(p.design.length>36?'…':''):'briefing...';
       html+=`
       <div class="post-row${p.isTrial?' trial':''}">
-        <input class="post-date-input" type="text" value="${p.date}" placeholder="dd/mm" onchange="updRow('${p.key}','date',this.value)">
+        <input class="post-date-input" type="text" value="${p.date||''}" placeholder="dd/mm" onchange="window.updRowField('${p.key}','date',this.value)">
         <div class="post-tipo">
           <span class="dot" style="background:${tipo.color}"></span>
-          <select class="tipo-select" onchange="updRow('${p.key}','tipoId',this.value);renderCalendar()">${tipoOpts}</select>
+          <select class="tipo-select" onchange="window.updRowField('${p.key}','tipoId',this.value)">${tipoOpts}</select>
         </div>
-        <span class="idea-cell${p.social?' filled':''}" onclick="openModal('${p.key}','social')" title="${p.social||''}">${sSnip}</span>
-        <span class="idea-cell${p.design?' filled':''}" onclick="openModal('${p.key}','design')" title="${p.design||''}">${dSnip}</span>
+        <span class="idea-cell${p.social?' filled':''}" onclick="window.openModal('${p.key}','social')" title="${(p.social||'').replace(/"/g,'&quot;')}">${sSnip}</span>
+        <span class="idea-cell${p.design?' filled':''}" onclick="window.openModal('${p.key}','design')" title="${(p.design||'').replace(/"/g,'&quot;')}">${dSnip}</span>
         <div class="cor-selector">${corBtns}</div>
-        <div class="status-cell"><span class="status-badge ${p.status}" onclick="cycleStatus('${p.key}')">${STATUS_LABEL[p.status]}</span></div>
-        <button class="del-btn" onclick="deleteRow('${p.key}')" title="Remover">×</button>
+        <div class="status-cell"><span class="status-badge ${p.status||'pendente'}" onclick="window.cycleStatus('${p.key}')">${STATUS_LABEL[p.status||'pendente']}</span></div>
+        <button class="del-btn" onclick="window.deleteRow('${p.key}')" title="Remover">×</button>
       </div>`;
     });
     html+='</div>';
@@ -461,11 +541,12 @@ function renderCalendar(){
   renderStats();
 }
 
+// ── STATS ──
 function renderStats(){
   const total=rows.length;
   const aprovados=rows.filter(r=>r.status==='aprovado').length;
   const reprovados=rows.filter(r=>r.status==='reprovado').length;
-  const pendentes=rows.filter(r=>r.status==='pendente').length;
+  const pendentes=rows.filter(r=>!r.status||r.status==='pendente').length;
   const pct=total?Math.round(aprovados/total*100):0;
   document.getElementById('maris-pct').textContent=total?pct+'%':'—';
   document.getElementById('maris-fill').style.width=pct+'%';
@@ -482,11 +563,10 @@ function renderStats(){
     <div class="stat-card"><div class="stat-label">% aprovação</div><div class="stat-value" style="color:${color}">${total?pct+'%':'—'}</div></div>`;
 }
 
-// modal
-let mTab='social';
-function openModal(key,tab='social'){
+// ── MODAL ──
+window.openModal=function(key,tab='social'){
   editingKey=key;
-  const r=rows.find(r=>r.key===key);if(!r)return;
+  const r=rows.find(r=>r.key===key);if(!r) return;
   const tipo=TIPOS.find(t=>t.id===r.tipoId)||TIPOS[0];
   document.getElementById('modal-title').textContent=tipo.name;
   document.getElementById('modal-sub').textContent=r.date||'sem data definida';
@@ -496,76 +576,85 @@ function openModal(key,tab='social'){
   document.getElementById('modal').classList.add('open');
   setTimeout(()=>document.getElementById('modal-'+tab).focus(),80);
 }
-function switchMTab(tab){
+
+window.switchMTab=function(tab){
   mTab=tab;
   document.querySelectorAll('.modal-tab').forEach((b,i)=>b.classList.toggle('active',['social','design'][i]===tab));
   document.querySelectorAll('.modal-pane').forEach(p=>p.classList.remove('active'));
   document.getElementById('modal-pane-'+tab).classList.add('active');
 }
-function closeModal(){document.getElementById('modal').classList.remove('open');editingKey=null;}
-function saveModal(){
+function switchMTab(tab){ window.switchMTab(tab); }
+
+window.closeModal=function(){document.getElementById('modal').classList.remove('open');editingKey=null;}
+
+window.saveModal=async function(){
   if(!editingKey) return;
-  const r=rows.find(r=>r.key===editingKey);
-  if(r){
-    r.social=document.getElementById('modal-social').value.trim();
-    r.design=document.getElementById('modal-design').value.trim();
-    sv('nb_rows',rows);
-  }
-  closeModal();renderCalendar();
+  const s=document.getElementById('modal-social').value.trim();
+  const d=document.getElementById('modal-design').value.trim();
+  await saveRow(editingKey,{social:s,design:d});
+  window.closeModal();
 }
-document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)window.closeModal();});
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape')closeModal();
-  if((e.metaKey||e.ctrlKey)&&e.key==='Enter')saveModal();
+  if(e.key==='Escape') window.closeModal();
+  if((e.metaKey||e.ctrlKey)&&e.key==='Enter') window.saveModal();
 });
 
-// descrições
-function renderDescs(){
-  document.getElementById('desc-social').value=dSocial;
-  document.getElementById('desc-design').value=dDesign;
+// ── DESCRIÇÕES ──
+function renderDescPage(){
+  document.getElementById('desc-social').value=descs.social||'';
+  document.getElementById('desc-design').value=descs.design||'';
   document.getElementById('tipo-descs').innerHTML=TIPOS.map(t=>`
     <div class="desc-card">
       <h3><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${t.color};margin-right:6px;vertical-align:middle"></span>${t.name}</h3>
       <p>Referências e regras para posts do tipo ${t.name.toLowerCase()}.</p>
-      <textarea placeholder="Diretrizes específicas para este tipo de post..." oninput="tDesc['${t.id}']=this.value;sv('nb_tdesc',tDesc)">${tDesc[t.id]||''}</textarea>
+      <textarea placeholder="Diretrizes específicas..." oninput="window.saveTipoDescField('${t.id}',this.value)">${tipoDesc[t.id]||''}</textarea>
       <div class="saved-note"></div>
     </div>`).join('');
 }
-let dTimer;
-function saveDescs(){
-  dSocial=document.getElementById('desc-social').value;
-  dDesign=document.getElementById('desc-design').value;
-  sv('nb_dsocial',dSocial);sv('nb_ddesign',dDesign);
-  clearTimeout(dTimer);
-  dTimer=setTimeout(()=>{
-    ['social','design'].forEach(k=>{
-      const el=document.getElementById('note-'+k);
-      if(el){el.textContent='Salvo ✓';setTimeout(()=>{el.textContent=''},2000);}
-    });
+
+let descTimer;
+window.saveDesc=function(field,val){
+  descs[field]=val;
+  clearTimeout(descTimer);
+  descTimer=setTimeout(async()=>{
+    await saveDescs();
+    const el=document.getElementById('note-'+field);
+    if(el){el.textContent='Salvo ✓';setTimeout(()=>{el.textContent=''},2000);}
   },800);
 }
 
-// config
+window.saveTipoDescField=async function(id,val){
+  tipoDesc[id]=val;
+  await saveTipoDesc();
+}
+
+// ── CONFIG ──
 function renderConfig(){
   document.getElementById('cores').innerHTML=cores.map((c,i)=>`
     <div class="cor-card">
       <div class="cor-swatch" style="background:${c.hex}" title="Clique para trocar">
-        <input type="color" value="${c.hex}" oninput="cores[${i}].hex=this.value;sv('nb_cores',cores);renderConfig();renderCalendar();">
+        <input type="color" value="${c.hex}" oninput="window.updateCor(${i},'hex',this.value)">
       </div>
       <input class="cor-name-input" value="${c.name}" placeholder="Nome da cor"
-        onchange="cores[${i}].name=this.value;sv('nb_cores',cores);renderCalendar();">
+        onchange="window.updateCor(${i},'name',this.value)">
       <div class="cor-hex">${c.hex.toUpperCase()}</div>
     </div>`).join('');
   renderTipos('tipos-cfg');
 }
 
-function init(){
-  ensureRows();
-  renderTipos();
-  renderTabs();
+window.updateCor=async function(i,field,val){
+  cores[i][field]=val;
+  await saveCores();
+  renderConfig();
   renderCalendar();
 }
-init();
+
+// ── INIT ──
+renderTipos();
+renderTabs();
+renderCalendar();
 </script>
 </body>
 </html>
