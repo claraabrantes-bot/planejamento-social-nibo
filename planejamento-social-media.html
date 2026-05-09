@@ -175,6 +175,61 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .maris-obs-btn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:.5px solid var(--border);cursor:pointer;background:transparent;font-size:12px;transition:all .15s;flex-shrink:0;margin-left:3px;vertical-align:middle}
 .maris-obs-btn:hover{background:#EDE9FE;border-color:#7c3aed}
 .maris-obs-btn.has-obs{background:#EDE9FE;border-color:#7c3aed;color:#6d28d9}
+
+.page-tab.ai-tab{background:linear-gradient(135deg,#fff7ed 0%,#fef3c7 100%);border-radius:8px 8px 0 0;color:#b45309;font-weight:700;padding-left:14px;padding-right:14px;border-left:.5px solid rgba(180,83,9,.15);border-right:.5px solid rgba(180,83,9,.15);border-top:.5px solid rgba(180,83,9,.15);letter-spacing:.01em}
+.page-tab.ai-tab:hover{color:#92400e;background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%)}
+.page-tab.ai-tab.active{color:#92400e;border-bottom-color:#d97706;background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%)}
+
+/* IA CRIATIVA PAGE */
+.ia-hero{display:flex;align-items:center;gap:14px;margin-bottom:1.6rem;padding:1.2rem 1.4rem;background:linear-gradient(135deg,#fffbeb,#fef9f0);border:.5px solid #fde68a;border-radius:var(--radius-lg)}
+.ia-hero-icon{font-size:28px;color:#d97706;flex-shrink:0;line-height:1}
+.ia-hero-title{font-size:16px;font-weight:700;color:#92400e;margin-bottom:2px}
+.ia-hero-sub{font-size:12px;color:#b45309;line-height:1.5}
+.ia-form-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.4rem}
+.ia-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ia-field{display:flex;flex-direction:column;gap:5px}
+.ia-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em}
+.ia-select,.ia-input{font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);border:.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;outline:none;background:var(--bg);transition:border-color .15s;width:100%}
+.ia-select:focus,.ia-input:focus{border-color:#d97706}
+.ia-textarea{font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 10px;outline:none;background:var(--bg);resize:vertical;line-height:1.6;width:100%;transition:border-color .15s}
+.ia-textarea:focus{border-color:#d97706}
+.ia-gen-btn{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;padding:9px 20px;border-radius:99px;border:none;cursor:pointer;background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;font-family:'DM Sans',sans-serif;transition:all .2s;box-shadow:0 2px 8px rgba(217,119,6,.3)}
+.ia-gen-btn:hover{background:linear-gradient(135deg,#b45309,#d97706);box-shadow:0 4px 14px rgba(217,119,6,.4);transform:translateY(-1px)}
+.ia-gen-btn:active{transform:translateY(0)}
+.ia-gen-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.ia-btn-icon{font-size:14px}
+.ia-clear-btn{font-size:12px;padding:8px 16px;border-radius:99px;border:.5px solid var(--border2);cursor:pointer;background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;transition:all .15s}
+.ia-clear-btn:hover{background:var(--surface2)}
+.ia-char-hint{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace}
+.ia-results-header{margin-top:1.8rem;margin-bottom:1rem;display:flex;align-items:baseline;gap:12px}
+.ia-results-title{font-size:14px;font-weight:700;color:var(--nibo1)}
+.ia-results-sub{font-size:11px;color:var(--text3)}
+.ia-cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.ia-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.2rem;display:flex;flex-direction:column;gap:10px;transition:box-shadow .2s,border-color .2s}
+.ia-card:hover{box-shadow:0 4px 18px rgba(0,45,114,.1);border-color:var(--border2)}
+.ia-card-num{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:'DM Mono',monospace}
+.ia-card-text{font-size:13px;color:var(--text);line-height:1.6;font-weight:500;flex:1}
+.ia-card-rationale{font-size:11px;color:var(--text3);line-height:1.5;font-style:italic;border-top:.5px solid var(--border);padding-top:8px;margin-top:2px}
+.ia-card-meta{display:flex;gap:6px;flex-wrap:wrap}
+.ia-card-tag{font-size:10px;padding:2px 8px;border-radius:99px;background:var(--surface2);color:var(--text2)}
+.ia-card-tag.cta{background:#DBEAFE;color:var(--nibo1)}
+.ia-card-tag.chars{background:#F0FDF4;color:var(--green);font-family:'DM Mono',monospace}
+.ia-card-tag.alert{background:#FEF3C7;color:#92400e}
+.ia-card-actions{display:flex;gap:6px;margin-top:4px}
+.ia-copy-btn{font-size:11px;padding:5px 12px;border-radius:99px;border:.5px solid var(--border2);cursor:pointer;background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;transition:all .15s;flex:1;text-align:center}
+.ia-copy-btn:hover{background:var(--surface2);border-color:var(--nibo3);color:var(--nibo1)}
+.ia-copy-btn.copied{background:#D1FAE5;color:var(--green);border-color:#6EE7B7}
+.ia-loading-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;padding:3rem 0}
+.ia-spinner{width:32px;height:32px;border:3px solid var(--border2);border-top-color:#d97706;border-radius:50%;animation:iaspin .7s linear infinite}
+@keyframes iaspin{to{transform:rotate(360deg)}}
+.ia-loading-text{font-size:13px;color:var(--text3)}
+.ia-error-box{background:#FEF2F2;border:.5px solid #FCA5A5;border-radius:var(--radius);padding:1rem 1.2rem;font-size:13px;color:var(--red);margin-top:1.2rem}
+.ia-history-list{display:flex;flex-direction:column;gap:8px;margin-top:.5rem}
+.ia-history-item{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);padding:10px 14px;font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
+.ia-history-item:hover{border-color:var(--nibo3);color:var(--nibo1);background:#F8FAFF}
+.ia-history-dot{width:6px;height:6px;border-radius:50%;background:#d97706;flex-shrink:0}
+@media(max-width:760px){.ia-form-grid{grid-template-columns:1fr}.ia-cards-grid{grid-template-columns:1fr}}
+
 .desc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:1rem}
 .desc-card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.2rem}
 .desc-card h3{font-size:13px;font-weight:600;color:var(--nibo1);margin-bottom:3px}
@@ -267,6 +322,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <button class="page-tab active" onclick="showPage('calendario',this)">Calendário</button>
   <button class="page-tab" onclick="showPage('descricoes',this)">Descrições</button>
   <button class="page-tab grid-tab" onclick="showPage('grid',this)">Grid Instagram</button>
+  <button class="page-tab ai-tab" onclick="showPage('ia',this)">✦ IA Criativa</button>
   <button class="page-tab" onclick="showPage('configuracoes',this)">Configurações</button>
 </nav>
 
@@ -383,6 +439,95 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
   </div>
   <div class="grid-legend">💡 <b>Arraste</b> para reordenar · <b>Clique</b> na imagem para opções · Novos posts aparecem no <b>topo esquerdo</b></div>
+</div>
+
+<!-- ══ IA CRIATIVA ══ -->
+<div id="page-ia" class="page">
+  <div class="ia-hero">
+    <div class="ia-hero-icon">✦</div>
+    <div>
+      <div class="ia-hero-title">Sugestões de Criativo</div>
+      <div class="ia-hero-sub">Descreva o produto, o destaque e a ideia — a IA gera opções prontas para o criativo</div>
+    </div>
+  </div>
+
+  <div class="ia-form-card">
+    <div class="ia-form-grid">
+      <div class="ia-field">
+        <label class="ia-label">Produto Nibo</label>
+        <select class="ia-select" id="ia-produto">
+          <option value="">Selecione o produto...</option>
+          <option value="Nibo Gestão Financeira">Nibo Gestão Financeira</option>
+          <option value="Nibo BPO Financeiro">Nibo BPO Financeiro</option>
+          <option value="Nibo para Contadores">Nibo para Contadores</option>
+          <option value="Nibo Obrigações Plus">Nibo Obrigações Plus</option>
+          <option value="Nibo (geral)">Nibo (geral)</option>
+        </select>
+      </div>
+      <div class="ia-field">
+        <label class="ia-label">Público-alvo</label>
+        <select class="ia-select" id="ia-publico">
+          <option value="">Selecione o público...</option>
+          <option value="Empresários e PMEs">Empresários e PMEs</option>
+          <option value="Contadores e escritórios contábeis">Contadores e escritórios contábeis</option>
+          <option value="Empresas que oferecem BPO financeiro">Empresas que oferecem BPO financeiro</option>
+          <option value="Empreendedores em geral">Empreendedores em geral</option>
+        </select>
+      </div>
+      <div class="ia-field">
+        <label class="ia-label">Tipo de post</label>
+        <select class="ia-select" id="ia-tipo">
+          <option value="">Selecione o tipo...</option>
+          <option value="Produto">Produto — destacar funcionalidade</option>
+          <option value="Editorial">Editorial — conteúdo educativo</option>
+          <option value="Webinar">Webinar — convite para evento</option>
+          <option value="Depoimento">Depoimento — prova social</option>
+          <option value="Curiosidade">Curiosidade — dado ou insight</option>
+        </select>
+      </div>
+      <div class="ia-field">
+        <label class="ia-label">Funcionalidade / destaque</label>
+        <input class="ia-input" id="ia-funcionalidade" placeholder="Ex: integração com WhatsApp, conciliação automática..." />
+      </div>
+    </div>
+    <div class="ia-field" style="margin-top:12px">
+      <label class="ia-label">Ideia ou direção do post <span style="color:var(--text3);font-weight:400">(quanto mais detalhe, melhor)</span></label>
+      <textarea class="ia-textarea" id="ia-ideia" placeholder="Ex: mostrar que o empresário perde tempo fazendo fluxo de caixa na mão, e que o Nibo resolve isso automaticamente. Tom leve, próximo. Talvez usar dado de que 70% das empresas fecham por falta de gestão financeira." rows="3"></textarea>
+    </div>
+    <div class="ia-field" style="margin-top:12px">
+      <label class="ia-label">Referência visual ou trend <span style="color:var(--text3);font-weight:400">(opcional)</span></label>
+      <input class="ia-input" id="ia-trend" placeholder="Ex: meme do 'isso não é para mim', trend de comparação antes/depois, layout minimalista com dado em destaque..." />
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <button class="ia-gen-btn" id="ia-gen-btn" onclick="window.gerarSugestoes()">
+        <span class="ia-btn-icon">✦</span> Gerar sugestões de criativo
+      </button>
+      <button class="ia-clear-btn" onclick="window.limparIA()">Limpar</button>
+      <span class="ia-char-hint" id="ia-char-hint"></span>
+    </div>
+  </div>
+
+  <!-- results -->
+  <div id="ia-results" style="display:none">
+    <div class="ia-results-header">
+      <div class="ia-results-title">Sugestões geradas</div>
+      <div class="ia-results-sub" id="ia-results-sub"></div>
+    </div>
+    <div id="ia-cards" class="ia-cards-grid"></div>
+  </div>
+
+  <div id="ia-loading" style="display:none" class="ia-loading-wrap">
+    <div class="ia-spinner"></div>
+    <div class="ia-loading-text">Gerando sugestões com base nas diretrizes Nibo...</div>
+  </div>
+
+  <div id="ia-error" style="display:none" class="ia-error-box"></div>
+
+  <!-- history -->
+  <div id="ia-history-wrap" style="display:none;margin-top:2rem">
+    <div class="section-label">Histórico desta sessão</div>
+    <div id="ia-history-list" class="ia-history-list"></div>
+  </div>
 </div>
 
 <!-- ══ CONFIGURAÇÕES ══ -->
@@ -1046,6 +1191,176 @@ function renderGridTabs(){
 renderTipos();
 window.pickerYear=2025;
 window.renderPicker();
+
+// ── IA CRIATIVA ──
+let iaHistory=[];
+
+const NIBO_SYSTEM_PROMPT=`Você é um especialista em copywriting e social media para a empresa Nibo, software de gestão financeira e contábil para PMEs, contadores e empresas de BPO financeiro.
+
+DIRETRIZES OBRIGATÓRIAS da Nibo para texto de criativo (post de redes sociais):
+
+1. FISGAR EM 1 SEGUNDO: o texto precisa chamar atenção imediatamente. Se não fisgar, a pessoa passa direto.
+
+2. DEIXAR CLARO PARA QUEM É:
+   - Se for para contador ou escritório contábil: mencionar explicitamente "contador", "escritório contábil" ou similar.
+   - Se for para BPO financeiro: deixar claro que é para quem presta BPO.
+   - Se for para empresário/PME: chamar o empresário diretamente.
+   - NUNCA usar "escritório" sozinho — pode ser de engenharia, arquitetura, etc.
+
+3. MOSTRAR DOR, BENEFÍCIO OU TRANSFORMAÇÃO: de forma simples e rápida.
+
+4. CTA ALINHADO AO PRODUTO:
+   - BPO e Contador: CTA = "solicite uma demonstração gratuita" ou "fale com o especialista". NUNCA "teste grátis" para esses públicos.
+   - Gestão Financeira: pode usar "teste grátis" ou "fale com o especialista".
+
+5. TAMANHO DO TEXTO: entre 90 e 150 caracteres idealmente. Máximo aceitável: 180 caracteres. Texto curto, objetivo, fácil de ler rapidamente.
+
+6. QUANDO FOR UMA FUNCIONALIDADE ESPECÍFICA: mencionar em qual produto ela está (ex: "no Nibo Obrigações Plus").
+
+7. TOM: próximo, direto, sem jargão excessivo. Falar a língua do público.
+
+Você vai receber o produto, público, tipo de post, funcionalidade em destaque, ideia/direção e opcionalmente uma referência visual ou trend.
+
+Responda SOMENTE em JSON válido, sem markdown, sem texto fora do JSON. Formato:
+{
+  "sugestoes": [
+    {
+      "texto": "texto do criativo aqui",
+      "cta": "CTA sugerido",
+      "chars": 120,
+      "angulo": "Nome do ângulo (ex: Dor, Benefício, Transformação, Dado, Pergunta)",
+      "rationale": "Explicação curta do por que funciona e o que destaca",
+      "alerta": "" 
+    }
+  ]
+}
+Gere exatamente 4 sugestões com ângulos diferentes. O campo "alerta" deve conter um aviso se a sugestão tiver algum ponto de atenção (ex: "verificar se a feature está disponível neste plano"), caso contrário deixe vazio.`;
+
+window.gerarSugestoes=async function(){
+  const produto=document.getElementById('ia-produto').value.trim();
+  const publico=document.getElementById('ia-publico').value.trim();
+  const tipo=document.getElementById('ia-tipo').value.trim();
+  const func=document.getElementById('ia-funcionalidade').value.trim();
+  const ideia=document.getElementById('ia-ideia').value.trim();
+  const trend=document.getElementById('ia-trend').value.trim();
+
+  if(!produto||!publico||!ideia){
+    showIAError('Preencha pelo menos: Produto, Público-alvo e a Ideia/direção do post.');
+    return;
+  }
+
+  const userMsg=`Produto: ${produto}
+Público-alvo: ${publico}
+Tipo de post: ${tipo||'não especificado'}
+Funcionalidade / destaque: ${func||'não especificado'}
+Ideia e direção: ${ideia}${trend?'\nReferência visual / trend: '+trend:''}`;
+
+  document.getElementById('ia-results').style.display='none';
+  document.getElementById('ia-error').style.display='none';
+  document.getElementById('ia-loading').style.display='flex';
+  document.getElementById('ia-gen-btn').disabled=true;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:NIBO_SYSTEM_PROMPT,
+        messages:[{role:'user',content:userMsg}]
+      })
+    });
+    const data=await resp.json();
+    const raw=data.content?.filter(b=>b.type==='text').map(b=>b.text).join('');
+    if(!raw) throw new Error('Resposta vazia da IA');
+    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    if(!parsed.sugestoes) throw new Error('Formato inesperado');
+
+    // save to history
+    const entry={produto,publico,tipo,ideia,sugestoes:parsed.sugestoes,ts:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})};
+    iaHistory.unshift(entry);
+    renderIAHistory();
+    renderIACards(parsed.sugestoes,entry);
+
+  } catch(e){
+    showIAError('Erro ao gerar sugestões: '+e.message+'. Verifique sua conexão e tente novamente.');
+  } finally {
+    document.getElementById('ia-loading').style.display='none';
+    document.getElementById('ia-gen-btn').disabled=false;
+  }
+}
+
+function renderIACards(sugestoes,entry){
+  const el=document.getElementById('ia-results');
+  const sub=document.getElementById('ia-results-sub');
+  el.style.display='block';
+  sub.textContent=`${entry.produto} · ${entry.publico} · ${entry.ts}`;
+  document.getElementById('ia-cards').innerHTML=sugestoes.map((s,i)=>`
+    <div class="ia-card">
+      <div class="ia-card-num">Sugestão ${i+1} · ${s.angulo||''}</div>
+      <div class="ia-card-text">${escapeHtml(s.texto)}</div>
+      ${s.rationale?`<div class="ia-card-rationale">${escapeHtml(s.rationale)}</div>`:''}
+      <div class="ia-card-meta">
+        <span class="ia-card-tag chars">${s.chars||s.texto.length} chars</span>
+        ${s.cta?`<span class="ia-card-tag cta">CTA: ${escapeHtml(s.cta)}</span>`:''}
+        ${s.alerta?`<span class="ia-card-tag alert">⚠ ${escapeHtml(s.alerta)}</span>`:''}
+      </div>
+      <div class="ia-card-actions">
+        <button class="ia-copy-btn" id="copy-btn-${i}" onclick="window.copiarSugestao(${i},'${escapeJs(s.texto+'\n\nCTA: '+s.cta)}')">Copiar texto</button>
+      </div>
+    </div>`).join('');
+  el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+window.copiarSugestao=function(i,text){
+  navigator.clipboard.writeText(text.replace(/\\n/g,'\n')).then(()=>{
+    const btn=document.getElementById('copy-btn-'+i);
+    if(btn){btn.textContent='Copiado ✓';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copiar texto';btn.classList.remove('copied');},2000);}
+  });
+}
+
+function renderIAHistory(){
+  const wrap=document.getElementById('ia-history-wrap');
+  const list=document.getElementById('ia-history-list');
+  if(!iaHistory.length){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  list.innerHTML=iaHistory.map((e,i)=>`
+    <div class="ia-history-item" onclick="renderIACards(iaHistory[${i}].sugestoes,iaHistory[${i}])">
+      <div class="ia-history-dot"></div>
+      <span>${e.ts} · <b>${e.produto}</b> · ${e.publico}</span>
+      <span style="color:var(--text3);margin-left:auto;font-size:11px">${e.sugestoes.length} sugestões</span>
+    </div>`).join('');
+}
+
+function showIAError(msg){
+  const el=document.getElementById('ia-error');
+  el.style.display='block';
+  el.textContent=msg;
+  document.getElementById('ia-loading').style.display='none';
+}
+
+window.limparIA=function(){
+  document.getElementById('ia-produto').value='';
+  document.getElementById('ia-publico').value='';
+  document.getElementById('ia-tipo').value='';
+  document.getElementById('ia-funcionalidade').value='';
+  document.getElementById('ia-ideia').value='';
+  document.getElementById('ia-trend').value='';
+  document.getElementById('ia-results').style.display='none';
+  document.getElementById('ia-error').style.display='none';
+  document.getElementById('ia-char-hint').textContent='';
+}
+
+// live char counter on ideia textarea
+document.getElementById('ia-ideia')?.addEventListener('input',function(){
+  const len=this.value.length;
+  const hint=document.getElementById('ia-char-hint');
+  hint.textContent=len>0?len+' caracteres digitados':'';
+});
+
+function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escapeJs(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');}
 </script>
 </body>
 </html>
