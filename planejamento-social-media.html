@@ -219,6 +219,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .ia-copy-btn{font-size:11px;padding:5px 12px;border-radius:99px;border:.5px solid var(--border2);cursor:pointer;background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;transition:all .15s;flex:1;text-align:center}
 .ia-copy-btn:hover{background:var(--surface2);border-color:var(--nibo3);color:var(--nibo1)}
 .ia-copy-btn.copied{background:#D1FAE5;color:var(--green);border-color:#6EE7B7}
+.ia-use-btn{font-size:11px;padding:5px 12px;border-radius:99px;border:none;cursor:pointer;background:var(--nibo1);color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .15s;flex:1;text-align:center}
+.ia-use-btn:hover{background:var(--nibo2)}
 .ia-loading-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;padding:3rem 0}
 .ia-spinner{width:32px;height:32px;border:3px solid var(--border2);border-top-color:#d97706;border-radius:50%;animation:iaspin .7s linear infinite}
 @keyframes iaspin{to{transform:rotate(360deg)}}
@@ -320,9 +322,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 <nav class="page-tabs">
   <button class="page-tab active" onclick="showPage('calendario',this)">Calendário</button>
+  <button class="page-tab ai-tab" onclick="showPage('ia',this)">✦ IA Criativa</button>
   <button class="page-tab" onclick="showPage('descricoes',this)">Descrições</button>
   <button class="page-tab grid-tab" onclick="showPage('grid',this)">Grid Instagram</button>
-  <button class="page-tab ai-tab" onclick="showPage('ia',this)">✦ IA Criativa</button>
   <button class="page-tab" onclick="showPage('configuracoes',this)">Configurações</button>
 </nav>
 
@@ -457,11 +459,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
         <label class="ia-label">Produto Nibo</label>
         <select class="ia-select" id="ia-produto">
           <option value="">Selecione o produto...</option>
-          <option value="Nibo Gestão Financeira">Nibo Gestão Financeira</option>
-          <option value="Nibo BPO Financeiro">Nibo BPO Financeiro</option>
-          <option value="Nibo para Contadores">Nibo para Contadores</option>
-          <option value="Nibo Obrigações Plus">Nibo Obrigações Plus</option>
-          <option value="Nibo (geral)">Nibo (geral)</option>
+          <optgroup label="Para Empresas">
+            <option value="Nibo Gestão Financeira">Nibo Gestão Financeira</option>
+            <option value="Nibo Sistema de Cobranças">Nibo Sistema de Cobranças</option>
+          </optgroup>
+          <optgroup label="Para Contadores">
+            <option value="Nibo Obrigações Plus">Nibo Obrigações Plus</option>
+            <option value="Nibo Radar e-CAC">Nibo Radar e-CAC</option>
+            <option value="Nibo Conciliador Open Finance">Nibo Conciliador Open Finance</option>
+            <option value="Nibo via WhatsApp (Contador)">Nibo via WhatsApp (Contador)</option>
+            <option value="Nibo Emissor de NFS-e">Nibo Emissor de NFS-e</option>
+          </optgroup>
+          <optgroup label="Para BPO Financeiro">
+            <option value="Nibo BPO Financeiro">Nibo BPO Financeiro</option>
+            <option value="WhatsApp no Nibo BPO">WhatsApp no Nibo BPO</option>
+          </optgroup>
+          <optgroup label="Geral">
+            <option value="Nibo (ecossistema geral)">Nibo (ecossistema geral)</option>
+          </optgroup>
         </select>
       </div>
       <div class="ia-field">
@@ -569,6 +584,39 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
       <button class="btn btn-primary" onclick="saveModal()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- USAR EM POST MODAL -->
+<div class="modal-overlay" id="usar-post-modal">
+  <div class="modal" style="width:480px">
+    <div class="modal-head">
+      <h3>Usar sugestão em um post</h3>
+      <p>Escolha onde aplicar o texto gerado pela IA</p>
+    </div>
+    <div class="modal-body" style="padding:1rem 1.4rem">
+      <div class="modal-label" style="margin-bottom:8px">Texto que será aplicado</div>
+      <div id="usar-texto-preview" style="background:var(--surface2);border:.5px solid var(--border2);border-radius:var(--radius);padding:10px 12px;font-size:13px;color:var(--text);line-height:1.6;margin-bottom:14px;max-height:80px;overflow-y:auto"></div>
+      <div class="modal-label" style="margin-bottom:8px">Aplicar em qual campo?</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <label style="flex:1;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);cursor:pointer;background:var(--surface2);border:.5px solid var(--border2);border-radius:var(--radius);padding:8px 12px;transition:all .15s" id="campo-social-lbl">
+          <input type="radio" name="usar-campo" value="social" checked style="accent-color:var(--nibo1)"> 📱 Social Media
+        </label>
+        <label style="flex:1;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);cursor:pointer;background:var(--surface2);border:.5px solid var(--border2);border-radius:var(--radius);padding:8px 12px;transition:all .15s" id="campo-design-lbl">
+          <input type="radio" name="usar-campo" value="design" style="accent-color:var(--nibo1)"> 🎨 Design
+        </label>
+      </div>
+      <div class="modal-label" style="margin-bottom:8px">Selecione o post</div>
+      <select class="ia-select" id="usar-post-select" style="width:100%;margin-bottom:6px">
+        <option value="">Carregando posts...</option>
+      </select>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">Mostrando posts do mês ativo. Filtre por data ou tipo abaixo.</div>
+      <input class="ia-input" id="usar-post-filter" placeholder="Filtrar por data (dd/mm) ou tipo..." style="margin-top:8px;width:100%" oninput="window.filtrarPostsModal(this.value)">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('usar-post-modal').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-primary" onclick="window.confirmarUsarPost()">✓ Aplicar no post</button>
     </div>
   </div>
 </div>
@@ -1307,7 +1355,8 @@ function renderIACards(sugestoes,entry){
         ${s.alerta?`<span class="ia-card-tag alert">⚠ ${escapeHtml(s.alerta)}</span>`:''}
       </div>
       <div class="ia-card-actions">
-        <button class="ia-copy-btn" id="copy-btn-${i}" onclick="window.copiarSugestao(${i},'${escapeJs(s.texto+'\n\nCTA: '+s.cta)}')">Copiar texto</button>
+        <button class="ia-copy-btn" id="copy-btn-${i}" onclick="window.copiarSugestao(${i},'${escapeJs(s.texto+'\n\nCTA: '+s.cta)}')">Copiar</button>
+        <button class="ia-use-btn" onclick="window.abrirUsarPost('${escapeJs(s.texto)}')">→ Usar em post</button>
       </div>
     </div>`).join('');
   el.scrollIntoView({behavior:'smooth',block:'start'});
@@ -1361,6 +1410,64 @@ document.getElementById('ia-ideia')?.addEventListener('input',function(){
 
 function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function escapeJs(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');}
+
+// ── USAR EM POST ──
+let usarTexto='';
+let usarPostsAll=[];
+
+window.abrirUsarPost=function(texto){
+  usarTexto=texto.replace(/\\n/g,'\n').replace(/\\'/g,"'");
+  document.getElementById('usar-texto-preview').textContent=usarTexto;
+  document.getElementById('usar-post-filter').value='';
+  // populate select with rows from active month
+  const mo=months[activeMonthIdx];
+  usarPostsAll=mo?rows.filter(r=>r.y===mo.y&&r.m===mo.m).sort((a,b)=>(a.order||0)-(b.order||0)):rows;
+  preencherSelectPosts(usarPostsAll);
+  // reset radio
+  document.querySelector('input[name="usar-campo"][value="social"]').checked=true;
+  document.getElementById('usar-post-modal').classList.add('open');
+}
+
+function preencherSelectPosts(lista){
+  const sel=document.getElementById('usar-post-select');
+  if(!lista.length){sel.innerHTML='<option value="">Nenhum post encontrado</option>';return;}
+  sel.innerHTML='<option value="">— Escolha um post —</option>'+lista.map(r=>{
+    const tipo=TIPOS.find(t=>t.id===r.tipoId)||TIPOS[0];
+    const label=`${r.date||'sem data'} · ${tipo.name}${r.social?' (tem social)':''}`;
+    return `<option value="${r.key}">${label}</option>`;
+  }).join('');
+}
+
+window.filtrarPostsModal=function(q){
+  if(!q.trim()){preencherSelectPosts(usarPostsAll);return;}
+  const f=q.toLowerCase();
+  const filtered=usarPostsAll.filter(r=>{
+    const tipo=TIPOS.find(t=>t.id===r.tipoId)||TIPOS[0];
+    return (r.date||'').includes(f)||(tipo.name||'').toLowerCase().includes(f);
+  });
+  preencherSelectPosts(filtered);
+}
+
+window.confirmarUsarPost=async function(){
+  const key=document.getElementById('usar-post-select').value;
+  if(!key){alert('Selecione um post primeiro.');return;}
+  const campo=document.querySelector('input[name="usar-campo"]:checked')?.value||'social';
+  const r=rows.find(r=>r.key===key);
+  if(!r) return;
+  // if field already has content, confirm overwrite
+  if(r[campo]&&r[campo].trim()){
+    if(!confirm(`O campo ${campo==='social'?'Social Media':'Design'} deste post já tem conteúdo. Deseja substituir?`)) return;
+  }
+  await saveRow(key,{[campo]:usarTexto});
+  document.getElementById('usar-post-modal').classList.remove('open');
+  // visual feedback
+  const feedbackBanner=document.createElement('div');
+  feedbackBanner.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#065F46;color:#fff;font-size:13px;font-weight:600;padding:10px 22px;border-radius:99px;z-index:999;box-shadow:0 4px 18px rgba(0,0,0,.18);transition:opacity .3s';
+  feedbackBanner.textContent='✓ Texto aplicado com sucesso no post!';
+  document.body.appendChild(feedbackBanner);
+  setTimeout(()=>{feedbackBanner.style.opacity='0';setTimeout(()=>feedbackBanner.remove(),400)},2200);
+}
+document.getElementById('usar-post-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('open');});
 </script>
 </body>
 </html>
