@@ -579,11 +579,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 <!-- ══ CONFIGURAÇÕES ══ -->
 <div id="page-configuracoes" class="page">
-  <div class="section-label" style="margin-top:0">IA Criativa — API Key</div>
+  <div class="section-label" style="margin-top:0">IA Criativa — Google Gemini (gratuito)</div>
   <div style="background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:1.2rem 1.4rem;margin-bottom:1.8rem;max-width:560px">
-    <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px">Para usar a IA Criativa diretamente no planejamento, informe sua <strong>API key da Anthropic</strong>. Ela fica salva só no seu navegador (localStorage) e nunca sai do seu computador.</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px">A IA Criativa usa o <strong>Google Gemini</strong>, que tem uma camada gratuita generosa. Para ativar, crie sua key em <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--nibo2);text-decoration:none;font-weight:600">aistudio.google.com/apikey</a> — é de graça, só precisa de conta Google. Cole a key abaixo:</div>
     <div style="display:flex;gap:8px;align-items:center">
-      <input id="cfg-apikey" type="password" placeholder="sk-ant-..." style="flex:1;font-size:13px;font-family:'DM Mono',monospace;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)" />
+      <input id="cfg-apikey" type="password" placeholder="AIza..." style="flex:1;font-size:13px;font-family:'DM Mono',monospace;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)" />
       <button onclick="window.salvarApiKey()" style="font-size:12px;font-weight:600;padding:9px 16px;border-radius:var(--radius);border:none;cursor:pointer;background:var(--nibo1);color:#fff;font-family:'DM Sans',sans-serif;white-space:nowrap">Salvar key</button>
       <button onclick="window.limparApiKey()" style="font-size:12px;padding:9px 14px;border-radius:var(--radius);border:.5px solid var(--border2);cursor:pointer;background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif">Remover</button>
     </div>
@@ -1249,33 +1249,32 @@ renderTipos();
 window.pickerYear=2025;
 window.renderPicker();
 
-// ── API KEY ──
+// ── GEMINI API KEY ──
 window.salvarApiKey=function(){
   const v=document.getElementById('cfg-apikey').value.trim();
-  if(!v.startsWith('sk-ant-')&&!v.startsWith('sk-')){
-    document.getElementById('cfg-apikey-status').textContent='⚠ Parece que a key está errada. Deve começar com sk-ant-...';
+  if(!v.startsWith('AIza')){
+    document.getElementById('cfg-apikey-status').textContent='⚠ Key inválida. A key do Gemini começa com "AIza..."';
     document.getElementById('cfg-apikey-status').style.color='var(--red)';
     return;
   }
-  localStorage.setItem('nibo_api_key',v);
+  localStorage.setItem('nibo_gemini_key',v);
   document.getElementById('cfg-apikey').value='';
-  document.getElementById('cfg-apikey-status').textContent='✓ API key salva com sucesso!';
+  document.getElementById('cfg-apikey-status').textContent='✓ Gemini API key salva com sucesso!';
   document.getElementById('cfg-apikey-status').style.color='var(--green)';
   setTimeout(()=>document.getElementById('cfg-apikey-status').textContent='',3000);
 }
 window.limparApiKey=function(){
-  localStorage.removeItem('nibo_api_key');
+  localStorage.removeItem('nibo_gemini_key');
   document.getElementById('cfg-apikey').value='';
   document.getElementById('cfg-apikey-status').textContent='Key removida.';
   document.getElementById('cfg-apikey-status').style.color='var(--text3)';
   setTimeout(()=>document.getElementById('cfg-apikey-status').textContent='',2000);
 }
-// show status on config page load
 function renderApiKeyStatus(){
   const el=document.getElementById('cfg-apikey-status');
   if(!el) return;
-  const k=localStorage.getItem('nibo_api_key');
-  el.textContent=k?'✓ API key configurada (oculta por segurança)':'Nenhuma key salva. Sem key, a IA Criativa não funcionará.';
+  const k=localStorage.getItem('nibo_gemini_key');
+  el.textContent=k?'✓ Gemini API key configurada — IA Criativa ativa!':'Nenhuma key salva. Acesse aistudio.google.com/apikey para criar uma gratuitamente.';
   el.style.color=k?'var(--green)':'var(--text3)';
 }
 
@@ -1311,9 +1310,9 @@ const ANGULO_COLORS={
 };
 
 window.gerarSugestoes=async function(){
-  const apiKey=localStorage.getItem('nibo_api_key');
+  const apiKey=localStorage.getItem('nibo_gemini_key');
   if(!apiKey){
-    showIAError('Nenhuma API key configurada. Acesse a aba Configurações e adicione sua chave da Anthropic.');
+    showIAError('Nenhuma API key configurada. Vá em Configurações → cole sua key gratuita do Google Gemini (aistudio.google.com/apikey).');
     return;
   }
   const produto=document.getElementById('ia-produto').value.trim();
@@ -1326,7 +1325,14 @@ window.gerarSugestoes=async function(){
     showIAError('Preencha pelo menos: Produto, Público-alvo e a Ideia/direção do post.');
     return;
   }
-  const userMsg=`Produto: ${produto}\nPúblico-alvo: ${publico}\nTipo de post: ${tipo||'não especificado'}\nFuncionalidade / destaque: ${func||'não especificado'}\nIdeia e direção: ${ideia}${trend?'\nReferência visual / trend: '+trend:''}`;
+  const fullPrompt=`${NIBO_SYSTEM_PROMPT}
+
+Agora gere as sugestões para:
+Produto: ${produto}
+Público-alvo: ${publico}
+Tipo de post: ${tipo||'não especificado'}
+Funcionalidade / destaque: ${func||'não especificado'}
+Ideia e direção: ${ideia}${trend?'\nReferência visual / trend: '+trend:''}`;
 
   document.getElementById('ia-results').style.display='none';
   document.getElementById('ia-post-selector').style.display='none';
@@ -1336,17 +1342,21 @@ window.gerarSugestoes=async function(){
   iaSelectedIdx=null; iaSelectedPostKey=null; iaCurrentSugestoes=[];
 
   try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:NIBO_SYSTEM_PROMPT,messages:[{role:'user',content:userMsg}]})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{parts:[{text:fullPrompt}]}],
+        generationConfig:{temperature:0.8,maxOutputTokens:1200}
+      })
     });
     const data=await resp.json();
-    if(data.error) throw new Error(data.error.message||'Erro da API');
-    const raw=data.content?.filter(b=>b.type==='text').map(b=>b.text).join('');
-    if(!raw) throw new Error('Resposta vazia da IA');
-    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
-    if(!parsed.sugestoes) throw new Error('Formato inesperado');
+    if(data.error) throw new Error(data.error.message||'Erro da API Gemini');
+    const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    if(!raw) throw new Error('Resposta vazia do Gemini');
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+    if(!parsed.sugestoes) throw new Error('Formato inesperado na resposta');
     iaCurrentSugestoes=parsed.sugestoes;
     const entry={produto,publico,tipo,ideia,sugestoes:parsed.sugestoes,ts:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})};
     iaHistory.unshift(entry);
