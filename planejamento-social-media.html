@@ -287,6 +287,64 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 .footer-hint{text-align:center;margin-top:1.5rem;font-size:11px;color:var(--text3)}
 
+/* ── LOGIN SCREEN ── */
+#login-screen{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'DM Sans',sans-serif;
+}
+#login-screen.hidden{display:none}
+.login-card{
+  background:var(--surface);
+  border:.5px solid var(--border2);
+  border-radius:var(--radius-xl);
+  padding:2.4rem 2rem;
+  width:100%;max-width:380px;
+  box-shadow:0 12px 40px rgba(0,45,114,.13);
+}
+.login-logo{display:flex;gap:6px;align-items:center;margin-bottom:1.6rem}
+.login-logo-dot{width:11px;height:11px;border-radius:50%}
+.login-title{font-size:18px;font-weight:700;color:var(--nibo1);margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--text2);margin-bottom:1.8rem;line-height:1.5}
+.login-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.login-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em}
+.login-input{
+  font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);
+  border:.5px solid var(--border2);border-radius:var(--radius);
+  padding:10px 12px;outline:none;background:var(--bg);
+  transition:border-color .15s;width:100%
+}
+.login-input:focus{border-color:var(--nibo2)}
+.login-btn{
+  width:100%;font-size:13px;font-weight:600;padding:11px;
+  border-radius:var(--radius);border:none;cursor:pointer;
+  background:var(--nibo1);color:#fff;
+  font-family:'DM Sans',sans-serif;
+  margin-top:8px;transition:all .15s;
+}
+.login-btn:hover{background:var(--nibo2)}
+.login-btn:disabled{opacity:.5;cursor:not-allowed}
+.login-error{
+  font-size:12px;color:var(--red);background:#FEE2E2;
+  border:.5px solid #FCA5A5;border-radius:var(--radius);
+  padding:8px 12px;margin-top:10px;display:none
+}
+.login-spinner{
+  width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);
+  border-top-color:#fff;border-radius:50%;
+  animation:lspin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px
+}
+@keyframes lspin{to{transform:rotate(360deg)}}
+.login-footer{font-size:11px;color:var(--text3);text-align:center;margin-top:1.4rem}
+.logout-btn{
+  font-size:11px;padding:4px 12px;border-radius:99px;
+  border:.5px solid var(--border2);cursor:pointer;
+  background:transparent;color:var(--text2);
+  font-family:'DM Sans',sans-serif;transition:all .15s;
+}
+.logout-btn:hover{background:var(--surface2);color:var(--red);border-color:#FCA5A5}
+
 @media(max-width:760px){
   .tipos-grid{grid-template-columns:repeat(3,1fr)}
   .cores-grid{grid-template-columns:repeat(2,1fr)}
@@ -299,6 +357,30 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 </style>
 </head>
 <body>
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-dot" style="background:#002d72"></div>
+      <div class="login-logo-dot" style="background:#0072ce"></div>
+      <div class="login-logo-dot" style="background:#41b6e6"></div>
+    </div>
+    <div class="login-title">Nibo · Social Media</div>
+    <div class="login-sub">Acesso restrito à equipe. Faça login com seu e-mail autorizado.</div>
+    <div class="login-field">
+      <label class="login-label">E-mail</label>
+      <input class="login-input" id="login-email" type="email" placeholder="voce@nibo.com.br" autocomplete="email" />
+    </div>
+    <div class="login-field">
+      <label class="login-label">Senha</label>
+      <input class="login-input" id="login-password" type="password" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-footer">Problemas? Fale com o admin da equipe.</div>
+  </div>
+</div>
+
 <div class="container">
 
 <div class="header">
@@ -316,6 +398,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="sync-dot" id="sync-dot"></div>
     <span id="sync-label">Conectando...</span>
   </div>
+  <button class="logout-btn" id="logout-btn" onclick="doLogout()" style="display:none">Sair</button>
 </div>
 
 <nav class="page-tabs">
@@ -633,6 +716,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getFirestore, doc, setDoc, onSnapshot, collection, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCucKm83A31gJ8_FNRvUpkvvGKs6W9ljB0",
@@ -645,6 +729,89 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
+const auth = getAuth(app);
+
+// ── LISTA DE EMAILS PERMITIDOS ──
+// Adicione ou remova emails conforme necessário
+const ALLOWED_EMAILS = [
+  "seuemail@nibo.com.br",       // ← substitua pelo seu email
+  "colega1@nibo.com.br",        // ← email da equipe
+  "colega2@nibo.com.br",        // ← email da equipe
+];
+
+// ── AUTH STATE ──
+onAuthStateChanged(auth, user => {
+  if (user && ALLOWED_EMAILS.includes(user.email.toLowerCase())) {
+    // ✅ Usuário autorizado → mostra o app
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('logout-btn').style.display = 'inline-flex';
+    document.getElementById('logout-btn').title = `Logado como ${user.email}`;
+  } else {
+    if (user) {
+      // Email não autorizado → faz logout automático
+      signOut(auth);
+      showLoginError("Seu e-mail não tem acesso a este planejamento. Fale com o admin.");
+    }
+    // Mostra tela de login
+    document.getElementById('login-screen').classList.remove('hidden');
+    document.getElementById('logout-btn').style.display = 'none';
+  }
+});
+
+// ── LOGIN ──
+window.doLogin = async function() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+
+  if (!email || !password) {
+    showLoginError("Preencha e-mail e senha.");
+    return;
+  }
+  if (!ALLOWED_EMAILS.includes(email)) {
+    showLoginError("Este e-mail não tem permissão de acesso.");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="login-spinner"></span>Entrando...';
+  errEl.style.display = 'none';
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    // onAuthStateChanged cuida do resto
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+    const msg = e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found'
+      ? "E-mail ou senha incorretos."
+      : e.code === 'auth/too-many-requests'
+      ? "Muitas tentativas. Aguarde alguns minutos."
+      : "Erro ao entrar. Tente novamente.";
+    showLoginError(msg);
+  }
+};
+
+// ── LOGOUT ──
+window.doLogout = async function() {
+  if (confirm('Deseja sair?')) await signOut(auth);
+};
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+// Permite login com Enter
+document.getElementById('login-password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') window.doLogin();
+});
+document.getElementById('login-email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('login-password').focus();
+});
+
 
 // ── CONSTANTS ──
 const TIPOS=[
