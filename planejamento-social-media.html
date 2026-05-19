@@ -555,6 +555,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .welcome-card-title{font-size:17px;font-weight:700;color:var(--nibo1)}
 .welcome-card-sub{font-size:11px;color:var(--text3);line-height:1.5}
 @media(max-width:600px){.welcome-cards{grid-template-columns:1fr}}
+
+#page-welcome.active{display:flex}
+#page-welcome{display:none}
 </style>
 </head>
 <body>
@@ -703,7 +706,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 <!-- ══ CALENDÁRIO ══ -->
 <!-- ══ BOAS-VINDAS ══ -->
-<div id="page-welcome" class="page active">
+<div id="page-welcome" class="page-welcome-screen active">
   <div class="welcome-title">Olá! 👋 Bem-vinda ao Planejamento de Marketing</div>
   <div class="welcome-sub">Selecione uma área para começar</div>
   <div class="welcome-cards">
@@ -1496,13 +1499,14 @@ window.switchMainTab = function(tab) {
   const tabBtn = document.getElementById('mtab-' + tab);
   if(tabBtn) tabBtn.classList.add('active');
 
-  // esconder todas as pages
+  // esconder welcome e todas as pages
+  const _wp = document.getElementById('page-welcome');
+  if(_wp) _wp.classList.remove('active');
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
 
   // se for welcome, mostrar só a welcome e esconder sub-abas
   if(tab === 'welcome') {
-    const wp = document.getElementById('page-welcome');
-    if(wp) wp.classList.add('active');
+    if(_wp) _wp.classList.add('active');
     Object.keys(MAIN_TAB_MAP).forEach(k => {
       const subtabEl = document.getElementById('subtabs-' + k);
       if(subtabEl) subtabEl.style.display = 'none';
