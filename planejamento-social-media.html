@@ -500,6 +500,53 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .notif-text b{color:#ff40b3}
 .notif-time{font-size:10px;color:var(--text3);margin-top:2px}
 .notif-empty{padding:2rem 1rem;text-align:center;font-size:12px;color:var(--text3)}
+
+/* ── CALENDÁRIO EMAIL PRODUTO ── */
+.ep-cal-wrap{overflow-x:auto}
+.ep-cal-nav{display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap}
+.ep-cal-title{font-size:16px;font-weight:700;color:var(--nibo1);min-width:160px}
+.ep-nav-btn{width:28px;height:28px;border-radius:50%;border:.5px solid var(--border2);cursor:pointer;background:var(--surface);color:var(--text2);font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.ep-nav-btn:hover{background:var(--surface2)}
+.ep-legend{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-left:auto}
+.ep-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+.ep-leg-dot{width:10px;height:10px;border-radius:50%}
+.ep-grid{display:grid;grid-template-columns:repeat(7,1fr);border:.5px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden;min-width:700px}
+.ep-dow-header{background:var(--surface2);padding:7px 4px;text-align:center;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-right:.5px solid var(--border);border-bottom:.5px solid var(--border2)}
+.ep-dow-header:last-child{border-right:none}
+.ep-cell{
+  min-height:90px;border-right:.5px solid var(--border);border-bottom:.5px solid var(--border);
+  padding:5px;position:relative;background:var(--surface);transition:background .1s;
+  vertical-align:top;
+}
+.ep-cell:nth-child(7n){border-right:none}
+.ep-cell.ep-other-month{background:#f9fafc}
+.ep-cell.ep-holiday{background:#fff1f1}
+.ep-cell.ep-today{background:#f0f6ff}
+.ep-day-num{font-size:10px;font-weight:700;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between}
+.ep-day-num.today-num{color:var(--nibo1)}
+.ep-add-btn{
+  width:16px;height:16px;border-radius:50%;border:.5px solid var(--border2);
+  cursor:pointer;background:transparent;color:var(--text3);
+  font-size:11px;line-height:1;display:none;align-items:center;justify-content:center;
+  transition:all .12s;padding:0;flex-shrink:0;
+}
+.ep-cell:hover .ep-add-btn{display:flex}
+.ep-add-btn:hover{background:#ff40b3;color:#fff;border-color:#ff40b3}
+.ep-entry{
+  font-size:10px;line-height:1.35;padding:2px 5px;border-radius:4px;
+  margin-bottom:2px;cursor:pointer;word-break:break-word;
+  display:block;transition:opacity .12s;position:relative;
+}
+.ep-entry:hover{opacity:.85}
+.ep-entry.color-cinza{color:#6b7280;background:#f3f4f6}
+.ep-entry.color-verde{color:#065f46;background:#d1fae5}
+.ep-entry.color-amarelo{color:#92400e;background:#fef3c7}
+.ep-entry.color-vermelho{color:#991b1b;background:#fee2e2}
+.ep-holiday-label{font-size:9px;font-weight:700;color:#dc2626;background:#fee2e2;border-radius:3px;padding:1px 4px;display:inline-block;margin-bottom:2px}
+
+/* modal célula */
+.ep-cell-modal{position:fixed;z-index:9999;background:var(--surface);border:.5px solid var(--border2);border-radius:var(--radius-lg);box-shadow:0 8px 32px rgba(0,45,114,.18);padding:14px;width:280px;display:none}
+.ep-cell-modal.open{display:block}
 </style>
 </head>
 <body>
@@ -942,14 +989,51 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 <!-- ══ CALENDÁRIO DE EMAIL - PRODUTO ══ -->
 <div id="page-email-produto" class="page">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;flex-wrap:wrap;gap:10px">
-    <div>
-      <div class="section-label" style="margin:0 0 4px">Calendário de Email · Produto</div>
-      <p style="font-size:12px;color:var(--text2)">Campanhas de email independentes. Adicione, preencha e aguarde aprovação da Maris.</p>
+  <div class="ep-cal-nav">
+    <button class="ep-nav-btn" onclick="window.epPrevMonth()">‹</button>
+    <div class="ep-cal-title" id="ep-cal-title">—</div>
+    <button class="ep-nav-btn" onclick="window.epNextMonth()">›</button>
+    <div class="ep-legend">
+      <div class="ep-leg-item"><div class="ep-leg-dot" style="background:#6b7280"></div>Vazio/rascunho</div>
+      <div class="ep-leg-item"><div class="ep-leg-dot" style="background:#059669"></div>Ok / enviado</div>
+      <div class="ep-leg-item"><div class="ep-leg-dot" style="background:#d97706"></div>Atenção</div>
+      <div class="ep-leg-item"><div class="ep-leg-dot" style="background:#dc2626"></div>Feriado</div>
     </div>
-    <button id="add-email-btn" onclick="window.abrirModalEmail()" style="display:none;font-size:12px;font-weight:600;padding:8px 18px;border-radius:99px;border:none;cursor:pointer;background:var(--nibo1);color:#fff;font-family:'DM Sans',sans-serif;box-shadow:0 2px 8px rgba(0,45,114,.18)">+ Nova campanha</button>
   </div>
-  <div id="email-produto-list"></div>
+  <div class="ep-cal-wrap">
+    <div class="ep-grid" id="ep-grid"></div>
+  </div>
+</div>
+
+<!-- MODAL CÉLULA EMAIL -->
+<div class="ep-cell-modal" id="ep-cell-modal">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <span style="font-size:12px;font-weight:700;color:var(--text)" id="ep-modal-date-label">—</span>
+    <button onclick="window.fecharEpModal()" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text3);line-height:1">×</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div>
+      <div class="modal-label">Texto</div>
+      <textarea id="ep-cell-text" rows="3" placeholder="Descreva a campanha..." style="width:100%;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:7px 9px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.5"></textarea>
+    </div>
+    <div id="ep-link-section">
+      <div class="modal-label">Link <span style="color:var(--text3);font-weight:400">(Clara e Roberta)</span></div>
+      <input id="ep-cell-link" type="url" placeholder="https://..." style="width:100%;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:7px 9px;outline:none;background:var(--bg);color:var(--text)" />
+    </div>
+    <div>
+      <div class="modal-label">Cor</div>
+      <div style="display:flex;gap:6px;margin-top:4px">
+        <button onclick="window.setEpColor('cinza')" id="ep-color-cinza" title="Vazio" style="width:22px;height:22px;border-radius:50%;background:#6b7280;border:2px solid transparent;cursor:pointer;transition:all .12s"></button>
+        <button onclick="window.setEpColor('verde')" id="ep-color-verde" title="Ok" style="width:22px;height:22px;border-radius:50%;background:#059669;border:2px solid transparent;cursor:pointer;transition:all .12s"></button>
+        <button onclick="window.setEpColor('amarelo')" id="ep-color-amarelo" title="Atenção" style="width:22px;height:22px;border-radius:50%;background:#d97706;border:2px solid transparent;cursor:pointer;transition:all .12s"></button>
+        <button onclick="window.setEpColor('vermelho')" id="ep-color-vermelho" title="Feriado/Bloqueado" style="width:22px;height:22px;border-radius:50%;background:#dc2626;border:2px solid transparent;cursor:pointer;transition:all .12s"></button>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:4px">
+      <button onclick="window.deletarEpEntry()" style="font-size:11px;padding:5px 10px;border-radius:99px;border:.5px solid #FCA5A5;cursor:pointer;background:transparent;color:var(--red);font-family:'DM Sans',sans-serif" id="ep-del-btn">✕ Remover</button>
+      <button onclick="window.salvarEpEntry()" style="font-size:11px;padding:5px 14px;border-radius:99px;border:none;cursor:pointer;background:var(--nibo1);color:#fff;font-family:'DM Sans',sans-serif;font-weight:600">Salvar</button>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL BRIEFING MÍDIA PRODUTO -->
@@ -990,52 +1074,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 </div>
 
 <!-- MODAL EMAIL PRODUTO -->
-<div class="modal-overlay" id="modal-email-produto">
-  <div class="modal" style="max-width:520px">
-    <div class="modal-head">
-      <h3 id="ep-modal-title">Nova campanha de email</h3>
-      <p>Preencha os dados da campanha</p>
-    </div>
-    <div class="modal-body" style="padding:1rem 1.4rem;display:flex;flex-direction:column;gap:10px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div>
-          <div class="modal-label">Data de envio</div>
-          <input id="ep-data" type="text" placeholder="dd/mm" style="width:100%;font-size:13px;font-family:'DM Mono',monospace;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)" />
-        </div>
-        <div>
-          <div class="modal-label">Tipo</div>
-          <select id="ep-tipo" style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)">
-            <option value="nutricao">Nutrição</option>
-            <option value="lancamento">Lançamento</option>
-            <option value="promocional">Promocional</option>
-            <option value="onboarding">Onboarding</option>
-            <option value="reengajamento">Reengajamento</option>
-          </select>
-        </div>
-      </div>
-      <div>
-        <div class="modal-label">Assunto do email</div>
-        <input id="ep-assunto" type="text" placeholder="Ex: Conheça a nova funcionalidade de gestão financeira" style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)" />
-      </div>
-      <div>
-        <div class="modal-label">Segmento / Público-alvo</div>
-        <input id="ep-publico" type="text" placeholder="Ex: Leads em trial, clientes ativos..." style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)" />
-      </div>
-      <div>
-        <div class="modal-label">Objetivo / CTA principal</div>
-        <input id="ep-cta" type="text" placeholder="Ex: Ativar trial, conhecer funcionalidade X..." style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)" />
-      </div>
-      <div>
-        <div class="modal-label">Briefing / observações</div>
-        <textarea id="ep-briefing" rows="3" placeholder="Detalhes, referências, tom de voz..." style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.6"></textarea>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="document.getElementById('modal-email-produto').classList.remove('open')">Cancelar</button>
-      <button class="btn btn-primary" onclick="window.salvarEmailProduto()">Salvar campanha</button>
-    </div>
-  </div>
-</div>
+
 
 <!-- MODAL APROVAÇÃO MARIS -->
 <div class="modal-overlay" id="modal-aprovacao">
@@ -2595,15 +2634,7 @@ onSnapshot(collection(db,'midia-produto'), snap => {
   window.renderMidiaProduto();
 });
 
-onSnapshot(collection(db,'email-produto'), snap => {
-  emailProdutoData = [];
-  snap.forEach(d => emailProdutoData.push({key:d.id,...d.data()}));
-  emailProdutoData.sort((a,b)=>(a.data||'').localeCompare(b.data||''));
-  window.renderEmailProduto();
-  // mostra botão de add só pra editores
-  const btn = document.getElementById('add-email-btn');
-  if(btn) btn.style.display = isProdutoEditor() ? 'inline-flex' : 'none';
-});
+
 
 // ── FILTRO ──
 window.setMpFilter = function(f, btn) {
@@ -2760,45 +2791,187 @@ window.renderEmailProduto = function() {
   }).join('');
 };
 
-// ── MODAL EMAIL ──
-window.abrirModalEmail = function(key=null) {
-  if(!isProdutoEditor()) return;
-  epEditingKey = key;
-  const ep = key ? emailProdutoData.find(e=>e.key===key) : {};
-  document.getElementById('ep-modal-title').textContent = key ? 'Editar campanha' : 'Nova campanha de email';
-  document.getElementById('ep-data').value = ep?.data || '';
-  document.getElementById('ep-tipo').value = ep?.tipo || 'nutricao';
-  document.getElementById('ep-assunto').value = ep?.assunto || '';
-  document.getElementById('ep-publico').value = ep?.publico || '';
-  document.getElementById('ep-cta').value = ep?.cta || '';
-  document.getElementById('ep-briefing').value = ep?.briefing || '';
-  document.getElementById('modal-email-produto').classList.add('open');
+// ══ CALENDÁRIO EMAIL PRODUTO ══
+
+// Feriados nacionais BR pré-definidos (dia-mes como chave)
+const BR_FERIADOS = {
+  '01-01':'Confraternização Universal',
+  '21-04':'Tiradentes',
+  '01-05':'Dia do Trabalho',
+  '07-09':'Independência do Brasil',
+  '12-10':'Nossa Sra. Aparecida',
+  '02-11':'Finados',
+  '15-11':'Proclamação da República',
+  '25-12':'Natal',
+  '20-11':'Consciência Negra',
+};
+// Feriados móveis por ano (simplificado)
+const FERIADOS_MOVEIS_2025 = {'03-03':'Carnaval','04-03':'Carnaval','18-04':'Sexta-feira Santa','20-04':'Páscoa','19-06':'Corpus Christi'};
+const FERIADOS_MOVEIS_2026 = {'16-02':'Carnaval','17-02':'Carnaval','03-04':'Sexta-feira Santa','05-04':'Páscoa','04-06':'Corpus Christi'};
+
+function getFeriadoLabel(day, month, year) {
+  const key = String(day).padStart(2,'0') + '-' + String(month+1).padStart(2,'0');
+  const moveis = year === 2025 ? FERIADOS_MOVEIS_2025 : year === 2026 ? FERIADOS_MOVEIS_2026 : {};
+  return BR_FERIADOS[key] || moveis[key] || null;
+}
+
+let epCalYear = new Date().getFullYear();
+let epCalMonth = new Date().getMonth();
+let epCellEditKey = null;
+let epCellEditColor = 'cinza';
+
+// Listener firestore
+onSnapshot(collection(db,'email-produto-cal'), snap => {
+  emailProdutoData = [];
+  snap.forEach(d => emailProdutoData.push({key:d.id,...d.data()}));
+  window.renderEmailProduto();
+});
+
+window.epPrevMonth = function() {
+  epCalMonth--;
+  if(epCalMonth < 0) { epCalMonth = 11; epCalYear--; }
+  window.renderEmailProduto();
+};
+window.epNextMonth = function() {
+  epCalMonth++;
+  if(epCalMonth > 11) { epCalMonth = 0; epCalYear++; }
+  window.renderEmailProduto();
 };
 
-window.salvarEmailProduto = async function() {
-  if(!isProdutoEditor()) return;
-  const key = epEditingKey || ('ep-' + Date.now());
-  const existing = emailProdutoData.find(e=>e.key===key) || {};
-  const data = {
-    key,
-    data:     document.getElementById('ep-data').value.trim(),
-    tipo:     document.getElementById('ep-tipo').value,
-    assunto:  document.getElementById('ep-assunto').value.trim(),
-    publico:  document.getElementById('ep-publico').value.trim(),
-    cta:      document.getElementById('ep-cta').value.trim(),
-    briefing: document.getElementById('ep-briefing').value.trim(),
-    aprovacao: existing.aprovacao === 'aprovado' ? 'pendente' : (existing.aprovacao || 'pendente'),
-    obsAprovacao: existing.obsAprovacao || '',
-    createdBy: existing.createdBy || currentUserEmail(),
-  };
-  await setDoc(doc(db,'email-produto',key), data);
-  document.getElementById('modal-email-produto').classList.remove('open');
+const MES_NOMES_EP = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DOW_EP = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
+
+window.renderEmailProduto = function() {
+  const grid = document.getElementById('ep-grid');
+  const title = document.getElementById('ep-cal-title');
+  if(!grid) return;
+  if(title) title.textContent = MES_NOMES_EP[epCalMonth] + ' de ' + epCalYear;
+
+  const hoje = new Date();
+  const firstDay = new Date(epCalYear, epCalMonth, 1).getDay();
+  const daysInMonth = new Date(epCalYear, epCalMonth+1, 0).getDate();
+  const daysInPrevMonth = new Date(epCalYear, epCalMonth, 0).getDate();
+
+  let html = DOW_EP.map(d => `<div class="ep-dow-header">${d}</div>`).join('');
+
+  // células antes do mês
+  for(let i = 0; i < firstDay; i++) {
+    const d = daysInPrevMonth - firstDay + i + 1;
+    html += `<div class="ep-cell ep-other-month"><div class="ep-day-num"><span style="opacity:.4">${d}</span></div></div>`;
+  }
+
+  // células do mês
+  for(let day = 1; day <= daysInMonth; day++) {
+    const feriadoLabel = getFeriadoLabel(day, epCalMonth, epCalYear);
+    const isToday = hoje.getDate()===day && hoje.getMonth()===epCalMonth && hoje.getFullYear()===epCalYear;
+    const dayKey = `${epCalYear}-${String(epCalMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const entries = emailProdutoData.filter(e => e.dayKey === dayKey);
+    const isFeriado = !!feriadoLabel;
+
+    html += `<div class="ep-cell${isFeriado?' ep-holiday':''}${isToday?' ep-today':''}">
+      <div class="ep-day-num${isToday?' today-num':''}">
+        <span>${day}</span>
+        ${isProdutoEditor() ? `<button class="ep-add-btn" onclick="window.abrirEpCell('${dayKey}',null,event)" title="Adicionar">+</button>` : ''}
+      </div>
+      ${feriadoLabel ? `<div class="ep-holiday-label">${feriadoLabel}</div>` : ''}
+      ${entries.map(e => {
+        const linkAttr = (e.link && (isProdutoEditor()||isMaris())) ? `href="${e.link}" target="_blank" rel="noopener"` : '';
+        const tag = linkAttr ? 'a' : 'span';
+        return `<${tag} ${linkAttr} class="ep-entry color-${e.color||'cinza'}" onclick="${!linkAttr?`window.abrirEpCell('${dayKey}','${e.key}',event);event.stopPropagation()`:'event.stopPropagation()'}" style="${linkAttr?'text-decoration:none;':''}">${e.text||'...'}</${tag}>`;
+      }).join('')}
+    </div>`;
+  }
+
+  // preencher último bloco
+  const total = firstDay + daysInMonth;
+  const remainder = total % 7 === 0 ? 0 : 7 - (total % 7);
+  for(let i = 1; i <= remainder; i++) {
+    html += `<div class="ep-cell ep-other-month"><div class="ep-day-num"><span style="opacity:.4">${i}</span></div></div>`;
+  }
+
+  grid.innerHTML = html;
 };
 
-window.deletarEmail = async function(key) {
-  if(!isProdutoEditor()) return;
-  if(!confirm('Remover esta campanha?')) return;
-  await deleteDoc(doc(db,'email-produto',key));
+// ── MODAL CÉLULA ──
+window.abrirEpCell = function(dayKey, entryKey, event) {
+  if(!isProdutoEditor() && !isMaris()) return;
+  event && event.stopPropagation();
+  epCellEditKey = entryKey;
+  const entry = entryKey ? emailProdutoData.find(e=>e.key===entryKey) : null;
+
+  const [y,m,d] = dayKey.split('-');
+  document.getElementById('ep-modal-date-label').textContent = `${d}/${m}/${y}`;
+  document.getElementById('ep-cell-text').value = entry?.text || '';
+  document.getElementById('ep-cell-link').value = entry?.link || '';
+  epCellEditColor = entry?.color || 'cinza';
+  window.setEpColor(epCellEditColor, true);
+
+  // link só pra editores
+  const linkSection = document.getElementById('ep-link-section');
+  if(linkSection) linkSection.style.display = isProdutoEditor() ? '' : 'none';
+
+  // botão remover só se entry existir e for editor
+  const delBtn = document.getElementById('ep-del-btn');
+  if(delBtn) delBtn.style.display = (entryKey && isProdutoEditor()) ? '' : 'none';
+
+  // posicionar modal perto do clique
+  const modal = document.getElementById('ep-cell-modal');
+  if(event) {
+    const rect = event.target.getBoundingClientRect();
+    let left = rect.left + window.scrollX;
+    let top = rect.bottom + window.scrollY + 4;
+    // não sair da tela
+    if(left + 290 > window.innerWidth) left = window.innerWidth - 295;
+    if(top + 320 > window.innerHeight + window.scrollY) top = rect.top + window.scrollY - 325;
+    modal.style.left = left + 'px';
+    modal.style.top = top + 'px';
+  }
+  modal.style.display = 'block';
+  modal.classList.add('open');
+  modal._dayKey = dayKey;
+  setTimeout(()=>document.getElementById('ep-cell-text').focus(), 60);
+};
+
+window.fecharEpModal = function() {
+  const modal = document.getElementById('ep-cell-modal');
+  modal.style.display = 'none';
+  modal.classList.remove('open');
+  epCellEditKey = null;
+};
+
+// Fechar ao clicar fora
+document.addEventListener('click', e => {
+  const modal = document.getElementById('ep-cell-modal');
+  if(modal && modal.classList.contains('open') && !modal.contains(e.target)) {
+    window.fecharEpModal();
+  }
+});
+
+window.setEpColor = function(color, silent=false) {
+  epCellEditColor = color;
+  ['cinza','verde','amarelo','vermelho'].forEach(c => {
+    const btn = document.getElementById('ep-color-'+c);
+    if(btn) btn.style.border = c===color ? '2.5px solid var(--text)' : '2px solid transparent';
+  });
+};
+
+window.salvarEpEntry = async function() {
+  if(!isProdutoEditor() && !isMaris()) return;
+  const modal = document.getElementById('ep-cell-modal');
+  const dayKey = modal._dayKey;
+  const text = document.getElementById('ep-cell-text').value.trim();
+  const link = isProdutoEditor() ? document.getElementById('ep-cell-link').value.trim() : (epCellEditKey ? (emailProdutoData.find(e=>e.key===epCellEditKey)?.link||'') : '');
+  if(!text) { window.fecharEpModal(); return; }
+  const key = epCellEditKey || ('epcal-' + Date.now());
+  await setDoc(doc(db,'email-produto-cal',key), { key, dayKey, text, link, color: epCellEditColor, updatedBy: currentUserEmail() });
+  window.fecharEpModal();
+};
+
+window.deletarEpEntry = async function() {
+  if(!isProdutoEditor() || !epCellEditKey) return;
+  if(!confirm('Remover esta entrada?')) return;
+  await deleteDoc(doc(db,'email-produto-cal',epCellEditKey));
+  window.fecharEpModal();
 };
 
 // ── APROVAÇÃO (só Maris) ──
