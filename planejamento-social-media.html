@@ -648,11 +648,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   </div>
   <!-- Abas principais — centralizadas -->
   <nav class="main-tabs" style="position:absolute;left:50%;transform:translateX(-50%)">
-    <button class="main-tab" id="mtab-welcome" onclick="switchMainTab('welcome')">🏠 Início</button>
-    <button class="main-tab" id="mtab-social" onclick="switchMainTab('social')">📅 Social Media</button>
-    <button class="main-tab" id="mtab-design" onclick="switchMainTab('design')">🎨 Design</button>
-    <button class="main-tab" id="mtab-produto" onclick="switchMainTab('produto')">🚀 Produto</button>
-    <button class="main-tab" id="mtab-gestao" onclick="switchMainTab('gestao')" style="display:none">📊 Gestão</button>
+    <button class="main-tab" id="mtab-welcome" onclick="switchMainTab('welcome')">Início</button>
+    <button class="main-tab" id="mtab-social" onclick="switchMainTab('social')">Social Media</button>
+    <button class="main-tab" id="mtab-design" onclick="switchMainTab('design')">Design</button>
+    <button class="main-tab" id="mtab-produto" onclick="switchMainTab('produto')">Produto</button>
+    <button class="main-tab" id="mtab-gestao" onclick="switchMainTab('gestao')" style="display:none">Gestão</button>
   </nav>
   <!-- Espaço direito (vazio, só pra balancear) -->
   <div style="visibility:hidden;display:flex;align-items:center;gap:10px">
@@ -739,7 +739,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <div id="page-welcome" class="page-welcome-screen active">
   <div class="welcome-title">Olá! 👋 Bem-vinda ao Planejamento de Marketing</div>
   <div class="welcome-sub">Selecione uma área para começar</div>
-  <div class="welcome-cards">
+  <div class="welcome-cards" id="welcome-cards-grid">
     <div class="welcome-card" onclick="switchMainTab('social')">
       <div class="welcome-card-icon">📅</div>
       <div class="welcome-card-title">Social Media</div>
@@ -754,6 +754,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="welcome-card-icon">🚀</div>
       <div class="welcome-card-title">Produto</div>
       <div class="welcome-card-sub">Calendário de mídia e campanhas de email de produto</div>
+    </div>
+    <div class="welcome-card" id="welcome-card-gestao" onclick="switchMainTab('gestao')" style="display:none">
+      <div class="welcome-card-icon">📊</div>
+      <div class="welcome-card-title">Gestão</div>
+      <div class="welcome-card-sub">Painel de demandas pendentes e aprovações do mês</div>
     </div>
   </div>
 </div>
@@ -829,7 +834,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="saved-note" id="note-social"></div>
     </div>
     <div class="desc-card">
-      <h3>🎨 Design</h3>
+      <h3>Design</h3>
       <p>Estilo visual, tipografia, regras de cor e referências para o designer.</p>
       <textarea id="desc-design" placeholder="Ex: sempre usar tipografia Nibo, fundo Azul Petróleo para produto..." oninput="saveDesc('design',this.value)"></textarea>
       <div class="saved-note" id="note-design"></div>
@@ -1340,6 +1345,13 @@ onAuthStateChanged(auth, user => {
     const gestaoBtn = document.getElementById('mtab-gestao');
     if(gestaoBtn && (user.email.toLowerCase() === 'mariana.araujo@nibo.com.br' || user.email.toLowerCase() === 'clara.abrantes@nibo.com.br')) {
       gestaoBtn.style.display = '';
+      const gestaoCard = document.getElementById('welcome-card-gestao');
+      if(gestaoCard) {
+        gestaoCard.style.display = '';
+        // grid 4 colunas quando Gestão aparece
+        const grid = document.getElementById('welcome-cards-grid');
+        if(grid) grid.style.gridTemplateColumns = 'repeat(4,1fr)';
+      }
     }
     // pré-preenche iniciais com email enquanto carrega perfil
     const initials = user.email.split('@')[0].slice(0,2).toUpperCase();
