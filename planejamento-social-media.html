@@ -24,8 +24,29 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .sync-dot.ok{background:#1D9E75}.sync-dot.saving{background:#F59E0B;animation:pulse .8s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 
+/* main tabs */
+.main-tabs{display:flex;gap:6px;margin-bottom:0;margin-top:1rem}
+.main-tab{
+  font-size:13px;font-weight:600;padding:9px 20px;
+  border-radius:10px 10px 0 0;
+  border:.5px solid var(--border2);border-bottom:none;
+  cursor:pointer;background:var(--surface2);color:var(--text2);
+  font-family:'DM Sans',sans-serif;transition:all .15s;
+  position:relative;bottom:-1px;
+}
+.main-tab:hover{background:var(--surface);color:var(--nibo1)}
+.main-tab.active{
+  background:var(--surface);color:var(--nibo1);
+  border-color:var(--border2);border-bottom-color:var(--surface);
+  font-weight:700;
+}
+.main-tab-divider{
+  height:1.5px;background:var(--border2);
+  margin-bottom:0;margin-top:0;
+}
+
 /* tabs */
-.page-tabs{display:flex;gap:0;border-bottom:1.5px solid var(--border2);margin-bottom:2rem;margin-top:1rem}
+.page-tabs{display:flex;gap:0;border-bottom:1.5px solid var(--border2);margin-bottom:2rem;margin-top:0;background:var(--surface);padding:0 4px;border-radius:0 4px 0 0;border:.5px solid var(--border2);border-top:none}
 .page-tab{font-size:13px;font-weight:500;padding:10px 18px;cursor:pointer;color:var(--text2);border:none;background:none;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:all .15s;font-family:'DM Sans',sans-serif;white-space:nowrap}
 .page-tab:hover{color:var(--nibo2)}
 .page-tab.active{color:var(--nibo1);border-bottom-color:var(--nibo1)}
@@ -390,12 +411,28 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <button class="logout-btn" id="logout-btn" onclick="doLogout()" style="display:none">Sair</button>
 </div>
 
-<nav class="page-tabs">
-  <button class="page-tab active" onclick="showPage('calendario',this)">Calendário</button>
-  <button class="page-tab ai-tab" onclick="showPage('ia',this)">✦ IA Criativa</button>
-  <button class="page-tab" onclick="showPage('descricoes',this)">Descrições</button>
-  <button class="page-tab grid-tab" onclick="showPage('grid',this)">Grid Instagram</button>
-  <button class="page-tab" onclick="showPage('configuracoes',this)">Configurações</button>
+<!-- NAV PRINCIPAL -->
+<nav class="main-tabs">
+  <button class="main-tab active" id="mtab-social" onclick="switchMainTab('social')">📅 Social Media</button>
+  <button class="main-tab" id="mtab-design" onclick="switchMainTab('design')">🎨 Design</button>
+  <button class="main-tab" id="mtab-config" onclick="switchMainTab('config')">⚙️ Configurações</button>
+</nav>
+
+<!-- SUB-ABAS SOCIAL MEDIA -->
+<nav class="page-tabs" id="subtabs-social">
+  <button class="page-tab active" id="stab-calendario" onclick="showPage('calendario',this)">Calendário</button>
+  <button class="page-tab ai-tab" id="stab-ia" onclick="showPage('ia',this)">✦ IA Criativa</button>
+</nav>
+
+<!-- SUB-ABAS DESIGN -->
+<nav class="page-tabs" id="subtabs-design" style="display:none">
+  <button class="page-tab grid-tab active" id="stab-grid" onclick="showPage('grid',this)">Grid Instagram</button>
+</nav>
+
+<!-- SUB-ABAS CONFIG -->
+<nav class="page-tabs" id="subtabs-config" style="display:none">
+  <button class="page-tab active" id="stab-descricoes" onclick="showPage('descricoes',this)">Descrições</button>
+  <button class="page-tab" id="stab-configuracoes" onclick="showPage('configuracoes',this)">Configurações</button>
 </nav>
 
 <!-- ══ CALENDÁRIO ══ -->
@@ -940,6 +977,33 @@ async function saveRow(key,data){
 }
 async function saveCores(){setSyncing();await setDoc(doc(db,'config','cores'),{list:cores});setSynced();}
 async function saveDescs(){setSyncing();await setDoc(doc(db,'config','descs'),descs);setSynced();}
+
+// ── MAIN TABS ──
+const MAIN_TAB_MAP = {
+  social: { subtabs: 'subtabs-social', defaultPage: 'calendario', defaultSubTab: 'stab-calendario' },
+  design: { subtabs: 'subtabs-design', defaultPage: 'grid',       defaultSubTab: 'stab-grid' },
+  config: { subtabs: 'subtabs-config', defaultPage: 'descricoes', defaultSubTab: 'stab-descricoes' },
+};
+
+window.switchMainTab = function(tab) {
+  // highlight main tab
+  document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('mtab-' + tab).classList.add('active');
+  // show/hide subtab bars
+  Object.keys(MAIN_TAB_MAP).forEach(k => {
+    document.getElementById('subtabs-' + k).style.display = k === tab ? '' : 'none';
+  });
+  // activate default sub-page
+  const cfg = MAIN_TAB_MAP[tab];
+  const subBtn = document.getElementById(cfg.defaultSubTab);
+  document.querySelectorAll('.page-tab').forEach(b => b.classList.remove('active'));
+  if (subBtn) subBtn.classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + cfg.defaultPage).classList.add('active');
+  if(cfg.defaultPage==='descricoes') renderDescPage();
+  if(cfg.defaultPage==='configuracoes') renderConfig();
+  if(cfg.defaultPage==='grid'){renderGridTabs();renderGrid();}
+};
 
 // ── PAGES ──
 window.showPage=function(id,btn){
