@@ -546,7 +546,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <nav class="main-tabs">
   <button class="main-tab active" id="mtab-social" onclick="switchMainTab('social')">📅 Social Media</button>
   <button class="main-tab" id="mtab-design" onclick="switchMainTab('design')">🎨 Design</button>
-  <button class="main-tab" id="mtab-config" onclick="switchMainTab('config')">⚙️ Configurações</button>
+  <button class="main-tab" id="mtab-produto" onclick="switchMainTab('produto')">🚀 Produto</button>
 </nav>
 
 <!-- SUB-ABAS SOCIAL MEDIA -->
@@ -561,10 +561,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <button class="page-tab" id="stab-refs" onclick="showPage('refs',this)">Referências</button>
 </nav>
 
-<!-- SUB-ABAS CONFIG -->
+<!-- SUB-ABAS CONFIG (oculto, acessível só pelo dropdown) -->
 <nav class="page-tabs" id="subtabs-config" style="display:none">
   <button class="page-tab active" id="stab-descricoes" onclick="showPage('descricoes',this)">Descrições</button>
   <button class="page-tab" id="stab-configuracoes" onclick="showPage('configuracoes',this)">Configurações</button>
+</nav>
+
+<!-- SUB-ABAS PRODUTO -->
+<nav class="page-tabs" id="subtabs-produto" style="display:none">
+  <button class="page-tab active" id="stab-midia-produto" onclick="showPage('midia-produto',this)">Calendário de Mídia</button>
+  <button class="page-tab" id="stab-email-produto" onclick="showPage('email-produto',this)">Calendário de Email</button>
 </nav>
 
 <!-- ══ CALENDÁRIO ══ -->
@@ -847,6 +853,140 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   </div>
   <div id="refs-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px"></div>
   <div id="refs-empty" style="display:none;text-align:center;padding:3rem 0;color:var(--text3);font-size:13px">Nenhuma referência ainda. Adicione a primeira! 🎨</div>
+</div>
+
+<!-- ══ CALENDÁRIO DE MÍDIA - PRODUTO ══ -->
+<div id="page-midia-produto" class="page">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.4rem;flex-wrap:wrap;gap:10px">
+    <div>
+      <div class="section-label" style="margin:0 0 4px">Calendário de Mídia · Produto</div>
+      <p style="font-size:12px;color:var(--text2)">Posts de Produto do Social Media. Roberta preenche o briefing, Maris aprova para refletir no calendário.</p>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <div style="display:flex;gap:4px">
+        <button id="mp-filter-todos" onclick="window.setMpFilter('todos',this)" style="font-size:11px;padding:4px 12px;border-radius:99px;border:.5px solid var(--border2);cursor:pointer;background:var(--nibo1);color:#fff;font-family:'DM Sans',sans-serif">Todos</button>
+        <button id="mp-filter-pendente" onclick="window.setMpFilter('pendente',this)" style="font-size:11px;padding:4px 12px;border-radius:99px;border:.5px solid var(--border2);cursor:pointer;background:var(--surface);color:var(--text2);font-family:'DM Sans',sans-serif">Pendentes</button>
+        <button id="mp-filter-aprovado" onclick="window.setMpFilter('aprovado',this)" style="font-size:11px;padding:4px 12px;border-radius:99px;border:.5px solid var(--border2);cursor:pointer;background:var(--surface);color:var(--text2);font-family:'DM Sans',sans-serif">Aprovados</button>
+      </div>
+    </div>
+  </div>
+  <div id="midia-produto-list"></div>
+</div>
+
+<!-- ══ CALENDÁRIO DE EMAIL - PRODUTO ══ -->
+<div id="page-email-produto" class="page">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;flex-wrap:wrap;gap:10px">
+    <div>
+      <div class="section-label" style="margin:0 0 4px">Calendário de Email · Produto</div>
+      <p style="font-size:12px;color:var(--text2)">Campanhas de email independentes. Adicione, preencha e aguarde aprovação da Maris.</p>
+    </div>
+    <button id="add-email-btn" onclick="window.abrirModalEmail()" style="display:none;font-size:12px;font-weight:600;padding:8px 18px;border-radius:99px;border:none;cursor:pointer;background:var(--nibo1);color:#fff;font-family:'DM Sans',sans-serif;box-shadow:0 2px 8px rgba(0,45,114,.18)">+ Nova campanha</button>
+  </div>
+  <div id="email-produto-list"></div>
+</div>
+
+<!-- MODAL BRIEFING MÍDIA PRODUTO -->
+<div class="modal-overlay" id="modal-midia-produto">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <h3 id="mp-modal-title">Briefing · Post de Produto</h3>
+      <p id="mp-modal-sub"></p>
+    </div>
+    <div class="modal-body" style="padding:1rem 1.4rem;display:flex;flex-direction:column;gap:10px">
+      <div>
+        <div class="modal-label">Objetivo do post</div>
+        <input id="mp-objetivo" type="text" placeholder="Ex: Apresentar funcionalidade X do produto..." style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)" />
+      </div>
+      <div>
+        <div class="modal-label">Formato</div>
+        <select id="mp-formato" style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)">
+          <option value="carrossel">Carrossel</option>
+          <option value="estatico">Estático</option>
+          <option value="reels">Reels</option>
+          <option value="stories">Stories</option>
+        </select>
+      </div>
+      <div>
+        <div class="modal-label">Briefing para o designer</div>
+        <textarea id="mp-briefing" rows="4" placeholder="Descreva o que precisa ser criado, referências visuais, texto principal..." style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.6"></textarea>
+      </div>
+      <div>
+        <div class="modal-label">Copy / texto do post</div>
+        <textarea id="mp-copy" rows="3" placeholder="Sugestão de texto para o post..." style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.6"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-midia-produto').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-primary" id="mp-salvar-btn" onclick="window.salvarMidiaProduto()">Salvar briefing</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EMAIL PRODUTO -->
+<div class="modal-overlay" id="modal-email-produto">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <h3 id="ep-modal-title">Nova campanha de email</h3>
+      <p>Preencha os dados da campanha</p>
+    </div>
+    <div class="modal-body" style="padding:1rem 1.4rem;display:flex;flex-direction:column;gap:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div class="modal-label">Data de envio</div>
+          <input id="ep-data" type="text" placeholder="dd/mm" style="width:100%;font-size:13px;font-family:'DM Mono',monospace;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)" />
+        </div>
+        <div>
+          <div class="modal-label">Tipo</div>
+          <select id="ep-tipo" style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)">
+            <option value="nutricao">Nutrição</option>
+            <option value="lancamento">Lançamento</option>
+            <option value="promocional">Promocional</option>
+            <option value="onboarding">Onboarding</option>
+            <option value="reengajamento">Reengajamento</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div class="modal-label">Assunto do email</div>
+        <input id="ep-assunto" type="text" placeholder="Ex: Conheça a nova funcionalidade de gestão financeira" style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)" />
+      </div>
+      <div>
+        <div class="modal-label">Segmento / Público-alvo</div>
+        <input id="ep-publico" type="text" placeholder="Ex: Leads em trial, clientes ativos..." style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)" />
+      </div>
+      <div>
+        <div class="modal-label">Objetivo / CTA principal</div>
+        <input id="ep-cta" type="text" placeholder="Ex: Ativar trial, conhecer funcionalidade X..." style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)" />
+      </div>
+      <div>
+        <div class="modal-label">Briefing / observações</div>
+        <textarea id="ep-briefing" rows="3" placeholder="Detalhes, referências, tom de voz..." style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.6"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-email-produto').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-primary" onclick="window.salvarEmailProduto()">Salvar campanha</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL APROVAÇÃO MARIS -->
+<div class="modal-overlay" id="modal-aprovacao">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head">
+      <h3 id="apr-title">Aprovar item</h3>
+      <p id="apr-sub"></p>
+    </div>
+    <div class="modal-body" style="padding:1rem 1.4rem">
+      <div class="modal-label">Observação (opcional)</div>
+      <textarea id="apr-obs" rows="3" placeholder="Algum comentário para a equipe?" style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.6"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-aprovacao').classList.remove('open')">Cancelar</button>
+      <button class="btn" onclick="window.executarAprovacao('reprovado')" style="background:#FEE2E2;color:var(--red);border-color:#FCA5A5">✗ Reprovar</button>
+      <button class="btn btn-primary" onclick="window.executarAprovacao('aprovado')">✓ Aprovar</button>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL REFERÊNCIA -->
@@ -1177,9 +1317,10 @@ async function saveDescs(){setSyncing();await setDoc(doc(db,'config','descs'),de
 
 // ── MAIN TABS ──
 const MAIN_TAB_MAP = {
-  social: { subtabs: 'subtabs-social', defaultPage: 'calendario', defaultSubTab: 'stab-calendario' },
-  design: { subtabs: 'subtabs-design', defaultPage: 'grid', defaultSubTab: 'stab-grid' },
-  config: { subtabs: 'subtabs-config', defaultPage: 'descricoes', defaultSubTab: 'stab-descricoes' },
+  social:  { subtabs: 'subtabs-social',  defaultPage: 'calendario',    defaultSubTab: 'stab-calendario' },
+  design:  { subtabs: 'subtabs-design',  defaultPage: 'grid',          defaultSubTab: 'stab-grid' },
+  config:  { subtabs: 'subtabs-config',  defaultPage: 'descricoes',    defaultSubTab: 'stab-descricoes' },
+  produto: { subtabs: 'subtabs-produto', defaultPage: 'midia-produto', defaultSubTab: 'stab-midia-produto' },
 };
 
 window.switchMainTab = function(tab) {
@@ -1201,6 +1342,8 @@ window.switchMainTab = function(tab) {
   if(cfg.defaultPage==='configuracoes') renderConfig();
   if(cfg.defaultPage==='grid'){renderGridTabs();renderGrid();}
   if(cfg.defaultPage==='refs') window.renderRefs();
+  if(cfg.defaultPage==='midia-produto') window.renderMidiaProduto();
+  if(cfg.defaultPage==='email-produto') window.renderEmailProduto();
 };
 
 // ── PAGES ──
@@ -1213,6 +1356,8 @@ window.showPage=function(id,btn){
   if(id==='configuracoes') renderConfig();
   if(id==='grid'){renderGridTabs();renderGrid();}
   if(id==='refs') window.renderRefs();
+  if(id==='midia-produto') window.renderMidiaProduto();
+  if(id==='email-produto') window.renderEmailProduto();
 }
 
 // ── REFERÊNCIAS ──
@@ -2262,6 +2407,290 @@ window.salvarPerfil = async function() {
   updateAvatarUI();
   updateTeamMemberFromProfile();
   window.fecharModalPerfil();
+};
+
+
+// ══════════════════════════════════════════
+// PRODUTO
+// ══════════════════════════════════════════
+const MARIS_EMAIL = 'mariana.araujo@nibo.com.br';
+const PRODUTO_EDITORS = ['clara.abrantes@nibo.com.br','roberta.rocha@nibo.com.br'];
+
+function currentUserEmail() {
+  return auth.currentUser ? auth.currentUser.email.toLowerCase() : '';
+}
+function isMaris()         { return currentUserEmail() === MARIS_EMAIL; }
+function isProdutoEditor() { return PRODUTO_EDITORS.includes(currentUserEmail()); }
+
+// ── TIPO PRODUTO labels
+const EP_TIPO_LABEL = {
+  nutricao:'Nutrição', lancamento:'Lançamento', promocional:'Promocional',
+  onboarding:'Onboarding', reengajamento:'Reengajamento'
+};
+const MP_FORMATO_LABEL = {
+  carrossel:'Carrossel', estatico:'Estático', reels:'Reels', stories:'Stories'
+};
+
+// ── ESTADO ──
+let mpFilter = 'todos';
+let mpEditingKey = null;
+let epEditingKey = null;
+let aprKey = null;
+let aprType = null; // 'midia' | 'email'
+
+let midiaProdutoData = [];
+let emailProdutoData = [];
+
+// ── LISTENERS FIRESTORE ──
+onSnapshot(collection(db,'midia-produto'), snap => {
+  midiaProdutoData = [];
+  snap.forEach(d => midiaProdutoData.push({key:d.id,...d.data()}));
+  midiaProdutoData.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  window.renderMidiaProduto();
+});
+
+onSnapshot(collection(db,'email-produto'), snap => {
+  emailProdutoData = [];
+  snap.forEach(d => emailProdutoData.push({key:d.id,...d.data()}));
+  emailProdutoData.sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+  window.renderEmailProduto();
+  // mostra botão de add só pra editores
+  const btn = document.getElementById('add-email-btn');
+  if(btn) btn.style.display = isProdutoEditor() ? 'inline-flex' : 'none';
+});
+
+// ── FILTRO ──
+window.setMpFilter = function(f, btn) {
+  mpFilter = f;
+  document.querySelectorAll('[id^="mp-filter-"]').forEach(b => {
+    b.style.background = 'var(--surface)';
+    b.style.color = 'var(--text2)';
+    b.style.borderColor = 'var(--border2)';
+  });
+  btn.style.background = 'var(--nibo1)';
+  btn.style.color = '#fff';
+  window.renderMidiaProduto();
+};
+
+// ── RENDER MÍDIA PRODUTO ──
+window.renderMidiaProduto = function() {
+  const container = document.getElementById('midia-produto-list');
+  if(!container) return;
+
+  // Pega posts do tipo Produto do social media
+  const produtoPosts = rows.filter(r => r.tipoId === 'produto');
+  const filtered = produtoPosts.filter(r => {
+    const mp = midiaProdutoData.find(m => m.socialKey === r.key);
+    const status = mp ? mp.aprovacao : 'pendente';
+    if(mpFilter === 'todos') return true;
+    return status === mpFilter;
+  });
+
+  if(!filtered.length) {
+    container.innerHTML = `<div style="text-align:center;padding:3rem 0;color:var(--text3);font-size:13px">
+      ${mpFilter==='todos' ? 'Nenhum post de Produto no calendário ainda.<br><span style="font-size:11px">Adicione posts do tipo "Produto" no calendário de Social Media.</span>' : 'Nenhum item com este filtro.'}
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(r => {
+    const mp = midiaProdutoData.find(m => m.socialKey === r.key) || {};
+    const status = mp.aprovacao || 'pendente';
+    const hasBriefing = !!(mp.objetivo || mp.briefing);
+    const canEdit = isProdutoEditor();
+    const canApprove = isMaris();
+
+    const statusBadge = {
+      pendente: `<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:#F1F0EC;color:var(--text3);border:.5px solid var(--border2)">● Pendente</span>`,
+      aprovado: `<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:#D1FAE5;color:var(--green);border:.5px solid #6EE7B7">✓ Aprovado</span>`,
+      reprovado: `<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:#FEE2E2;color:var(--red);border:.5px solid #FCA5A5">✗ Reprovado</span>`,
+    }[status];
+
+    const obsHtml = mp.obsAprovacao ? `<div style="font-size:11px;color:var(--text2);background:#FFFBEB;border:.5px solid #FDE68A;border-radius:6px;padding:6px 10px;margin-top:6px">💬 Maris: ${mp.obsAprovacao}</div>` : '';
+
+    return `<div style="background:var(--surface);border:.5px solid ${status==='aprovado'?'#6EE7B7':status==='reprovado'?'#FCA5A5':'var(--border)'};border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(0,45,114,.07)'" onmouseout="this.style.boxShadow='none'">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+            <span style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace;color:var(--nibo1)">${r.date||'—'}</span>
+            <span style="font-size:11px;color:var(--text2)">${r.week!==undefined?'Semana '+(r.week+1):''}</span>
+            ${statusBadge}
+            ${hasBriefing ? '<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:#EFF6FF;color:var(--nibo1);border:.5px solid #BFDBFE">✏ Briefing preenchido</span>' : ''}
+          </div>
+          ${mp.objetivo ? `<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px">${mp.objetivo}</div>` : `<div style="font-size:12px;color:var(--text3);font-style:italic">Briefing não preenchido</div>`}
+          ${mp.formato ? `<div style="font-size:11px;color:var(--text3)">Formato: ${MP_FORMATO_LABEL[mp.formato]||mp.formato}</div>` : ''}
+          ${mp.copy ? `<div style="font-size:12px;color:var(--text2);margin-top:4px;padding:6px 10px;background:var(--surface2);border-radius:6px;line-height:1.5">${mp.copy}</div>` : ''}
+          ${obsHtml}
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
+          ${canEdit ? `<button onclick="window.abrirModalMidiaProduto('${r.key}')" style="font-size:11px;padding:5px 12px;border-radius:99px;border:.5px solid var(--nibo2);cursor:pointer;background:transparent;color:var(--nibo1);font-family:'DM Sans',sans-serif;font-weight:600;transition:all .15s" onmouseover="this.style.background='#EFF6FF'" onmouseout="this.style.background='transparent'">✏ Briefing</button>` : ''}
+          ${canApprove && hasBriefing ? `<button onclick="window.abrirAprovacao('midia','${r.key}')" style="font-size:11px;padding:5px 12px;border-radius:99px;border:none;cursor:pointer;background:var(--nibo1);color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .15s" onmouseover="this.style.background='var(--nibo2)'" onmouseout="this.style.background='var(--nibo1)'">${status==='aprovado'?'↩ Revisar':'✓ Aprovar'}</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+};
+
+// ── MODAL MÍDIA PRODUTO ──
+window.abrirModalMidiaProduto = function(socialKey) {
+  if(!isProdutoEditor()) return;
+  mpEditingKey = socialKey;
+  const r = rows.find(r => r.key === socialKey);
+  const mp = midiaProdutoData.find(m => m.socialKey === socialKey) || {};
+  document.getElementById('mp-modal-title').textContent = `Briefing · ${r?.date||''} · Produto`;
+  document.getElementById('mp-modal-sub').textContent = '';
+  document.getElementById('mp-objetivo').value = mp.objetivo || '';
+  document.getElementById('mp-formato').value = mp.formato || 'carrossel';
+  document.getElementById('mp-briefing').value = mp.briefing || '';
+  document.getElementById('mp-copy').value = mp.copy || '';
+  document.getElementById('modal-midia-produto').classList.add('open');
+};
+
+window.salvarMidiaProduto = async function() {
+  if(!isProdutoEditor() || !mpEditingKey) return;
+  const key = 'mp-' + mpEditingKey;
+  const data = {
+    key, socialKey: mpEditingKey,
+    objetivo: document.getElementById('mp-objetivo').value.trim(),
+    formato:  document.getElementById('mp-formato').value,
+    briefing: document.getElementById('mp-briefing').value.trim(),
+    copy:     document.getElementById('mp-copy').value.trim(),
+    aprovacao: 'pendente',
+    updatedBy: currentUserEmail(),
+    updatedAt: new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),
+  };
+  // preservar aprovação existente se já tiver
+  const existing = midiaProdutoData.find(m => m.socialKey === mpEditingKey);
+  if(existing?.aprovacao) data.aprovacao = existing.aprovacao === 'aprovado' ? 'pendente' : existing.aprovacao;
+  await setDoc(doc(db,'midia-produto',key), data);
+  document.getElementById('modal-midia-produto').classList.remove('open');
+};
+
+// ── RENDER EMAIL PRODUTO ──
+window.renderEmailProduto = function() {
+  const container = document.getElementById('email-produto-list');
+  if(!container) return;
+  // mostra botão de add
+  const btn = document.getElementById('add-email-btn');
+  if(btn) btn.style.display = isProdutoEditor() ? 'inline-flex' : 'none';
+
+  if(!emailProdutoData.length) {
+    container.innerHTML = `<div style="text-align:center;padding:3rem 0;color:var(--text3);font-size:13px">Nenhuma campanha ainda.${isProdutoEditor()?' Crie a primeira!':''}</div>`;
+    return;
+  }
+
+  container.innerHTML = emailProdutoData.map(ep => {
+    const status = ep.aprovacao || 'pendente';
+    const canEdit = isProdutoEditor();
+    const canApprove = isMaris();
+    const statusBadge = {
+      pendente: `<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:#F1F0EC;color:var(--text3);border:.5px solid var(--border2)">● Pendente</span>`,
+      aprovado: `<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:#D1FAE5;color:var(--green);border:.5px solid #6EE7B7">✓ Aprovado</span>`,
+      reprovado: `<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:#FEE2E2;color:var(--red);border:.5px solid #FCA5A5">✗ Reprovado</span>`,
+    }[status];
+    const obsHtml = ep.obsAprovacao ? `<div style="font-size:11px;color:var(--text2);background:#FFFBEB;border:.5px solid #FDE68A;border-radius:6px;padding:6px 10px;margin-top:6px">💬 Maris: ${ep.obsAprovacao}</div>` : '';
+
+    return `<div style="background:var(--surface);border:.5px solid ${status==='aprovado'?'#6EE7B7':status==='reprovado'?'#FCA5A5':'var(--border)'};border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(0,45,114,.07)'" onmouseout="this.style.boxShadow='none'">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+            <span style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace;color:var(--nibo1)">${ep.data||'—'}</span>
+            <span style="font-size:10px;padding:2px 8px;border-radius:99px;background:var(--surface2);color:var(--text2);border:.5px solid var(--border)">${EP_TIPO_LABEL[ep.tipo]||ep.tipo}</span>
+            ${statusBadge}
+          </div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px">${ep.assunto||'Sem assunto'}</div>
+          ${ep.publico ? `<div style="font-size:11px;color:var(--text3)">👥 ${ep.publico}</div>` : ''}
+          ${ep.cta ? `<div style="font-size:11px;color:var(--text3)">🎯 ${ep.cta}</div>` : ''}
+          ${ep.briefing ? `<div style="font-size:12px;color:var(--text2);margin-top:4px;padding:6px 10px;background:var(--surface2);border-radius:6px;line-height:1.5">${ep.briefing}</div>` : ''}
+          ${obsHtml}
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
+          ${canEdit ? `<button onclick="window.abrirModalEmail('${ep.key}')" style="font-size:11px;padding:5px 12px;border-radius:99px;border:.5px solid var(--nibo2);cursor:pointer;background:transparent;color:var(--nibo1);font-family:'DM Sans',sans-serif;font-weight:600;transition:all .15s" onmouseover="this.style.background='#EFF6FF'" onmouseout="this.style.background='transparent'">✏ Editar</button>` : ''}
+          ${canEdit ? `<button onclick="window.deletarEmail('${ep.key}')" style="font-size:11px;padding:5px 12px;border-radius:99px;border:.5px solid #FCA5A5;cursor:pointer;background:transparent;color:var(--red);font-family:'DM Sans',sans-serif;transition:all .15s" onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='transparent'">✕</button>` : ''}
+          ${canApprove ? `<button onclick="window.abrirAprovacao('email','${ep.key}')" style="font-size:11px;padding:5px 12px;border-radius:99px;border:none;cursor:pointer;background:var(--nibo1);color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .15s" onmouseover="this.style.background='var(--nibo2)'" onmouseout="this.style.background='var(--nibo1)'">${status==='aprovado'?'↩ Revisar':'✓ Aprovar'}</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+};
+
+// ── MODAL EMAIL ──
+window.abrirModalEmail = function(key=null) {
+  if(!isProdutoEditor()) return;
+  epEditingKey = key;
+  const ep = key ? emailProdutoData.find(e=>e.key===key) : {};
+  document.getElementById('ep-modal-title').textContent = key ? 'Editar campanha' : 'Nova campanha de email';
+  document.getElementById('ep-data').value = ep?.data || '';
+  document.getElementById('ep-tipo').value = ep?.tipo || 'nutricao';
+  document.getElementById('ep-assunto').value = ep?.assunto || '';
+  document.getElementById('ep-publico').value = ep?.publico || '';
+  document.getElementById('ep-cta').value = ep?.cta || '';
+  document.getElementById('ep-briefing').value = ep?.briefing || '';
+  document.getElementById('modal-email-produto').classList.add('open');
+};
+
+window.salvarEmailProduto = async function() {
+  if(!isProdutoEditor()) return;
+  const key = epEditingKey || ('ep-' + Date.now());
+  const existing = emailProdutoData.find(e=>e.key===key) || {};
+  const data = {
+    key,
+    data:     document.getElementById('ep-data').value.trim(),
+    tipo:     document.getElementById('ep-tipo').value,
+    assunto:  document.getElementById('ep-assunto').value.trim(),
+    publico:  document.getElementById('ep-publico').value.trim(),
+    cta:      document.getElementById('ep-cta').value.trim(),
+    briefing: document.getElementById('ep-briefing').value.trim(),
+    aprovacao: existing.aprovacao === 'aprovado' ? 'pendente' : (existing.aprovacao || 'pendente'),
+    obsAprovacao: existing.obsAprovacao || '',
+    createdBy: existing.createdBy || currentUserEmail(),
+  };
+  await setDoc(doc(db,'email-produto',key), data);
+  document.getElementById('modal-email-produto').classList.remove('open');
+};
+
+window.deletarEmail = async function(key) {
+  if(!isProdutoEditor()) return;
+  if(!confirm('Remover esta campanha?')) return;
+  await deleteDoc(doc(db,'email-produto',key));
+};
+
+// ── APROVAÇÃO (só Maris) ──
+window.abrirAprovacao = function(type, key) {
+  if(!isMaris()) return;
+  aprType = type;
+  aprKey = key;
+  let label = '';
+  if(type === 'midia') {
+    const r = rows.find(r => r.key === key);
+    label = `Post ${r?.date||''} · Produto`;
+  } else {
+    const ep = emailProdutoData.find(e => e.key === key);
+    label = ep?.assunto || 'Campanha de email';
+  }
+  document.getElementById('apr-title').textContent = 'Aprovar · ' + label;
+  document.getElementById('apr-sub').textContent = type === 'midia' ? 'Este post vai refletir no calendário principal após aprovação.' : 'Campanhas aprovadas ficam marcadas para execução.';
+  document.getElementById('apr-obs').value = '';
+  document.getElementById('modal-aprovacao').classList.add('open');
+};
+
+window.executarAprovacao = async function(decisao) {
+  if(!isMaris() || !aprKey || !aprType) return;
+  const obs = document.getElementById('apr-obs').value.trim();
+  if(aprType === 'midia') {
+    const mpKey = 'mp-' + aprKey;
+    const existing = midiaProdutoData.find(m => m.socialKey === aprKey) || {};
+    await setDoc(doc(db,'midia-produto',mpKey), {...existing, aprovacao:decisao, obsAprovacao:obs, approvedBy:currentUserEmail(), approvedAt:new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}, {merge:true});
+    // Se aprovado, reflete status no post do social media
+    if(decisao === 'aprovado') {
+      await setDoc(doc(db,'rows',aprKey), {status:'aprovado'}, {merge:true});
+    }
+  } else {
+    const existing = emailProdutoData.find(e=>e.key===aprKey) || {};
+    await setDoc(doc(db,'email-produto',aprKey), {...existing, aprovacao:decisao, obsAprovacao:obs, approvedBy:currentUserEmail()}, {merge:true});
+  }
+  document.getElementById('modal-aprovacao').classList.remove('open');
+  aprKey = null; aprType = null;
 };
 
 </script>
