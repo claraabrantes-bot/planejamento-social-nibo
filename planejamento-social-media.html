@@ -560,33 +560,55 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 #page-welcome{display:none}
 
 /* ── GESTÃO ── */
-.gestao-section{margin-bottom:2rem}
-.gestao-section-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.06em}
-.gestao-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.4rem}
-.gestao-kpi{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px}
-.gestao-kpi-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
-.gestao-kpi-value{font-size:26px;font-weight:700;line-height:1}
-.gestao-kpi-sub{font-size:11px;color:var(--text3);margin-top:3px}
-.gestao-kpi.warn .gestao-kpi-value{color:#d97706}
-.gestao-kpi.ok .gestao-kpi-value{color:var(--green)}
-.gestao-kpi.danger .gestao-kpi-value{color:var(--red)}
-.gestao-kpi.neutral .gestao-kpi-value{color:var(--nibo1)}
-.gestao-list{display:flex;flex-direction:column;gap:6px}
-.gestao-item{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);padding:10px 14px;display:flex;align-items:center;gap:10px;transition:box-shadow .12s}
-.gestao-item:hover{box-shadow:0 2px 10px rgba(0,45,114,.07)}
-.gestao-item-date{font-size:11px;font-weight:700;font-family:'DM Mono',monospace;color:var(--nibo1);min-width:44px}
-.gestao-item-type{font-size:11px;color:var(--text2);min-width:90px}
+.gestao-cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:2rem}
+.gestao-big-card{
+  background:var(--surface);border:.5px solid var(--border2);border-radius:var(--radius-xl);
+  overflow:hidden;cursor:pointer;transition:all .2s;
+}
+.gestao-big-card:hover{box-shadow:0 6px 24px rgba(0,45,114,.10);transform:translateY(-2px)}
+.gestao-big-card.open{border-color:var(--nibo2);box-shadow:0 4px 18px rgba(0,45,114,.10)}
+.gestao-big-card-header{padding:20px 22px;display:flex;align-items:center;gap:14px}
+.gestao-big-card-icon{font-size:28px;line-height:1;flex-shrink:0}
+.gestao-big-card-info{flex:1;min-width:0}
+.gestao-big-card-title{font-size:14px;font-weight:700;color:var(--nibo1);margin-bottom:2px}
+.gestao-big-card-sub{font-size:11px;color:var(--text3)}
+.gestao-big-card-badge{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-width:56px;height:56px;border-radius:var(--radius-lg);
+  font-weight:800;line-height:1;
+}
+.gestao-big-card-badge.ok{background:#D1FAE5;color:var(--green)}
+.gestao-big-card-badge.warn{background:#FEF3C7;color:#92400e}
+.gestao-big-card-badge.danger{background:#FEE2E2;color:var(--red)}
+.gestao-big-card-badge .badge-num{font-size:28px}
+.gestao-big-card-badge .badge-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-top:1px}
+.gestao-big-card-chevron{font-size:12px;color:var(--text3);margin-left:8px;transition:transform .2s;flex-shrink:0}
+.gestao-big-card.open .gestao-big-card-chevron{transform:rotate(180deg)}
+.gestao-big-card-stats{display:grid;grid-template-columns:repeat(3,1fr);border-top:.5px solid var(--border);background:var(--surface2)}
+.gestao-stat{padding:10px;text-align:center;border-right:.5px solid var(--border)}
+.gestao-stat:last-child{border-right:none}
+.gestao-stat-num{font-size:18px;font-weight:700;line-height:1}
+.gestao-stat-label{font-size:10px;color:var(--text3);margin-top:2px}
+.gestao-stat-num.ok{color:var(--green)}
+.gestao-stat-num.warn{color:#d97706}
+.gestao-stat-num.danger{color:var(--red)}
+.gestao-big-card-body{display:none;border-top:.5px solid var(--border)}
+.gestao-big-card.open .gestao-big-card-body{display:block}
+.gestao-list{display:flex;flex-direction:column}
+.gestao-item{padding:10px 22px;display:flex;align-items:center;gap:10px;border-bottom:.5px solid var(--border);transition:background .1s}
+.gestao-item:last-child{border-bottom:none}
+.gestao-item:hover{background:var(--surface2)}
+.gestao-item-date{font-size:11px;font-weight:700;font-family:'DM Mono',monospace;color:var(--nibo1);min-width:44px;flex-shrink:0}
+.gestao-item-type{font-size:11px;color:var(--text2);min-width:80px;flex-shrink:0}
 .gestao-item-desc{font-size:12px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gestao-item-status{font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap;flex-shrink:0}
 .gestao-item-status.pendente{background:#F1F0EC;color:var(--text3);border:.5px solid var(--border2)}
 .gestao-item-status.sem-briefing{background:#FEF3C7;color:#92400e;border:.5px solid #FDE68A}
-.gestao-item-status.aprovado{background:#D1FAE5;color:var(--green);border:.5px solid #6EE7B7}
 .gestao-item-status.reprovado{background:#FEE2E2;color:var(--red);border:.5px solid #FCA5A5}
 .gestao-item-action{font-size:11px;font-weight:600;padding:4px 12px;border-radius:99px;border:none;cursor:pointer;background:var(--nibo1);color:#fff;font-family:'DM Sans',sans-serif;transition:all .15s;flex-shrink:0}
 .gestao-item-action:hover{background:var(--nibo2)}
-.gestao-mes-filter{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:1.4rem}
-.gestao-empty{text-align:center;padding:1.5rem;font-size:12px;color:var(--text3);background:var(--surface2);border-radius:var(--radius)}
-@media(max-width:760px){.gestao-kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.gestao-empty{text-align:center;padding:1.5rem;font-size:12px;color:var(--text3)}
+@media(max-width:760px){.gestao-cards-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1034,34 +1056,75 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <!-- ══ GESTÃO ══ -->
 <div id="page-gestao" class="page">
 
-  <!-- Filtro de mês -->
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:1.6rem">
     <div>
       <div class="section-label" style="margin:0 0 4px">Painel de Gestão</div>
-      <p style="font-size:12px;color:var(--text2)">Visão geral do mês ativo — o que falta entregar e o que aguarda sua aprovação.</p>
+      <p style="font-size:12px;color:var(--text2)">Clique em um card para ver as tarefas pendentes.</p>
     </div>
-    <div class="gestao-mes-filter" id="gestao-mes-label" style="font-size:12px;color:var(--text2);font-weight:600"></div>
+    <div id="gestao-mes-label" style="font-size:12px;color:var(--text2);font-weight:600"></div>
   </div>
 
-  <!-- ── SOCIAL MEDIA ── -->
-  <div class="gestao-section">
-    <div class="gestao-section-title"><span>📅</span> Social Media</div>
-    <div class="gestao-kpi-grid" id="gestao-kpi-social"></div>
-    <div id="gestao-list-social" class="gestao-list"></div>
-  </div>
+  <div class="gestao-cards-grid">
+    <!-- SOCIAL MEDIA -->
+    <div class="gestao-big-card" id="gestao-card-social" onclick="window.toggleGestaoCard('social')">
+      <div class="gestao-big-card-header">
+        <div class="gestao-big-card-icon">📅</div>
+        <div class="gestao-big-card-info">
+          <div class="gestao-big-card-title">Social Media</div>
+          <div class="gestao-big-card-sub" id="gestao-sub-social">carregando...</div>
+        </div>
+        <div class="gestao-big-card-badge warn" id="gestao-badge-social">
+          <span class="badge-num" id="gestao-num-social">—</span>
+          <span class="badge-label">faltam</span>
+        </div>
+        <span class="gestao-big-card-chevron">▾</span>
+      </div>
+      <div class="gestao-big-card-stats" id="gestao-stats-social"></div>
+      <div class="gestao-big-card-body">
+        <div class="gestao-list" id="gestao-list-social"></div>
+      </div>
+    </div>
 
-  <!-- ── PRODUTO (MÍDIA) ── -->
-  <div class="gestao-section">
-    <div class="gestao-section-title"><span>🚀</span> Produto · Mídia</div>
-    <div class="gestao-kpi-grid" id="gestao-kpi-midia"></div>
-    <div id="gestao-list-midia" class="gestao-list"></div>
-  </div>
+    <!-- PRODUTO -->
+    <div class="gestao-big-card" id="gestao-card-produto" onclick="window.toggleGestaoCard('produto')">
+      <div class="gestao-big-card-header">
+        <div class="gestao-big-card-icon">🚀</div>
+        <div class="gestao-big-card-info">
+          <div class="gestao-big-card-title">Produto</div>
+          <div class="gestao-big-card-sub" id="gestao-sub-produto">carregando...</div>
+        </div>
+        <div class="gestao-big-card-badge warn" id="gestao-badge-produto">
+          <span class="badge-num" id="gestao-num-produto">—</span>
+          <span class="badge-label">faltam</span>
+        </div>
+        <span class="gestao-big-card-chevron">▾</span>
+      </div>
+      <div class="gestao-big-card-stats" id="gestao-stats-produto"></div>
+      <div class="gestao-big-card-body">
+        <div class="gestao-list" id="gestao-list-midia"></div>
+        <div class="gestao-list" id="gestao-list-email" style="border-top:.5px solid var(--border2)"></div>
+      </div>
+    </div>
 
-  <!-- ── PRODUTO (EMAIL) ── -->
-  <div class="gestao-section">
-    <div class="gestao-section-title"><span>📧</span> Produto · Email</div>
-    <div class="gestao-kpi-grid" id="gestao-kpi-email"></div>
-    <div id="gestao-list-email" class="gestao-list"></div>
+    <!-- DESIGN -->
+    <div class="gestao-big-card" id="gestao-card-design" onclick="window.toggleGestaoCard('design')">
+      <div class="gestao-big-card-header">
+        <div class="gestao-big-card-icon">🎨</div>
+        <div class="gestao-big-card-info">
+          <div class="gestao-big-card-title">Design</div>
+          <div class="gestao-big-card-sub" id="gestao-sub-design">carregando...</div>
+        </div>
+        <div class="gestao-big-card-badge warn" id="gestao-badge-design">
+          <span class="badge-num" id="gestao-num-design">—</span>
+          <span class="badge-label">faltam</span>
+        </div>
+        <span class="gestao-big-card-chevron">▾</span>
+      </div>
+      <div class="gestao-big-card-stats" id="gestao-stats-design"></div>
+      <div class="gestao-big-card-body">
+        <div class="gestao-list" id="gestao-list-design"></div>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -3457,9 +3520,152 @@ window.renderGestao = function() {
   const mo = months[activeMonthIdx];
   if(!mo) return;
 
-  // Label do mês
   const mesLabel = document.getElementById('gestao-mes-label');
   if(mesLabel) mesLabel.textContent = MES_NAMES[mo.m] + ' de ' + mo.y;
+
+  // ── HELPERS ──
+  function setBadge(id, num) {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.querySelector('.badge-num').textContent = num;
+    el.className = 'gestao-big-card-badge ' + (num === 0 ? 'ok' : num <= 3 ? 'warn' : 'danger');
+    el.querySelector('.badge-label').textContent = num === 0 ? 'ok!' : 'faltam';
+  }
+  function setStats(id, stats) {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.innerHTML = stats.map(s =>
+      `<div class="gestao-stat"><div class="gestao-stat-num ${s.cls||''}">${s.num}</div><div class="gestao-stat-label">${s.label}</div></div>`
+    ).join('');
+  }
+  function setSub(id, txt) { const el = document.getElementById(id); if(el) el.textContent = txt; }
+
+  // ── SOCIAL MEDIA ──
+  const socialRows = rows.filter(r => r.y === mo.y && r.m === mo.m);
+  const sTotal = socialRows.length;
+  const sAprov = socialRows.filter(r => r.status === 'aprovado').length;
+  const sReprov = socialRows.filter(r => r.status === 'reprovado').length;
+  const sPend = sTotal - sAprov;
+  setBadge('gestao-badge-social', sPend);
+  setSub('gestao-sub-social', `${sTotal} posts · ${sAprov} aprovados`);
+  setStats('gestao-stats-social', [
+    {num: sAprov, label: 'Aprovados', cls: sAprov === sTotal ? 'ok' : ''},
+    {num: sPend - sReprov, label: 'Pendentes', cls: (sPend - sReprov) > 0 ? 'warn' : ''},
+    {num: sReprov, label: 'Reprovados', cls: sReprov > 0 ? 'danger' : ''},
+  ]);
+  const listSocial = document.getElementById('gestao-list-social');
+  const sPendItems = socialRows.filter(r => r.status !== 'aprovado');
+  if(listSocial) {
+    listSocial.innerHTML = !sPendItems.length
+      ? '<div class="gestao-empty">✅ Todos os posts do mês aprovados!</div>'
+      : sPendItems.map(r => {
+          const tipo = TIPOS.find(t => t.id === r.tipoId) || TIPOS[0];
+          const semCopy = !r.social?.trim();
+          const semBriefing = !r.design?.trim();
+          const status = r.status || 'pendente';
+          let statusLabel = semCopy && semBriefing ? 'Sem copy e briefing'
+            : semCopy ? 'Sem copy' : semBriefing ? 'Sem briefing design'
+            : status === 'reprovado' ? '✗ Reprovado' : '● Aguarda aprovação';
+          let statusClass = (semCopy || semBriefing) ? 'sem-briefing' : status === 'reprovado' ? 'reprovado' : 'pendente';
+          const action = (!semCopy && status !== 'aprovado')
+            ? `<button class="gestao-item-action" onclick="event.stopPropagation();window.aprovarRapidoSocial('${r.key}')">✓ Aprovar</button>` : '';
+          return `<div class="gestao-item">
+            <span class="gestao-item-date">${r.date||'—'}</span>
+            <span class="gestao-item-type" style="color:${tipo.color}">${tipo.name}</span>
+            <span class="gestao-item-desc">${r.social||'<em style="color:var(--text3)">sem copy</em>'}</span>
+            <span class="gestao-item-status ${statusClass}">${statusLabel}</span>
+            ${action}
+          </div>`;
+        }).join('');
+  }
+
+  // ── PRODUTO ──
+  const prodPosts = rows.filter(r => r.tipoId === 'produto' && r.y === mo.y && r.m === mo.m);
+  const mpAprov = prodPosts.filter(r => midiaProdutoData.find(m=>m.socialKey===r.key)?.aprovacao==='aprovado').length;
+  const mpPend = prodPosts.length - mpAprov;
+  const epAprov = emailProdutoData.filter(e => e.aprovacao === 'aprovado').length;
+  const epPend = emailProdutoData.length - epAprov;
+  const totalProdutoPend = mpPend + epPend;
+  setBadge('gestao-badge-produto', totalProdutoPend);
+  setSub('gestao-sub-produto', `${prodPosts.length} posts mídia · ${emailProdutoData.length} emails`);
+  setStats('gestao-stats-produto', [
+    {num: mpAprov, label: 'Mídia aprovados', cls: mpAprov === prodPosts.length ? 'ok' : ''},
+    {num: mpPend, label: 'Mídia pendentes', cls: mpPend > 0 ? 'warn' : ''},
+    {num: epPend, label: 'Emails pendentes', cls: epPend > 0 ? 'warn' : ''},
+  ]);
+  const listMidia = document.getElementById('gestao-list-midia');
+  const mpPendItems = prodPosts.filter(r => midiaProdutoData.find(m=>m.socialKey===r.key)?.aprovacao !== 'aprovado');
+  if(listMidia) {
+    listMidia.innerHTML = !mpPendItems.length
+      ? '<div class="gestao-empty">✅ Posts de produto aprovados!</div>'
+      : `<div style="padding:8px 22px 4px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em">Mídia</div>`
+        + mpPendItems.map(r => {
+          const mp = midiaProdutoData.find(m=>m.socialKey===r.key);
+          const temBriefing = mp && (mp.objetivo || mp.briefing);
+          const statusLabel = !temBriefing ? 'Sem briefing' : mp.aprovacao==='reprovado' ? '✗ Reprovado' : '● Aguarda aprovação';
+          const statusClass = !temBriefing ? 'sem-briefing' : mp.aprovacao==='reprovado' ? 'reprovado' : 'pendente';
+          const action = temBriefing && mp.aprovacao !== 'aprovado'
+            ? `<button class="gestao-item-action" onclick="event.stopPropagation();window.abrirAprovacao('midia','${r.key}')">✓ Aprovar</button>` : '';
+          return `<div class="gestao-item">
+            <span class="gestao-item-date">${r.date||'—'}</span>
+            <span class="gestao-item-type">Produto</span>
+            <span class="gestao-item-desc">${mp?.objetivo||'<em style="color:var(--text3)">briefing não preenchido</em>'}</span>
+            <span class="gestao-item-status ${statusClass}">${statusLabel}</span>
+            ${action}
+          </div>`;
+        }).join('');
+  }
+  const listEmail = document.getElementById('gestao-list-email');
+  const epPendItems = emailProdutoData.filter(e => e.aprovacao !== 'aprovado');
+  if(listEmail) {
+    listEmail.innerHTML = !epPendItems.length
+      ? '<div class="gestao-empty">✅ Campanhas de email aprovadas!</div>'
+      : `<div style="padding:8px 22px 4px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em">Email</div>`
+        + epPendItems.map(ep => {
+          const sl = ep.aprovacao==='reprovado' ? '✗ Reprovada' : '● Aguarda aprovação';
+          const sc = ep.aprovacao==='reprovado' ? 'reprovado' : 'pendente';
+          return `<div class="gestao-item">
+            <span class="gestao-item-date">${ep.data||'—'}</span>
+            <span class="gestao-item-type">${EP_TIPO_LABEL[ep.tipo]||ep.tipo||'—'}</span>
+            <span class="gestao-item-desc">${ep.assunto||'<em style="color:var(--text3)">sem assunto</em>'}</span>
+            <span class="gestao-item-status ${sc}">${sl}</span>
+            <button class="gestao-item-action" onclick="event.stopPropagation();window.abrirAprovacao('email','${ep.key}')">✓ Aprovar</button>
+          </div>`;
+        }).join('');
+  }
+
+  // ── DESIGN ──
+  const semBriefingDesign = socialRows.filter(r => !r.design?.trim()).length;
+  const comBriefing = sTotal - semBriefingDesign;
+  setBadge('gestao-badge-design', semBriefingDesign);
+  setSub('gestao-sub-design', `${comBriefing} com briefing de ${sTotal} posts`);
+  setStats('gestao-stats-design', [
+    {num: comBriefing, label: 'Com briefing', cls: comBriefing === sTotal ? 'ok' : ''},
+    {num: semBriefingDesign, label: 'Sem briefing', cls: semBriefingDesign > 0 ? 'warn' : ''},
+    {num: sTotal, label: 'Total posts', cls: ''},
+  ]);
+  const listDesign = document.getElementById('gestao-list-design');
+  const semBriefItems = socialRows.filter(r => !r.design?.trim());
+  if(listDesign) {
+    listDesign.innerHTML = !semBriefItems.length
+      ? '<div class="gestao-empty">✅ Todos os posts têm briefing de design!</div>'
+      : semBriefItems.map(r => {
+          const tipo = TIPOS.find(t => t.id === r.tipoId) || TIPOS[0];
+          return `<div class="gestao-item">
+            <span class="gestao-item-date">${r.date||'—'}</span>
+            <span class="gestao-item-type" style="color:${tipo.color}">${tipo.name}</span>
+            <span class="gestao-item-desc">${r.social||'<em style="color:var(--text3)">sem copy</em>'}</span>
+            <span class="gestao-item-status sem-briefing">Sem briefing design</span>
+            <button class="gestao-item-action" onclick="event.stopPropagation();window.openModal('${r.key}','design')">✏ Adicionar</button>
+          </div>`;
+        }).join('');
+  }
+};
+
+window.toggleGestaoCard = function(tipo) {
+  const card = document.getElementById('gestao-card-' + tipo);
+  if(card) card.classList.toggle('open');
+};
 
   // ── SOCIAL MEDIA ──
   const socialRows = rows.filter(r => r.y === mo.y && r.m === mo.m);
@@ -3467,137 +3673,6 @@ window.renderGestao = function() {
   const aprovados = socialRows.filter(r => r.status === 'aprovado').length;
   const reprovados = socialRows.filter(r => r.status === 'reprovado').length;
   const pendentes = socialRows.filter(r => r.status === 'pendente' || !r.status).length;
-  const semSocial = socialRows.filter(r => !r.social || !r.social.trim()).length;
-  const semDesign = socialRows.filter(r => !r.design || !r.design.trim()).length;
-  const aguardandoAprov = socialRows.filter(r => (r.social||'').trim() && r.status !== 'aprovado' && r.status !== 'reprovado').length;
-
-  const kpiSocial = document.getElementById('gestao-kpi-social');
-  if(kpiSocial) kpiSocial.innerHTML = `
-    <div class="gestao-kpi neutral"><div class="gestao-kpi-label">Total de posts</div><div class="gestao-kpi-value">${total}</div><div class="gestao-kpi-sub">no mês</div></div>
-    <div class="gestao-kpi ok"><div class="gestao-kpi-label">Aprovados</div><div class="gestao-kpi-value">${aprovados}</div><div class="gestao-kpi-sub">pela Maris</div></div>
-    <div class="gestao-kpi warn"><div class="gestao-kpi-label">Pendentes</div><div class="gestao-kpi-value">${pendentes}</div><div class="gestao-kpi-sub">aguardando aprovação</div></div>
-    <div class="gestao-kpi ${reprovados > 0 ? 'danger' : 'neutral'}"><div class="gestao-kpi-label">Reprovados</div><div class="gestao-kpi-value">${reprovados}</div><div class="gestao-kpi-sub">para revisar</div></div>
-  `;
-
-  // Itens que precisam de ação
-  const listSocial = document.getElementById('gestao-list-social');
-  const precisamAcao = socialRows.filter(r => r.status !== 'aprovado');
-  if(listSocial) {
-    if(!precisamAcao.length) {
-      listSocial.innerHTML = '<div class="gestao-empty">✅ Todos os posts do mês estão aprovados!</div>';
-    } else {
-      listSocial.innerHTML = precisamAcao.map(r => {
-        const tipo = TIPOS.find(t => t.id === r.tipoId) || TIPOS[0];
-        const semCopy = !r.social || !r.social.trim();
-        const semBriefing = !r.design || !r.design.trim();
-        const status = r.status || 'pendente';
-        let statusLabel, statusClass, action = '';
-
-        if(semCopy && semBriefing) { statusLabel = 'Sem copy e briefing'; statusClass = 'sem-briefing'; }
-        else if(semCopy) { statusLabel = 'Sem copy social'; statusClass = 'sem-briefing'; }
-        else if(semBriefing) { statusLabel = 'Sem briefing design'; statusClass = 'sem-briefing'; }
-        else if(status === 'reprovado') { statusLabel = '✗ Reprovado'; statusClass = 'reprovado'; }
-        else { statusLabel = '● Aguarda aprovação'; statusClass = 'pendente'; }
-
-        const canApprove = !semCopy && status !== 'aprovado';
-        if(canApprove) action = `<button class="gestao-item-action" onclick="window.aprovarRapidoSocial('${r.key}')">✓ Aprovar</button>`;
-
-        return `<div class="gestao-item">
-          <span class="gestao-item-date">${r.date||'—'}</span>
-          <span class="gestao-item-type" style="color:${tipo.color}">${tipo.name}</span>
-          <span class="gestao-item-desc">${r.social||'<em style="color:var(--text3)">sem copy</em>'}</span>
-          <span class="gestao-item-status ${statusClass}">${statusLabel}</span>
-          ${action}
-        </div>`;
-      }).join('');
-    }
-  }
-
-  // ── PRODUTO MÍDIA ──
-  const produtoPosts = rows.filter(r => r.tipoId === 'produto' && r.y === mo.y && r.m === mo.m);
-  const mpTotal = produtoPosts.length;
-  const mpComBriefing = produtoPosts.filter(r => {
-    const mp = midiaProdutoData.find(m => m.socialKey === r.key);
-    return mp && (mp.objetivo || mp.briefing);
-  }).length;
-  const mpAprovados = produtoPosts.filter(r => {
-    const mp = midiaProdutoData.find(m => m.socialKey === r.key);
-    return mp?.aprovacao === 'aprovado';
-  }).length;
-  const mpAguardando = produtoPosts.filter(r => {
-    const mp = midiaProdutoData.find(m => m.socialKey === r.key);
-    return mp && (mp.objetivo || mp.briefing) && mp.aprovacao !== 'aprovado';
-  }).length;
-
-  const kpiMidia = document.getElementById('gestao-kpi-midia');
-  if(kpiMidia) kpiMidia.innerHTML = `
-    <div class="gestao-kpi neutral"><div class="gestao-kpi-label">Posts de Produto</div><div class="gestao-kpi-value">${mpTotal}</div><div class="gestao-kpi-sub">no mês</div></div>
-    <div class="gestao-kpi ${mpComBriefing < mpTotal ? 'warn' : 'ok'}"><div class="gestao-kpi-label">Com briefing</div><div class="gestao-kpi-value">${mpComBriefing}</div><div class="gestao-kpi-sub">de ${mpTotal}</div></div>
-    <div class="gestao-kpi ok"><div class="gestao-kpi-label">Aprovados</div><div class="gestao-kpi-value">${mpAprovados}</div></div>
-    <div class="gestao-kpi ${mpAguardando > 0 ? 'warn' : 'neutral'}"><div class="gestao-kpi-label">Aguardando aprovação</div><div class="gestao-kpi-value">${mpAguardando}</div></div>
-  `;
-
-  const listMidia = document.getElementById('gestao-list-midia');
-  const mpPendentes = produtoPosts.filter(r => {
-    const mp = midiaProdutoData.find(m => m.socialKey === r.key);
-    return !mp || mp.aprovacao !== 'aprovado';
-  });
-  if(listMidia) {
-    if(!mpPendentes.length) {
-      listMidia.innerHTML = '<div class="gestao-empty">✅ Todos os posts de produto aprovados!</div>';
-    } else {
-      listMidia.innerHTML = mpPendentes.map(r => {
-        const mp = midiaProdutoData.find(m => m.socialKey === r.key);
-        const temBriefing = mp && (mp.objetivo || mp.briefing);
-        const statusLabel = !temBriefing ? 'Sem briefing' : mp.aprovacao === 'reprovado' ? '✗ Reprovado' : '● Aguarda aprovação';
-        const statusClass = !temBriefing ? 'sem-briefing' : mp.aprovacao === 'reprovado' ? 'reprovado' : 'pendente';
-        const action = temBriefing && mp.aprovacao !== 'aprovado'
-          ? `<button class="gestao-item-action" onclick="window.abrirAprovacao('midia','${r.key}')">✓ Aprovar</button>` : '';
-        return `<div class="gestao-item">
-          <span class="gestao-item-date">${r.date||'—'}</span>
-          <span class="gestao-item-type">Produto</span>
-          <span class="gestao-item-desc">${mp?.objetivo||'<em style="color:var(--text3)">briefing não preenchido</em>'}</span>
-          <span class="gestao-item-status ${statusClass}">${statusLabel}</span>
-          ${action}
-        </div>`;
-      }).join('');
-    }
-  }
-
-  // ── PRODUTO EMAIL ──
-  const epTotal = emailProdutoData.length;
-  const epAprovados = emailProdutoData.filter(e => e.aprovacao === 'aprovado').length;
-  const epPendentes = emailProdutoData.filter(e => e.aprovacao !== 'aprovado').length;
-  const epReprovados = emailProdutoData.filter(e => e.aprovacao === 'reprovado').length;
-
-  const kpiEmail = document.getElementById('gestao-kpi-email');
-  if(kpiEmail) kpiEmail.innerHTML = `
-    <div class="gestao-kpi neutral"><div class="gestao-kpi-label">Campanhas</div><div class="gestao-kpi-value">${epTotal}</div><div class="gestao-kpi-sub">cadastradas</div></div>
-    <div class="gestao-kpi ok"><div class="gestao-kpi-label">Aprovadas</div><div class="gestao-kpi-value">${epAprovados}</div></div>
-    <div class="gestao-kpi ${epPendentes > 0 ? 'warn' : 'neutral'}"><div class="gestao-kpi-label">Pendentes</div><div class="gestao-kpi-value">${epPendentes}</div></div>
-    <div class="gestao-kpi ${epReprovados > 0 ? 'danger' : 'neutral'}"><div class="gestao-kpi-label">Reprovadas</div><div class="gestao-kpi-value">${epReprovados}</div></div>
-  `;
-
-  const listEmail = document.getElementById('gestao-list-email');
-  const epPend = emailProdutoData.filter(e => e.aprovacao !== 'aprovado');
-  if(listEmail) {
-    if(!epPend.length) {
-      listEmail.innerHTML = '<div class="gestao-empty">✅ Todas as campanhas de email aprovadas!</div>';
-    } else {
-      listEmail.innerHTML = epPend.map(ep => {
-        const statusLabel = ep.aprovacao === 'reprovado' ? '✗ Reprovada' : '● Aguarda aprovação';
-        const statusClass = ep.aprovacao === 'reprovado' ? 'reprovado' : 'pendente';
-        return `<div class="gestao-item">
-          <span class="gestao-item-date">${ep.data||'—'}</span>
-          <span class="gestao-item-type">${EP_TIPO_LABEL[ep.tipo]||ep.tipo||'—'}</span>
-          <span class="gestao-item-desc">${ep.assunto||'<em style="color:var(--text3)">sem assunto</em>'}</span>
-          <span class="gestao-item-status ${statusClass}">${statusLabel}</span>
-          <button class="gestao-item-action" onclick="window.abrirAprovacao('email','${ep.key}')">✓ Aprovar</button>
-        </div>`;
-      }).join('');
-    }
-  }
-};
 
 // Aprovar rapidamente um post social direto do painel
 window.aprovarRapidoSocial = async function(key) {
