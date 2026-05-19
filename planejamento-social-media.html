@@ -1575,11 +1575,17 @@ window.salvarRef = async function() {
   const author = auth.currentUser ? auth.currentUser.email.split('@')[0] : 'anon';
   const authorFull = auth.currentUser ? auth.currentUser.email : '';
   const now = new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-  const refObj = { key, url, title, cat, author, authorFull, ts: now, comments: [], imgBase64: refImgTemp };
-  if(comment) {
+
+  // ── preservar comentários existentes ao editar ──
+  const existing = refsData.find(r => r.key === key);
+  const existingComments = existing?.comments || [];
+
+  const refObj = { key, url, title, cat, author, authorFull, ts: existing?.ts || now, comments: existingComments, imgBase64: refImgTemp };
+
+  // comentário inicial só em criações novas (não edição)
+  if(comment && !refEditingKey) {
     const commentObj = { id: Date.now(), author, authorFull, text: comment, ts: now };
     refObj.comments.push(commentObj);
-    // detectar menções e criar notificações
     window.detectarMencoes(comment, author, title||'uma referência', key, 'ref');
   }
   await setDoc(doc(db,'refs',key), refObj);
@@ -1587,7 +1593,7 @@ window.salvarRef = async function() {
 };
 
 window.deletarRef = async function(key) {
-  if(!confirm('Remover esta referência?')) return;
+  if(!confirm('Remover esta referência e todos os comentários?')) return;
   await deleteDoc(doc(db,'refs',key));
 };
 
@@ -1603,9 +1609,68 @@ window.adicionarComentario = async function(key) {
   const commentObj = {id:Date.now(), author, authorFull, text, ts:now};
   const comments = [...(ref.comments||[]), commentObj];
   await setDoc(doc(db,'refs',key), {...ref, comments}, {merge:true});
-  // detectar menções
   window.detectarMencoes(text, author, ref.title||'uma referência', key, 'ref');
   inp.value='';
+};
+
+window.handleCommentKey = function(e, refKey) {
+  if(e.key !== 'Enter') return;
+  const id = e.target.dataset.editingId;
+  if(id) window.salvarEdicaoComentario(refKey, parseInt(id), e.target.value.trim());
+  else window.adicionarComentario(refKey);
+};
+
+window.editarComentario = function(refKey, commentId) {
+  const inp = document.getElementById('ref-comment-input-'+refKey);
+  const ref = refsData.find(r=>r.key===refKey);
+  const c = ref?.comments?.find(c=>c.id===commentId);
+  if(!c || !inp) return;
+  inp.value = c.text;
+  inp.focus();
+  inp.dataset.editingId = commentId;
+  inp.style.borderColor = '#ff40b3';
+  // Troca placeholder
+  inp.placeholder = 'Editando comentário... pressione Enter para salvar';
+  // Atualiza handler do Enter para modo edição
+  inp.onkeydown = async function(e) {
+    if(e.key !== 'Enter') return;
+    const newText = inp.value.trim();
+    if(!newText) return;
+    const isEditing = inp.dataset.editingId;
+    if(isEditing) {
+      await window.salvarEdicaoComentario(refKey, parseInt(isEditing), newText);
+    } else {
+      await window.adicionarComentario(refKey);
+    }
+  };
+};
+
+window.salvarEdicaoComentario = async function(refKey, commentId, newText) {
+  const ref = refsData.find(r=>r.key===refKey);
+  if(!ref) return;
+  const comments = (ref.comments||[]).map(c =>
+    c.id === commentId ? {...c, text: newText, edited: true} : c
+  );
+  await setDoc(doc(db,'refs',refKey), {...ref, comments}, {merge:true});
+  // Reset input
+  const inp = document.getElementById('ref-comment-input-'+refKey);
+  if(inp) {
+    inp.value='';
+    inp.style.borderColor='';
+    inp.placeholder='Comentar... use @Nome para mencionar';
+    delete inp.dataset.editingId;
+    inp.onkeydown = e => { if(e.key==='Enter') window.adicionarComentario(refKey); };
+  }
+};
+
+window.apagarComentario = async function(refKey, commentId) {
+  const ref = refsData.find(r=>r.key===refKey);
+  if(!ref) return;
+  const currentUser = auth.currentUser?.email?.split('@')[0];
+  const comments = (ref.comments||[]).map(c =>
+    c.id === commentId ? {...c, text: null, deleted: true} : c
+  );
+  await setDoc(doc(db,'refs',refKey), {...ref, comments}, {merge:true});
 };
 
 window.toggleRefComments = function(key) {
@@ -1642,11 +1707,28 @@ window.renderRefs = function() {
     const commentCount = comments.length;
 
     const commentsHtml = comments.map(c => {
-      const highlighted = c.text.replace(/@(\w+)/g, '<span style="color:#ff40b3;font-weight:600">@$1</span>');
-      return `<div style="padding:7px 0;border-bottom:.5px solid var(--border);display:flex;gap:8px;align-items:flex-start">
+      const highlighted = (c.text||'').replace(/@(\w+)/g, '<span style="color:#ff40b3;font-weight:600">@$1</span>');
+      const isOwn = auth.currentUser?.email?.split('@')[0] === c.author;
+
+      if(c.deleted) {
+        return `<div style="padding:6px 0;border-bottom:.5px solid var(--border);display:flex;gap:8px;align-items:center">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--surface2);flex-shrink:0;border:.5px solid var(--border)"></div>
+          <span style="font-size:11px;color:var(--text3);font-style:italic">Comentário excluído</span>
+        </div>`;
+      }
+
+      return `<div style="padding:7px 0;border-bottom:.5px solid var(--border);display:flex;gap:8px;align-items:flex-start" id="comment-${c.id}">
         <div style="width:28px;height:28px;border-radius:50%;background:var(--nibo4);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--nibo1);flex-shrink:0;overflow:hidden;border:.5px solid var(--border)">${getProfileAvatar(c.authorFull, c.author)}</div>
-        <div style="flex:1">
-          <div style="font-size:11px;font-weight:600;color:var(--text)">${c.author} <span style="font-weight:400;color:var(--text3)">${c.ts}</span></div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span style="font-size:11px;font-weight:600;color:var(--text)">${c.author}</span>
+            <span style="font-size:10px;color:var(--text3)">${c.ts}</span>
+            ${c.edited ? '<span style="font-size:10px;color:var(--text3);font-style:italic">· editado</span>' : ''}
+            ${isOwn ? `
+              <button onclick="window.editarComentario('${r.key}',${c.id})" style="font-size:10px;color:var(--nibo2);background:none;border:none;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif;margin-left:2px" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Editar</button>
+              <button onclick="window.apagarComentario('${r.key}',${c.id})" style="font-size:10px;color:var(--red);background:none;border:none;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Apagar</button>
+            ` : ''}
+          </div>
           <div style="font-size:12px;color:var(--text2);margin-top:2px;line-height:1.5">${highlighted}</div>
         </div>
       </div>`;
@@ -1686,7 +1768,7 @@ window.renderRefs = function() {
           <div style="font-size:10px;color:var(--text3);margin-bottom:5px">Mencionar:</div>
           <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${memberMentions}</div>
           <div style="display:flex;gap:6px">
-            <input id="ref-comment-input-${r.key}" type="text" placeholder="Comentar... use @Nome para mencionar" style="flex:1;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:99px;padding:6px 12px;outline:none;background:var(--bg);color:var(--text)" onkeydown="if(event.key==='Enter')window.adicionarComentario('${r.key}')" />
+            <input id="ref-comment-input-${r.key}" type="text" placeholder="Comentar... use @Nome para mencionar" style="flex:1;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:99px;padding:6px 12px;outline:none;background:var(--bg);color:var(--text)" onkeydown="window.handleCommentKey(event,'${r.key}')" />
             <button onclick="window.adicionarComentario('${r.key}')" style="font-size:12px;padding:6px 14px;border-radius:99px;border:none;cursor:pointer;background:#ff40b3;color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;flex-shrink:0">Enviar</button>
           </div>
         </div>
@@ -2783,6 +2865,8 @@ window.deletarMidiaBriefing = async function(socialKey) {
   const mpKey = 'mp-' + socialKey;
   await deleteDoc(doc(db,'midia-produto', mpKey));
 };
+
+window.salvarMidiaProduto = async function() {
   if(!isProdutoEditor() || !mpEditingKey) return;
   const key = 'mp-' + mpEditingKey;
   const data = {
