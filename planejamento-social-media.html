@@ -2713,6 +2713,8 @@ window.renderMidiaProduto = function() {
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
           ${canEdit ? `<button onclick="window.abrirModalMidiaProduto('${r.key}')" style="font-size:11px;padding:5px 12px;border-radius:99px;border:.5px solid var(--nibo2);cursor:pointer;background:transparent;color:var(--nibo1);font-family:'DM Sans',sans-serif;font-weight:600;transition:all .15s" onmouseover="this.style.background='#EFF6FF'" onmouseout="this.style.background='transparent'">✏ Briefing</button>` : ''}
+          ${canEdit && hasBriefing ? `<button onclick="window.notificarMaris('${r.key}')" style="font-size:11px;padding:5px 12px;border-radius:99px;border:.5px solid #ff40b3;cursor:pointer;background:transparent;color:#ff40b3;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .15s" onmouseover="this.style.background='#fff0f9'" onmouseout="this.style.background='transparent'" id="notify-btn-${r.key}">🔔 Notificar Mariana</button>` : ''}
+          ${canEdit && mp.key ? `<button onclick="window.deletarMidiaBriefing('${r.key}')" style="font-size:11px;padding:5px 12px;border-radius:99px;border:.5px solid #FCA5A5;cursor:pointer;background:transparent;color:var(--red);font-family:'DM Sans',sans-serif;transition:all .15s" onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='transparent'">✕ Apagar</button>` : ''}
           ${canApprove && hasBriefing ? `<button onclick="window.abrirAprovacao('midia','${r.key}')" style="font-size:11px;padding:5px 12px;border-radius:99px;border:none;cursor:pointer;background:var(--nibo1);color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .15s" onmouseover="this.style.background='var(--nibo2)'" onmouseout="this.style.background='var(--nibo1)'">${status==='aprovado'?'↩ Revisar':'✓ Aprovar'}</button>` : ''}
         </div>
       </div>
@@ -2735,7 +2737,52 @@ window.abrirModalMidiaProduto = function(socialKey) {
   document.getElementById('modal-midia-produto').classList.add('open');
 };
 
-window.salvarMidiaProduto = async function() {
+window.notificarMaris = async function(socialKey) {
+  if(!isProdutoEditor()) return;
+  const r = rows.find(r => r.key === socialKey);
+  const mp = midiaProdutoData.find(m => m.socialKey === socialKey);
+  if(!mp) return;
+
+  const from = userProfile.nome || currentUserEmail().split('@')[0];
+  const context = `Post ${r?.date||''} · Produto`;
+  const now = Date.now();
+  const tsFormatted = new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+
+  await setDoc(doc(db,'notifications','notif-maris-'+socialKey+'-'+now), {
+    key: 'notif-maris-'+socialKey+'-'+now,
+    toEmail: MARIS_EMAIL,
+    fromName: from,
+    context,
+    excerpt: mp.objetivo || 'Briefing preenchido e aguardando aprovação.',
+    refKey: socialKey,
+    type: 'midia-produto',
+    read: false,
+    ts: now,
+    tsFormatted,
+  });
+
+  // Feedback visual no botão
+  const btn = document.getElementById('notify-btn-'+socialKey);
+  if(btn) {
+    btn.textContent = '✓ Notificado!';
+    btn.style.background = '#D1FAE5';
+    btn.style.color = 'var(--green)';
+    btn.style.borderColor = '#6EE7B7';
+    setTimeout(() => {
+      btn.textContent = '🔔 Notificar Mariana';
+      btn.style.background = 'transparent';
+      btn.style.color = '#ff40b3';
+      btn.style.borderColor = '#ff40b3';
+    }, 3000);
+  }
+};
+
+window.deletarMidiaBriefing = async function(socialKey) {
+  if(!isProdutoEditor()) return;
+  if(!confirm('Apagar o briefing deste post? O post continua no calendário.')) return;
+  const mpKey = 'mp-' + socialKey;
+  await deleteDoc(doc(db,'midia-produto', mpKey));
+};
   if(!isProdutoEditor() || !mpEditingKey) return;
   const key = 'mp-' + mpEditingKey;
   const data = {
