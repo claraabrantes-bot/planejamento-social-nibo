@@ -3466,13 +3466,12 @@ document.addEventListener('click', e => {
 });
 
 window.marcarLida = async function(key) {
-  await setDoc(doc(db,'notifications',key), {read:true}, {merge:true});
+  await deleteDoc(doc(db,'notifications',key));
 };
 
 window.marcarTodasLidas = async function() {
-  const unread = notifData.filter(n => !n.read);
-  for(const n of unread) {
-    await setDoc(doc(db,'notifications',n.key), {read:true}, {merge:true});
+  for(const n of notifData) {
+    await deleteDoc(doc(db,'notifications',n.key));
   }
 };
 
