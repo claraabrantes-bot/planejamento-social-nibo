@@ -1982,9 +1982,17 @@ window.updRowField=async function(key,field,val){await saveRow(key,{[field]:val}
 // ── CYCLE STATUS ──
 window.cycleStatus=async function(key){
   if(currentUserEmail()!=='mariana.araujo@nibo.com.br' && currentUserEmail()!=='clara.abrantes@nibo.com.br') return;
-  const r=rows.find(r=>r.key===key);if(!r) return;
+  const r=rows.find(r=>r.key===key);
   const i=STATUS_CYCLE.indexOf(r.status||'pendente');
-  await saveRow(key,{status:STATUS_CYCLE[(i+1)%3]});
+  const novoStatus = STATUS_CYCLE[(i+1)%3];
+  await saveRow(key,{status:novoStatus});
+  // Se aprovado e quem aprovou é Mariana, notifica Clara
+  if(novoStatus === 'aprovado' && currentUserEmail() === 'mariana.araujo@nibo.com.br') {
+    const from = userProfile.nome || 'Mariana';
+    const now = Date.now();
+    const tsFormatted = new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    await window.enviarNotifAprovacao('clara.abrantes@nibo.com.br', from, `Post ${r?.date||''} · Social Media`, 'social', now, tsFormatted);
+  }
 }
 
 // ── UPDATE DATE + DOW LIVE ──
@@ -3288,20 +3296,42 @@ window.abrirAprovacao = function(type, key) {
 window.executarAprovacao = async function(decisao) {
   if(!isMaris() || !aprKey || !aprType) return;
   const obs = document.getElementById('apr-obs').value.trim();
+  const from = userProfile.nome || 'Mariana';
+  const now = Date.now();
+  const tsFormatted = new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+
   if(aprType === 'midia') {
     const mpKey = 'mp-' + aprKey;
     const existing = midiaProdutoData.find(m => m.socialKey === aprKey) || {};
     await setDoc(doc(db,'midia-produto',mpKey), {...existing, aprovacao:decisao, obsAprovacao:obs, approvedBy:currentUserEmail(), approvedAt:new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}, {merge:true});
-    // Se aprovado, reflete status no post do social media
     if(decisao === 'aprovado') {
       await setDoc(doc(db,'rows',aprKey), {status:'aprovado'}, {merge:true});
+      // Notificar Roberta — aprovação de produto
+      const r = rows.find(r=>r.key===aprKey);
+      await window.enviarNotifAprovacao('roberta.rocha@nibo.com.br', from, `Post ${r?.date||''} · Produto`, 'produto', now, tsFormatted);
     }
   } else {
     const existing = emailProdutoData.find(e=>e.key===aprKey) || {};
     await setDoc(doc(db,'email-produto',aprKey), {...existing, aprovacao:decisao, obsAprovacao:obs, approvedBy:currentUserEmail()}, {merge:true});
+    if(decisao === 'aprovado') {
+      // Notificar Roberta — aprovação de email produto
+      const ep = emailProdutoData.find(e=>e.key===aprKey);
+      await window.enviarNotifAprovacao('roberta.rocha@nibo.com.br', from, ep?.assunto||'Campanha de email', 'email-produto', now, tsFormatted);
+    }
   }
   document.getElementById('modal-aprovacao').classList.remove('open');
   aprKey = null; aprType = null;
+};
+
+// ── Notificação de aprovação ──
+window.enviarNotifAprovacao = async function(toEmail, fromName, context, type, ts, tsFormatted) {
+  const key = `notif-aprov-${type}-${ts}`;
+  await setDoc(doc(db,'notifications',key), {
+    key, toEmail, fromName,
+    context,
+    excerpt: `✅ Aprovado por ${fromName}`,
+    type, read: false, ts, tsFormatted,
+  });
 };
 
 
@@ -3572,6 +3602,11 @@ window.renderGestao = function() {
 // Aprovar rapidamente um post social direto do painel
 window.aprovarRapidoSocial = async function(key) {
   await saveRow(key, {status:'aprovado'});
+  const from = userProfile.nome || 'Mariana';
+  const r = rows.find(r=>r.key===key);
+  const now = Date.now();
+  const tsFormatted = new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  await window.enviarNotifAprovacao('clara.abrantes@nibo.com.br', from, `Post ${r?.date||''} · Social Media`, 'social', now, tsFormatted);
   window.renderGestao();
 };
 
