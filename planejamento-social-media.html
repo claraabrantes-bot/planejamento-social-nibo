@@ -535,6 +535,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 /* modal célula */
 .ep-cell-modal{position:fixed;z-index:9999;background:var(--surface);border:.5px solid var(--border2);border-radius:var(--radius-lg);box-shadow:0 8px 32px rgba(0,45,114,.18);padding:14px;width:280px;display:none}
 .ep-cell-modal.open{display:block}
+
+/* ── TELA DE BOAS-VINDAS ── */
+#page-welcome{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:60vh;padding:2rem 1rem;
+}
+.welcome-title{font-size:22px;font-weight:700;color:var(--nibo1);margin-bottom:6px;text-align:center}
+.welcome-sub{font-size:13px;color:var(--text2);margin-bottom:2.4rem;text-align:center}
+.welcome-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:720px;width:100%}
+.welcome-card{
+  background:var(--surface);border:.5px solid var(--border2);border-radius:var(--radius-xl);
+  padding:2rem 1.4rem;cursor:pointer;transition:all .2s;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+}
+.welcome-card:hover{transform:translateY(-4px);box-shadow:0 8px 28px rgba(0,45,114,.12);border-color:var(--nibo2)}
+.welcome-card.active-card{border-color:var(--nibo1);box-shadow:0 4px 18px rgba(0,45,114,.14)}
+.welcome-card-icon{font-size:32px;line-height:1}
+.welcome-card-title{font-size:15px;font-weight:700;color:var(--nibo1)}
+.welcome-card-sub{font-size:11px;color:var(--text3);line-height:1.5}
+@media(max-width:600px){.welcome-cards{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -647,13 +667,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 <!-- NAV PRINCIPAL -->
 <nav class="main-tabs">
-  <button class="main-tab active" id="mtab-social" onclick="switchMainTab('social')">📅 Social Media</button>
+  <button class="main-tab" id="mtab-social" onclick="switchMainTab('social')">📅 Social Media</button>
   <button class="main-tab" id="mtab-design" onclick="switchMainTab('design')">🎨 Design</button>
   <button class="main-tab" id="mtab-produto" onclick="switchMainTab('produto')">🚀 Produto</button>
 </nav>
 
 <!-- SUB-ABAS SOCIAL MEDIA -->
-<nav class="page-tabs" id="subtabs-social">
+<nav class="page-tabs" id="subtabs-social" style="display:none">
   <button class="page-tab active" id="stab-calendario" onclick="showPage('calendario',this)">Calendário</button>
   <button class="page-tab" id="stab-ia" onclick="showPage('ia',this)">IA Criativa</button>
 </nav>
@@ -677,7 +697,30 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 </nav>
 
 <!-- ══ CALENDÁRIO ══ -->
-<div id="page-calendario" class="page active">
+<!-- ══ BOAS-VINDAS ══ -->
+<div id="page-welcome" class="page active">
+  <div class="welcome-title">Olá! 👋 Bem-vinda ao Planejamento de Marketing</div>
+  <div class="welcome-sub">Selecione uma área para começar</div>
+  <div class="welcome-cards">
+    <div class="welcome-card" onclick="switchMainTab('social')">
+      <div class="welcome-card-icon">📅</div>
+      <div class="welcome-card-title">Social Media</div>
+      <div class="welcome-card-sub">Calendário de posts, IA Criativa e acompanhamento de status</div>
+    </div>
+    <div class="welcome-card" onclick="switchMainTab('design')">
+      <div class="welcome-card-icon">🎨</div>
+      <div class="welcome-card-title">Design</div>
+      <div class="welcome-card-sub">Grid do Instagram e referências visuais da equipe</div>
+    </div>
+    <div class="welcome-card" onclick="switchMainTab('produto')">
+      <div class="welcome-card-icon">🚀</div>
+      <div class="welcome-card-title">Produto</div>
+      <div class="welcome-card-sub">Calendário de mídia e campanhas de email de produto</div>
+    </div>
+  </div>
+</div>
+
+<div id="page-calendario" class="page">
   <div class="section-label" style="margin-top:0">Tipos de post</div>
   <div class="tipos-grid" id="tipos"></div>
 
@@ -1442,12 +1485,17 @@ const MAIN_TAB_MAP = {
 };
 
 window.switchMainTab = function(tab) {
+  // esconder tela de boas-vindas se estiver ativa
+  const welcomePage = document.getElementById('page-welcome');
+  if(welcomePage) welcomePage.classList.remove('active');
   // highlight main tab
   document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
-  document.getElementById('mtab-' + tab).classList.add('active');
-  // show/hide subtab bars
+  const tabBtn = document.getElementById('mtab-' + tab);
+  if(tabBtn) tabBtn.classList.add('active');
+  // show/hide subtab bars — só mostra a do tab ativo
   Object.keys(MAIN_TAB_MAP).forEach(k => {
-    document.getElementById('subtabs-' + k).style.display = k === tab ? '' : 'none';
+    const subtabEl = document.getElementById('subtabs-' + k);
+    if(subtabEl) subtabEl.style.display = k === tab ? '' : 'none';
   });
   // activate default sub-page
   const cfg = MAIN_TAB_MAP[tab];
