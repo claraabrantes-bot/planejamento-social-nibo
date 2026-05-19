@@ -1629,19 +1629,22 @@ window.editarComentario = function(refKey, commentId) {
   inp.focus();
   inp.dataset.editingId = commentId;
   inp.style.borderColor = '#ff40b3';
-  // Troca placeholder
-  inp.placeholder = 'Editando comentário... pressione Enter para salvar';
-  // Atualiza handler do Enter para modo edição
+  inp.placeholder = 'Editando... Enter para salvar, Esc para cancelar';
   inp.onkeydown = async function(e) {
+    if(e.key === 'Escape') {
+      // cancelar edição
+      inp.value = '';
+      inp.style.borderColor = '';
+      inp.placeholder = 'Comentar... use @Nome para mencionar';
+      delete inp.dataset.editingId;
+      inp.onkeydown = null;
+      return;
+    }
     if(e.key !== 'Enter') return;
+    e.stopPropagation(); // evita que handleCommentKey também dispare
     const newText = inp.value.trim();
     if(!newText) return;
-    const isEditing = inp.dataset.editingId;
-    if(isEditing) {
-      await window.salvarEdicaoComentario(refKey, parseInt(isEditing), newText);
-    } else {
-      await window.adicionarComentario(refKey);
-    }
+    await window.salvarEdicaoComentario(refKey, parseInt(commentId), newText);
   };
 };
 
@@ -1652,24 +1655,22 @@ window.salvarEdicaoComentario = async function(refKey, commentId, newText) {
     c.id === commentId ? {...c, text: newText, edited: true} : c
   );
   await setDoc(doc(db,'refs',refKey), {...ref, comments}, {merge:true});
-  // Reset input
   const inp = document.getElementById('ref-comment-input-'+refKey);
   if(inp) {
     inp.value='';
     inp.style.borderColor='';
     inp.placeholder='Comentar... use @Nome para mencionar';
     delete inp.dataset.editingId;
-    inp.onkeydown = e => { if(e.key==='Enter') window.adicionarComentario(refKey); };
+    inp.onkeydown = null; // volta para o onkeydown inline do HTML
   }
 };
 
 window.apagarComentario = async function(refKey, commentId) {
+  if(!confirm('Apagar este comentário?')) return;
   const ref = refsData.find(r=>r.key===refKey);
   if(!ref) return;
-  const currentUser = auth.currentUser?.email?.split('@')[0];
-  const comments = (ref.comments||[]).map(c =>
-    c.id === commentId ? {...c, text: null, deleted: true} : c
-  );
+  // Remove completamente, não marca como excluído
+  const comments = (ref.comments||[]).filter(c => c.id !== commentId);
   await setDoc(doc(db,'refs',refKey), {...ref, comments}, {merge:true});
 };
 
@@ -1704,18 +1705,12 @@ window.renderRefs = function() {
     const iconLabel = isPinterest ? 'P' : isBehance ? 'Be' : '🔗';
 
     const comments = r.comments||[];
-    const commentCount = comments.length;
+    const visibleComments = comments.filter(c => !c.deleted);
+    const commentCount = visibleComments.length;
 
-    const commentsHtml = comments.map(c => {
+    const commentsHtml = visibleComments.map(c => {
       const highlighted = (c.text||'').replace(/@(\w+)/g, '<span style="color:#ff40b3;font-weight:600">@$1</span>');
       const isOwn = auth.currentUser?.email?.split('@')[0] === c.author;
-
-      if(c.deleted) {
-        return `<div style="padding:6px 0;border-bottom:.5px solid var(--border);display:flex;gap:8px;align-items:center">
-          <div style="width:28px;height:28px;border-radius:50%;background:var(--surface2);flex-shrink:0;border:.5px solid var(--border)"></div>
-          <span style="font-size:11px;color:var(--text3);font-style:italic">Comentário excluído</span>
-        </div>`;
-      }
 
       return `<div style="padding:7px 0;border-bottom:.5px solid var(--border);display:flex;gap:8px;align-items:flex-start" id="comment-${c.id}">
         <div style="width:28px;height:28px;border-radius:50%;background:var(--nibo4);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--nibo1);flex-shrink:0;overflow:hidden;border:.5px solid var(--border)">${getProfileAvatar(c.authorFull, c.author)}</div>
