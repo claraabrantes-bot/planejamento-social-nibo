@@ -1630,11 +1630,14 @@ let mTab = 'social';
 let userProfile = { nome:'', arroba:'', cargo:'', fotoBase64:'' };
 let allProfiles = {};
 let notifData = [];
+let refsData = [];
 
 // ── SYNC UI ──
 function setSyncing(){document.getElementById('sync-dot').className='sync-dot saving';document.getElementById('sync-label').textContent='Salvando...';}
 function setSynced() {document.getElementById('sync-dot').className='sync-dot ok';  document.getElementById('sync-label').textContent='Sincronizado ✓';}
 function setConn()   {document.getElementById('sync-dot').className='sync-dot ok';  document.getElementById('sync-label').textContent='Conectado · tempo real';}
+
+function renderCores(){renderConfig();}
 
 // ── FIRESTORE LISTENERS ──
 onSnapshot(doc(db,'config','cores'), snap=>{
@@ -2053,7 +2056,7 @@ window.toggleRefComments = function(key) {
   if(el) el.style.display = el.style.display==='none' ? 'block' : 'none';
 };
 
-let refsData = [];
+
 
 onSnapshot(collection(db,'refs'), snap => {
   refsData = [];
@@ -2502,7 +2505,6 @@ function renderConfig(){
     </div>`).join('');
   renderTipos('tipos-cfg');
 }
-function renderCores(){renderConfig();}
 window.updateCor=async function(i,field,val){
   cores[i][field]=val;
   await saveCores();
