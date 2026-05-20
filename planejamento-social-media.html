@@ -1282,6 +1282,29 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 
+<!-- MODAL VISÃO COMPLETA (Painel Gestão) -->
+<div class="modal-overlay" id="modal-visao-completa">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-head">
+      <h3 id="vc-title">Visão completa</h3>
+      <p id="vc-sub"></p>
+    </div>
+    <div class="modal-body" style="padding:1rem 1.4rem;display:flex;flex-direction:column;gap:14px;max-height:65vh;overflow-y:auto">
+      <div id="vc-secoes"></div>
+      <div style="border-top:.5px solid var(--border2);padding-top:14px">
+        <div class="modal-label" id="vc-obs-label">Sugestão / observação ao reprovar</div>
+        <textarea id="vc-obs" rows="3" placeholder="Ex: A copy do dia 20 ficou genérica, sugiro destacar a integração com banco..." style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.6"></textarea>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">A observação fica salva no item e quem criou recebe uma notificação.</div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-visao-completa').classList.remove('open')">Fechar</button>
+      <button class="btn" id="vc-btn-reprovar" onclick="window.executarAprovacaoCompleta('reprovado')" style="background:#FEE2E2;color:var(--red);border-color:#FCA5A5">✗ Reprovar</button>
+      <button class="btn btn-primary" id="vc-btn-aprovar" onclick="window.executarAprovacaoCompleta('aprovado')">✓ Aprovar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL REFERÊNCIA -->
 <div class="modal-overlay" id="modal-ref">
   <div class="modal" style="max-width:480px">
@@ -3449,6 +3472,167 @@ window.enviarNotifAprovacao = async function(toEmail, fromName, context, type, t
   });
 };
 
+// ── PAINEL GESTÃO: VISÃO COMPLETA ──
+let vcContexto = null; // {tipo:'social'|'midia'|'email', key}
+
+// Email do criador de cada área (quem recebe a notif de reprovação)
+const CRIADOR_POR_AREA = {
+  social: 'clara.abrantes@nibo.com.br',
+  midia:  'roberta.rocha@nibo.com.br',
+  email:  'roberta.rocha@nibo.com.br',
+};
+
+function htmlSecao(label, valor, vazioMsg) {
+  const conteudo = (valor && valor.trim())
+    ? `<div style="font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap">${valor.replace(/</g,'&lt;')}</div>`
+    : `<div style="font-size:12px;color:var(--text3);font-style:italic">${vazioMsg||'— vazio —'}</div>`;
+  return `<div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px">
+    <div class="modal-label" style="margin-bottom:6px">${label}</div>
+    ${conteudo}
+  </div>`;
+}
+
+window.abrirVisaoCompleta = function(tipo, key) {
+  if(!isMaris()) return;
+  vcContexto = {tipo, key};
+  const title = document.getElementById('vc-title');
+  const sub   = document.getElementById('vc-sub');
+  const sec   = document.getElementById('vc-secoes');
+  const obs   = document.getElementById('vc-obs');
+  const btnAp = document.getElementById('vc-btn-aprovar');
+  const btnRp = document.getElementById('vc-btn-reprovar');
+  obs.value = '';
+
+  let secoes = '';
+  let podeAprovar = true;
+
+  if(tipo === 'social') {
+    const r = rows.find(r => r.key === key);
+    if(!r) return;
+    const tipoInfo = TIPOS.find(t => t.id === r.tipoId) || TIPOS[0];
+    const produtoLabel = (NIBO_PRODUTO_OPTS.find(([v]) => v === r.produto) || [,'—'])[1];
+    title.textContent = `Visão completa · Post ${r.date||''}`;
+    sub.textContent = `${tipoInfo.name} · ${produtoLabel} · Status: ${r.status||'pendente'}`;
+    secoes += htmlSecao('Copy / texto do post (Social Media)', r.social, 'Copy ainda não foi escrita');
+    secoes += htmlSecao('Briefing de design', r.design, 'Briefing de design ainda não foi preenchido');
+    if(r.marisObs) secoes += htmlSecao('Observação da Maris', r.marisObs);
+    if(r.obsReprovacao) secoes += htmlSecao('⚠ Última reprovação', r.obsReprovacao);
+    podeAprovar = !!(r.social && r.social.trim());
+    btnAp.style.display = r.status === 'aprovado' ? 'none' : '';
+    btnRp.style.display = '';
+  }
+  else if(tipo === 'midia') {
+    const r = rows.find(r => r.key === key);
+    const mp = midiaProdutoData.find(m => m.socialKey === key) || {};
+    if(!r) return;
+    const produtoLabel = (NIBO_PRODUTO_OPTS.find(([v]) => v === r.produto) || [,'—'])[1];
+    title.textContent = `Visão completa · Post Produto ${r.date||''}`;
+    sub.textContent = `${produtoLabel} · Formato: ${MP_FORMATO_LABEL[mp.formato]||'—'} · Status: ${mp.aprovacao||'pendente'}`;
+    secoes += htmlSecao('Objetivo do post', mp.objetivo, 'Objetivo não preenchido');
+    secoes += htmlSecao('Briefing para o designer', mp.briefing, 'Briefing não preenchido');
+    secoes += htmlSecao('Copy / texto sugerido (Produto)', mp.copy, 'Copy ainda não foi escrita');
+    secoes += htmlSecao('Copy / texto do post (Social Media)', r.social, 'Copy do Social ainda não foi escrita');
+    secoes += htmlSecao('Briefing de design (Social Media)', r.design, 'Briefing de design ainda não foi preenchido');
+    if(mp.obsReprovacao) secoes += htmlSecao('⚠ Última reprovação', mp.obsReprovacao);
+    podeAprovar = !!(mp.objetivo || mp.briefing);
+    btnAp.style.display = mp.aprovacao === 'aprovado' ? 'none' : '';
+    btnRp.style.display = '';
+  }
+  else if(tipo === 'email') {
+    const ep = emailProdutoData.find(e => e.key === key);
+    if(!ep) return;
+    title.textContent = `Visão completa · ${ep.assunto || 'Campanha de email'}`;
+    sub.textContent = `${EP_TIPO_LABEL[ep.tipo]||ep.tipo||'—'} · ${ep.data||'—'} · Status: ${ep.aprovacao||'pendente'}`;
+    secoes += htmlSecao('Assunto', ep.assunto, 'Sem assunto');
+    secoes += htmlSecao('Objetivo', ep.objetivo, 'Objetivo não preenchido');
+    secoes += htmlSecao('Briefing / conteúdo', ep.briefing || ep.conteudo, 'Briefing não preenchido');
+    if(ep.preheader) secoes += htmlSecao('Preheader', ep.preheader);
+    if(ep.cta) secoes += htmlSecao('Call to action', ep.cta);
+    if(ep.obsReprovacao) secoes += htmlSecao('⚠ Última reprovação', ep.obsReprovacao);
+    podeAprovar = true;
+    btnAp.style.display = ep.aprovacao === 'aprovado' ? 'none' : '';
+    btnRp.style.display = '';
+  }
+
+  sec.innerHTML = secoes;
+  // Se não pode aprovar (faltam infos), só permite reprovar com observação
+  btnAp.disabled = !podeAprovar;
+  btnAp.style.opacity = podeAprovar ? '1' : '.4';
+  btnAp.style.cursor  = podeAprovar ? 'pointer' : 'not-allowed';
+
+  document.getElementById('modal-visao-completa').classList.add('open');
+};
+
+window.executarAprovacaoCompleta = async function(decisao) {
+  if(!vcContexto || !isMaris()) return;
+  const {tipo, key} = vcContexto;
+  const obs = document.getElementById('vc-obs').value.trim();
+  const from = userProfile.nome || 'Mariana';
+  const now = Date.now();
+  const tsFormatted = new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+
+  // Se reprovou, exige observação
+  if(decisao === 'reprovado' && !obs) {
+    alert('Por favor, escreva uma sugestão ou observação ao reprovar.');
+    document.getElementById('vc-obs').focus();
+    return;
+  }
+
+  if(tipo === 'social') {
+    const r = rows.find(r => r.key === key);
+    const patch = {status: decisao};
+    if(decisao === 'reprovado') patch.obsReprovacao = obs;
+    await saveRow(key, patch);
+    if(decisao === 'reprovado') {
+      await window.enviarNotifReprovacao(CRIADOR_POR_AREA.social, from, `Post ${r?.date||''} · Social Media`, 'social', obs, now, tsFormatted);
+    } else {
+      await window.enviarNotifAprovacao(CRIADOR_POR_AREA.social, from, `Post ${r?.date||''} · Social Media`, 'social', now, tsFormatted);
+    }
+  }
+  else if(tipo === 'midia') {
+    const r = rows.find(r => r.key === key);
+    const mpKey = 'mp-' + key;
+    const existing = midiaProdutoData.find(m => m.socialKey === key) || {};
+    const patch = {...existing, aprovacao: decisao, approvedBy: currentUserEmail(), approvedAt: tsFormatted};
+    if(decisao === 'reprovado') patch.obsReprovacao = obs;
+    else patch.obsAprovacao = obs;
+    await setDoc(doc(db,'midia-produto',mpKey), patch, {merge:true});
+    if(decisao === 'aprovado') {
+      await setDoc(doc(db,'rows',key), {status:'aprovado'}, {merge:true});
+      await window.enviarNotifAprovacao(CRIADOR_POR_AREA.midia, from, `Post ${r?.date||''} · Produto`, 'produto', now, tsFormatted);
+    } else {
+      await window.enviarNotifReprovacao(CRIADOR_POR_AREA.midia, from, `Post ${r?.date||''} · Produto`, 'produto', obs, now, tsFormatted);
+    }
+  }
+  else if(tipo === 'email') {
+    const existing = emailProdutoData.find(e => e.key === key) || {};
+    const patch = {...existing, aprovacao: decisao, approvedBy: currentUserEmail()};
+    if(decisao === 'reprovado') patch.obsReprovacao = obs;
+    else patch.obsAprovacao = obs;
+    await setDoc(doc(db,'email-produto',key), patch, {merge:true});
+    if(decisao === 'aprovado') {
+      await window.enviarNotifAprovacao(CRIADOR_POR_AREA.email, from, existing.assunto||'Campanha de email', 'email-produto', now, tsFormatted);
+    } else {
+      await window.enviarNotifReprovacao(CRIADOR_POR_AREA.email, from, existing.assunto||'Campanha de email', 'email-produto', obs, now, tsFormatted);
+    }
+  }
+
+  document.getElementById('modal-visao-completa').classList.remove('open');
+  vcContexto = null;
+  if(window.renderGestao) window.renderGestao();
+};
+
+// ── Notificação de reprovação (com sugestão) ──
+window.enviarNotifReprovacao = async function(toEmail, fromName, context, type, sugestao, ts, tsFormatted) {
+  const key = `notif-reprov-${type}-${ts}`;
+  await setDoc(doc(db,'notifications',key), {
+    key, toEmail, fromName,
+    context,
+    excerpt: `✗ Reprovado: "${(sugestao||'').slice(0,120)}"`,
+    type, read: false, ts, tsFormatted,
+  });
+};
+
 
 // ══════════════════════════════════════════
 // NOTIFICAÇÕES (sininho)
@@ -3694,7 +3878,7 @@ window.renderGestao = function() {
           let statusClass = (semCopy || semBriefing) ? 'sem-briefing' : status === 'reprovado' ? 'reprovado' : 'pendente';
           const action = (!semCopy && status !== 'aprovado')
             ? `<button class="gestao-item-action" onclick="event.stopPropagation();window.aprovarRapidoSocial('${r.key}')">✓ Aprovar</button>` : '';
-          return `<div class="gestao-item">
+          return `<div class="gestao-item" style="cursor:pointer" onclick="window.abrirVisaoCompleta('social','${r.key}')">
             <span class="gestao-item-date">${r.date||'—'}</span>
             <span class="gestao-item-type" style="color:${tipo.color}">${tipo.name}</span>
             <span class="gestao-item-desc">${r.social||'<em style="color:var(--text3)">sem copy</em>'}</span>
@@ -3731,7 +3915,7 @@ window.renderGestao = function() {
           const statusClass = !temBriefing ? 'sem-briefing' : mp.aprovacao==='reprovado' ? 'reprovado' : 'pendente';
           const action = temBriefing && mp.aprovacao !== 'aprovado'
             ? `<button class="gestao-item-action" onclick="event.stopPropagation();window.abrirAprovacao('midia','${r.key}')">✓ Aprovar</button>` : '';
-          return `<div class="gestao-item">
+          return `<div class="gestao-item" style="cursor:pointer" onclick="window.abrirVisaoCompleta('midia','${r.key}')">
             <span class="gestao-item-date">${r.date||'—'}</span>
             <span class="gestao-item-type">Produto</span>
             <span class="gestao-item-desc">${mp?.objetivo||'<em style="color:var(--text3)">briefing não preenchido</em>'}</span>
@@ -3749,7 +3933,7 @@ window.renderGestao = function() {
         + epPendItems.map(ep => {
           const sl = ep.aprovacao==='reprovado' ? '✗ Reprovada' : '● Aguarda aprovação';
           const sc = ep.aprovacao==='reprovado' ? 'reprovado' : 'pendente';
-          return `<div class="gestao-item">
+          return `<div class="gestao-item" style="cursor:pointer" onclick="window.abrirVisaoCompleta('email','${ep.key}')">
             <span class="gestao-item-date">${ep.data||'—'}</span>
             <span class="gestao-item-type">${EP_TIPO_LABEL[ep.tipo]||ep.tipo||'—'}</span>
             <span class="gestao-item-desc">${ep.assunto||'<em style="color:var(--text3)">sem assunto</em>'}</span>
