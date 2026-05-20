@@ -121,7 +121,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .trial-badge{font-size:10px;padding:2px 8px;border-radius:99px;background:#FEF3C7;color:var(--amber);font-weight:500}
 
 /* post row */
-.post-row{display:grid;grid-template-columns:82px 106px 130px 1fr 1fr 82px 110px 120px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s}
+.post-row{display:grid;grid-template-columns:82px 106px 140px 1fr 1fr 82px 110px 120px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s}
 .post-row:last-child{border-bottom:none}
 .post-row:hover{background:#FAFBFD}
 .post-row.trial{background:#FFFDF0}
@@ -643,6 +643,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .leg-copy-btn.copied{background:#D1FAE5;color:var(--green);border-color:#6EE7B7}
 .leg-apply-btn{font-size:11px;font-weight:600;padding:5px 14px;border-radius:99px;border:none;cursor:pointer;background:#ff40b3;color:#fff;font-family:'DM Sans',sans-serif;transition:all .15s}
 .leg-apply-btn:hover{background:#d4008f}
+
+.formato-select{
+  font-size:11px;font-family:'DM Sans',sans-serif;
+  border:.5px solid var(--border2);border-radius:var(--radius);
+  padding:3px 5px;outline:none;background:var(--surface);
+  cursor:pointer;width:100%;transition:all .15s;color:var(--text2);
+}
+.formato-select:focus{border-color:var(--nibo2)}
+.formato-select.video{color:#7c3aed;border-color:#c4b5fd;background:#f5f3ff}
+.formato-select.carrossel{color:#0369a1;border-color:#7dd3fc;background:#f0f9ff}
+.formato-select.estatica{color:#065f46;border-color:#6ee7b7;background:#f0fdf4}
+.formato-select.stories{color:#c2410c;border-color:#fdba74;background:#fff7ed}
+.formato-select.reels{color:#be185d;border-color:#f9a8d4;background:#fdf2f8}
 </style>
 </head>
 <body>
@@ -943,14 +956,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
   </div>
 
-  <!-- ABAS DA IA -->
-  <div class="ia-tabs">
-    <button class="ia-tab-btn active" id="ia-tab-criativo" onclick="window.switchIATab('criativo')">✦ Sugestões de Criativo</button>
-    <button class="ia-tab-btn" id="ia-tab-legenda" onclick="window.switchIATab('legenda')">📸 Legenda Instagram</button>
-  </div>
-
-  <!-- SEÇÃO CRIATIVO -->
-  <div id="ia-section-criativo">
   <div class="ia-form-card">
     <div class="ia-form-grid">
       <div class="ia-field">
@@ -1178,9 +1183,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="section-label" style="margin:0 0 4px">Referências de Design</div>
       <p style="font-size:12px;color:var(--text2)">Salve links do Behance, Pinterest e afins. Marque colegas para discutir!</p>
     </div>
-    <button onclick="window.abrirModalRef()" style="font-size:12px;font-weight:600;padding:8px 18px;border-radius:99px;border:none;cursor:pointer;background:#ff40b3;color:#fff;font-family:'DM Sans',sans-serif;box-shadow:0 2px 8px rgba(255,64,179,.3);transition:all .15s">+ Adicionar referência</button>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <select id="ref-filtro-mes" onchange="window.renderRefs()" style="font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:99px;padding:6px 14px;outline:none;background:var(--surface);color:var(--text2);cursor:pointer">
+        <option value="">Todos os meses</option>
+        <option value="Jan">Janeiro</option>
+        <option value="Fev">Fevereiro</option>
+        <option value="Mar">Março</option>
+        <option value="Abr">Abril</option>
+        <option value="Mai">Maio</option>
+        <option value="Jun">Junho</option>
+        <option value="Jul">Julho</option>
+        <option value="Ago">Agosto</option>
+        <option value="Set">Setembro</option>
+        <option value="Out">Outubro</option>
+        <option value="Nov">Novembro</option>
+        <option value="Dez">Dezembro</option>
+      </select>
+      <button onclick="window.abrirModalRef()" style="font-size:12px;font-weight:600;padding:8px 18px;border-radius:99px;border:none;cursor:pointer;background:#ff40b3;color:#fff;font-family:'DM Sans',sans-serif;box-shadow:0 2px 8px rgba(255,64,179,.3);transition:all .15s">+ Adicionar referência</button>
+    </div>
   </div>
-  <div id="refs-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px"></div>
+  <div id="refs-container"></div>
   <div id="refs-empty" style="display:none;text-align:center;padding:3rem 0;color:var(--text3);font-size:13px">Nenhuma referência ainda. Adicione a primeira! 🎨</div>
 </div>
 
@@ -1356,17 +1378,37 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px" id="mention-chips"></div>
         </div>
 
-        <!-- CATEGORIA -->
-        <div>
-          <div class="modal-label">Categoria</div>
-          <select id="ref-cat" style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)">
-            <option value="paleta">🎨 Paleta / Cores</option>
-            <option value="layout">📐 Layout / Composição</option>
-            <option value="tipografia">✍️ Tipografia</option>
-            <option value="motion">🎬 Motion / Animação</option>
-            <option value="foto">📸 Fotografia / Estilo</option>
-            <option value="geral">💡 Geral / Inspiração</option>
-          </select>
+        <!-- CATEGORIA + MÊS -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <div class="modal-label">Categoria</div>
+            <select id="ref-cat" style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)">
+              <option value="paleta">🎨 Paleta / Cores</option>
+              <option value="layout">📐 Layout / Composição</option>
+              <option value="tipografia">✍️ Tipografia</option>
+              <option value="motion">🎬 Motion / Animação</option>
+              <option value="foto">📸 Fotografia / Estilo</option>
+              <option value="geral">💡 Geral / Inspiração</option>
+            </select>
+          </div>
+          <div>
+            <div class="modal-label">Mês de referência</div>
+            <select id="ref-mes" style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)">
+              <option value="">Geral</option>
+              <option value="Jan">Janeiro</option>
+              <option value="Fev">Fevereiro</option>
+              <option value="Mar">Março</option>
+              <option value="Abr">Abril</option>
+              <option value="Mai">Maio</option>
+              <option value="Jun">Junho</option>
+              <option value="Jul">Julho</option>
+              <option value="Ago">Agosto</option>
+              <option value="Set">Setembro</option>
+              <option value="Out">Outubro</option>
+              <option value="Nov">Novembro</option>
+              <option value="Dez">Dezembro</option>
+            </select>
+          </div>
         </div>
 
       </div>
@@ -1786,6 +1828,7 @@ window.abrirModalRef = function(key=null) {
   document.getElementById('ref-title').value = '';
   document.getElementById('ref-comment').value = '';
   document.getElementById('ref-cat').value = 'geral';
+  document.getElementById('ref-mes').value = '';
   document.getElementById('ref-img-preview').style.display = 'none';
   document.getElementById('ref-img-placeholder').style.display = 'flex';
   document.getElementById('ref-img-remove').style.display = 'none';
@@ -1796,6 +1839,7 @@ window.abrirModalRef = function(key=null) {
       document.getElementById('ref-url').value = snap.url||'';
       document.getElementById('ref-title').value = snap.title||'';
       document.getElementById('ref-cat').value = snap.cat||'geral';
+      document.getElementById('ref-mes').value = snap.mes||'';
       if(snap.imgBase64) {
         refImgTemp = snap.imgBase64;
         document.getElementById('ref-img-preview').src = snap.imgBase64;
@@ -1813,11 +1857,25 @@ window.onRefImgChange = function(input) {
   if(!file) return;
   const reader = new FileReader();
   reader.onload = e => {
-    refImgTemp = e.target.result;
-    document.getElementById('ref-img-preview').src = refImgTemp;
-    document.getElementById('ref-img-preview').style.display = 'block';
-    document.getElementById('ref-img-placeholder').style.display = 'none';
-    document.getElementById('ref-img-remove').style.display = 'inline';
+    // Comprimir imagem para max 800px e qualidade 0.7 (evita estourar o Firestore)
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if(w > MAX || h > MAX) {
+        if(w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      refImgTemp = canvas.toDataURL('image/jpeg', 0.72);
+      document.getElementById('ref-img-preview').src = refImgTemp;
+      document.getElementById('ref-img-preview').style.display = 'block';
+      document.getElementById('ref-img-placeholder').style.display = 'none';
+      document.getElementById('ref-img-remove').style.display = 'inline';
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 };
@@ -1862,7 +1920,8 @@ window.salvarRef = async function() {
   const existing = refsData.find(r => r.key === key);
   const existingComments = existing?.comments || [];
 
-  const refObj = { key, url, title, cat, author, authorFull, ts: existing?.ts || now, comments: existingComments, imgBase64: refImgTemp };
+  const refMes = document.getElementById('ref-mes')?.value || '';
+  const refObj = { key, url, title, cat, author, authorFull, ts: existing?.ts || now, comments: existingComments, imgBase64: refImgTemp, mes: refMes };
 
   // comentário inicial só em criações novas (não edição)
   if(comment && !refEditingKey) {
@@ -1971,13 +2030,33 @@ onSnapshot(collection(db,'refs'), snap => {
 });
 
 window.renderRefs = function() {
-  const grid = document.getElementById('refs-grid');
+  const container = document.getElementById('refs-container');
   const empty = document.getElementById('refs-empty');
-  if(!grid) return;
-  if(!refsData.length) { grid.innerHTML=''; empty.style.display='block'; return; }
+  if(!container) return;
+
+  const filtroMes = document.getElementById('ref-filtro-mes')?.value || '';
+  let filtered = filtroMes ? refsData.filter(r => r.mes === filtroMes) : refsData;
+
+  if(!filtered.length) { container.innerHTML=''; empty.style.display='block'; return; }
   empty.style.display='none';
 
-  grid.innerHTML = refsData.map(r => {
+  // Agrupar por mês
+  const grupos = {};
+  filtered.forEach(r => {
+    const mesKey = r.mes || 'Geral';
+    if(!grupos[mesKey]) grupos[mesKey] = [];
+    grupos[mesKey].push(r);
+  });
+
+  const mesOrdem = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez','Geral'];
+  const gruposOrdenados = Object.keys(grupos).sort((a,b) => {
+    const ia = mesOrdem.indexOf(a), ib = mesOrdem.indexOf(b);
+    return (ia===-1?99:ia) - (ib===-1?99:ib);
+  });
+
+  container.innerHTML = gruposOrdenados.map(mes => {
+    const refs = grupos[mes];
+    const cardsHtml = refs.map(r => {
     let domain = '';
     try { domain = new URL(r.url).hostname.replace('www.',''); } catch(e){}
     const isPinterest = domain.includes('pinterest');
@@ -2051,10 +2130,17 @@ window.renderRefs = function() {
         </div>
       </div>
     </div>`;
+    }).join('');
+    return `<div style="margin-bottom:2rem">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em">${mes === 'Geral' ? '📌 Geral' : '📅 ' + mes}</div>
+        <div style="flex:1;height:.5px;background:var(--border2)"></div>
+        <div style="font-size:11px;color:var(--text3)">${refs.length} referência${refs.length!==1?'s':''}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px">${cardsHtml}</div>
+    </div>`;
   }).join('');
-};
-
-window.insertMention = function(key, name) {
+};indow.insertMention = function(key, name) {
   const inp = document.getElementById('ref-comment-input-'+key);
   if(!inp) return;
   const val = inp.value;
@@ -2229,9 +2315,18 @@ function renderCalendar(){
           <span class="dot" style="background:${tipo.color}"></span>
           <select class="tipo-select" onchange="window.updRowField('${p.key}','tipoId',this.value)">${tipoOpts}</select>
         </div>
-        <select class="produto-select${p.produto?' filled':''}" onchange="window.updRowField('${p.key}','produto',this.value)" title="${p.produto||''}">
-          ${NIBO_PRODUTO_OPTS.map(([v,l])=>`<option value="${v}"${v===p.produto?' selected':''}>${l}</option>`).join('')}
-        </select>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <select class="produto-select${p.produto?' filled':''}" onchange="window.updRowField('${p.key}','produto',this.value)" title="${p.produto||''}">
+            ${NIBO_PRODUTO_OPTS.map(([v,l])=>`<option value="${v}"${v===p.produto?' selected':''}>${l}</option>`).join('')}
+          </select>
+          <select class="formato-select ${p.formato||''}" onchange="window.setFormato('${p.key}',this)">
+            <option value="">Formato...</option>
+            <option value="estatica"${p.formato==='estatica'?' selected':''}>🖼 Estática</option>
+            <option value="carrossel"${p.formato==='carrossel'?' selected':''}>📑 Carrossel</option>
+            <option value="video"${p.formato==='video'?' selected':''}>🎬 Vídeo/Reels</option>
+            <option value="stories"${p.formato==='stories'?' selected':''}>⭕ Stories</option>
+          </select>
+        </div>
         <span class="idea-cell${p.social?' filled':''}" onclick="window.openModal('${p.key}','social')" title="${(p.social||'').replace(/"/g,'&quot;')}">${sSnip}</span>
         <span class="idea-cell${p.design?' filled':''}" onclick="window.openModal('${p.key}','design')" title="${(p.design||'').replace(/"/g,'&quot;')}">${dSnip}</span>
         <div class="cor-selector">${corBtns}</div>
@@ -3949,6 +4044,13 @@ window.limparLegenda = function() {
   document.getElementById('leg-error').style.display='none';
   document.getElementById('leg-post-selector').style.display='none';
   legSelectedIdx=null;legSelectedPostKey=null;legCurrentLegendas=[];
+};
+
+
+window.setFormato = async function(key, sel) {
+  const val = sel.value;
+  sel.className = 'formato-select ' + val;
+  await window.updRowField(key, 'formato', val);
 };
 
 </script>
