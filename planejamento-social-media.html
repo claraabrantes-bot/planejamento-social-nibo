@@ -108,7 +108,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
 
 /* table */
-.table-header{display:grid;grid-template-columns:82px 140px 1fr 1fr 82px 110px 120px 30px;gap:5px;padding:0 10px 6px;border-bottom:.5px solid var(--border2);margin-bottom:6px}
+.table-header{display:grid;grid-template-columns:82px 106px 130px 1fr 1fr 82px 110px 120px 30px;gap:5px;padding:0 10px 6px;border-bottom:.5px solid var(--border2);margin-bottom:6px}
 .th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
 
 /* week */
@@ -121,7 +121,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .trial-badge{font-size:10px;padding:2px 8px;border-radius:99px;background:#FEF3C7;color:var(--amber);font-weight:500}
 
 /* post row */
-.post-row{display:grid;grid-template-columns:82px 140px 1fr 1fr 82px 110px 120px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s}
+.post-row{display:grid;grid-template-columns:82px 106px 130px 1fr 1fr 82px 110px 120px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s}
 .post-row:last-child{border-bottom:none}
 .post-row:hover{background:#FAFBFD}
 .post-row.trial{background:#FFFDF0}
@@ -868,6 +868,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="table-header" style="margin-top:8px">
     <div class="th">Data</div>
     <div class="th">Tipo</div>
+    <div class="th">Produto</div>
     <div class="th">Social media</div>
     <div class="th">Design</div>
     <div class="th">Cor</div>
@@ -1626,6 +1627,9 @@ let tipoDesc= {};
 let activeMonthIdx = 0;  // index into months[]
 let editingKey = null;
 let mTab = 'social';
+let userProfile = { nome:'', arroba:'', cargo:'', fotoBase64:'' };
+let allProfiles = {};
+let notifData = [];
 
 // ── SYNC UI ──
 function setSyncing(){document.getElementById('sync-dot').className='sync-dot saving';document.getElementById('sync-label').textContent='Salvando...';}
@@ -2343,8 +2347,10 @@ function renderCalendar(){
         <div class="post-tipo">
           <span class="dot" style="background:${tipo.color}"></span>
           <select class="tipo-select" onchange="window.updRowField('${p.key}','tipoId',this.value)">${tipoOpts}</select>
-          ${p.produto||p.formato ? `<span style="font-size:9px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60px" title="${p.produto||''}${p.formato?' · '+p.formato:''}">${p.produto?p.produto.split(' ').slice(-1)[0]:''}${p.formato?' · '+p.formato:''}</span>` : ''}
         </div>
+        <select class="produto-select${p.produto?' filled':''}" onchange="window.updRowField('${p.key}','produto',this.value)" title="${p.produto||''}">
+          ${NIBO_PRODUTO_OPTS.map(([v,l])=>`<option value="${v}"${v===p.produto?' selected':''}>${l}</option>`).join('')}
+        </select>
         <span class="idea-cell${p.social?' filled':''}" data-modal-key="${p.key}" data-modal-tab="social" title="${(p.social||'').replace(/"/g,'&quot;')}">${sSnip}</span>
         <span class="idea-cell${p.design?' filled':''}" data-modal-key="${p.key}" data-modal-tab="design" title="${(p.design||'').replace(/"/g,'&quot;')}">${dSnip}</span>
         <div class="cor-selector">${corBtns}</div>
@@ -2496,6 +2502,7 @@ function renderConfig(){
     </div>`).join('');
   renderTipos('tipos-cfg');
 }
+function renderCores(){renderConfig();}
 window.updateCor=async function(i,field,val){
   cores[i][field]=val;
   await saveCores();
@@ -2982,9 +2989,6 @@ window.showPage=function(id,btn){if(_origSP)_origSP(id,btn);if(id==='configuraco
 
 
 // ── USER PROFILE ──
-let userProfile = { nome:'', arroba:'', cargo:'', fotoBase64:'' };
-let allProfiles = {}; // cache: email -> { fotoBase64, nome, arroba }
-
 // Listener de TODOS os perfis para usar nos comentários
 onSnapshot(collection(db, 'profiles'), snap => {
   snap.forEach(d => {
@@ -3612,7 +3616,6 @@ window.enviarNotifAprovacao = async function(toEmail, fromName, context, type, t
 // ══════════════════════════════════════════
 // NOTIFICAÇÕES (sininho)
 // ══════════════════════════════════════════
-let notifData = [];
 let notifOpen = false;
 
 // Listener do Firestore para notificações do usuário atual
