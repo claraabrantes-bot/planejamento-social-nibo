@@ -1804,18 +1804,66 @@ window.abrirModalRef = function(key=null) {
   document.getElementById('modal-ref').classList.add('open');
 };
 
-window.onRefImgChange = function(input) {
+// Comprime imagem: redimensiona pra max 1200px no maior lado e reencoda como JPEG 0.82
+async function comprimirImagem(file, maxLado = 1200, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Falha ao ler o arquivo'));
+    reader.onload = e => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Falha ao carregar imagem'));
+      img.onload = () => {
+        let { width: w, height: h } = img;
+        if (w > maxLado || h > maxLado) {
+          if (w >= h) { h = Math.round(h * maxLado / w); w = maxLado; }
+          else        { w = Math.round(w * maxLado / h); h = maxLado; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        // fundo branco pra PNGs com transparência não virarem preto no JPEG
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+window.onRefImgChange = async function(input) {
   const file = input.files[0];
   if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    refImgTemp = e.target.result;
-    document.getElementById('ref-img-preview').src = refImgTemp;
-    document.getElementById('ref-img-preview').style.display = 'block';
-    document.getElementById('ref-img-placeholder').style.display = 'none';
-    document.getElementById('ref-img-remove').style.display = 'inline';
-  };
-  reader.readAsDataURL(file);
+  const placeholder = document.getElementById('ref-img-placeholder');
+  const preview = document.getElementById('ref-img-preview');
+  const removeBtn = document.getElementById('ref-img-remove');
+
+  // Estado de loading
+  const txtOriginal = placeholder.innerHTML;
+  placeholder.innerHTML = '<span style="font-size:12px;color:var(--text2)">Comprimindo imagem...</span>';
+
+  try {
+    let dataUrl = await comprimirImagem(file, 1200, 0.82);
+    // Se ainda passar de ~800KB em base64 (~1MB no Firestore), tenta de novo mais agressivo
+    if (dataUrl.length > 800_000) {
+      dataUrl = await comprimirImagem(file, 900, 0.7);
+    }
+    if (dataUrl.length > 800_000) {
+      dataUrl = await comprimirImagem(file, 700, 0.6);
+    }
+    refImgTemp = dataUrl;
+    preview.src = refImgTemp;
+    preview.style.display = 'block';
+    placeholder.style.display = 'none';
+    placeholder.innerHTML = txtOriginal;
+    removeBtn.style.display = 'inline';
+  } catch(err) {
+    placeholder.innerHTML = txtOriginal;
+    alert('Não consegui processar essa imagem. Tente outra.\n\n' + (err?.message||''));
+    input.value = '';
+  }
 };
 
 window.removeRefImg = function() {
@@ -1866,8 +1914,21 @@ window.salvarRef = async function() {
     refObj.comments.push(commentObj);
     window.detectarMencoes(comment, author, title||'uma referência', key, 'ref');
   }
-  await setDoc(doc(db,'refs',key), refObj);
-  window.fecharModalRef();
+
+  // Tamanho aproximado do payload (limite do Firestore é 1 MiB ≈ 1.048.576 bytes)
+  const tamanho = JSON.stringify(refObj).length;
+  if (tamanho > 1_000_000) {
+    alert(`A referência ficou muito grande (${(tamanho/1024).toFixed(0)} KB). Tente uma imagem menor.`);
+    return;
+  }
+
+  try {
+    await setDoc(doc(db,'refs',key), refObj);
+    window.fecharModalRef();
+  } catch(err) {
+    console.error('Erro ao salvar referência:', err);
+    alert('Erro ao salvar a referência:\n\n' + (err?.message || err));
+  }
 };
 
 window.deletarRef = async function(key) {
@@ -3493,7 +3554,9 @@ function htmlSecao(label, valor, vazioMsg) {
 }
 
 window.abrirVisaoCompleta = function(tipo, key) {
-  if(!isMaris()) return;
+  // Qualquer um logado pode VER. Só aprovadores (Maris/Clara) veem os botões aprovar/reprovar.
+  if(!auth.currentUser) return;
+  const ehAprovador = isMaris() || currentUserEmail() === 'clara.abrantes@nibo.com.br';
   vcContexto = {tipo, key};
   const title = document.getElementById('vc-title');
   const sub   = document.getElementById('vc-sub');
@@ -3560,11 +3623,22 @@ window.abrirVisaoCompleta = function(tipo, key) {
   btnAp.style.opacity = podeAprovar ? '1' : '.4';
   btnAp.style.cursor  = podeAprovar ? 'pointer' : 'not-allowed';
 
+  // Quem não é aprovador só consegue visualizar — esconde botões e campo de observação
+  const obsWrap = obs.closest('div');
+  if (!ehAprovador) {
+    btnAp.style.display = 'none';
+    btnRp.style.display = 'none';
+    if(obsWrap) obsWrap.style.display = 'none';
+  } else {
+    if(obsWrap) obsWrap.style.display = '';
+  }
+
   document.getElementById('modal-visao-completa').classList.add('open');
 };
 
 window.executarAprovacaoCompleta = async function(decisao) {
-  if(!vcContexto || !isMaris()) return;
+  const ehAprovador = isMaris() || currentUserEmail() === 'clara.abrantes@nibo.com.br';
+  if(!vcContexto || !ehAprovador) return;
   const {tipo, key} = vcContexto;
   const obs = document.getElementById('vc-obs').value.trim();
   const from = userProfile.nome || 'Mariana';
