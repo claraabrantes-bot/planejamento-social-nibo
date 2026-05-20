@@ -23,6 +23,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);transition:background .3s;flex-shrink:0}
 .sync-dot.ok{background:#1D9E75}.sync-dot.saving{background:#F59E0B;animation:pulse .8s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes slideInToast{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
 
 /* main tabs */
 .main-tabs{display:flex;gap:8px;align-items:center;margin:0}
@@ -1458,6 +1459,7 @@ onAuthStateChanged(auth, user => {
     if(ddName) ddName.textContent = user.email.split('@')[0];
     listenProfile(user.uid);
     listenNotifications(user.uid);
+    pedirPermissaoNotif();
   } else {
     if (user) {
       signOut(auth);
@@ -3454,17 +3456,91 @@ window.enviarNotifAprovacao = async function(toEmail, fromName, context, type, t
 let notifData = [];
 let notifOpen = false;
 
+// ── POP-UP DE MENÇÕES ──
+let notifIdsConhecidos = new Set();
+let primeiroCarregamento = true;
+
+// Pede permissão pro navegador mostrar notificações do sistema
+async function pedirPermissaoNotif() {
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "default") {
+    await Notification.requestPermission();
+  }
+}
+
+// Toast bonitinho dentro da própria página
+function mostrarToastMencao(n) {
+  const toast = document.createElement('div');
+  toast.style.cssText = `
+    position:fixed;bottom:80px;right:24px;z-index:9999;
+    background:#fff;border:.5px solid var(--border2);
+    border-left:3px solid #ff40b3;
+    padding:14px 18px;border-radius:10px;
+    box-shadow:0 8px 24px rgba(0,0,0,.15);
+    max-width:340px;cursor:pointer;
+    animation:slideInToast .3s ease-out;
+    font-family:'DM Sans',sans-serif;
+    transition:opacity .4s;
+  `;
+  toast.innerHTML = `
+    <div style="font-size:13px;color:var(--text);line-height:1.4">
+      <b style="color:#ff40b3">@${n.fromName}</b> te mencionou em <b>${n.context}</b>
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-top:4px;line-height:1.4">
+      "${n.excerpt || ''}"
+    </div>
+  `;
+  // Ao clicar no toast, abre o dropdown de notificações
+  toast.onclick = () => {
+    window.toggleNotif();
+    toast.remove();
+  };
+  document.body.appendChild(toast);
+  setTimeout(() => toast.style.opacity = '0', 5000);
+  setTimeout(() => toast.remove(), 5400);
+}
+
+// Notificação do sistema operacional (aparece mesmo em outra aba)
+function notificarSistema(n) {
+  if (Notification.permission !== "granted") return;
+  const notif = new Notification(`${n.fromName} te mencionou`, {
+    body: `${n.context}: "${n.excerpt || ''}"`,
+    tag: 'nibo-mencao-' + n.key,
+  });
+  notif.onclick = () => {
+    window.focus();
+    notif.close();
+  };
+}
+
+// Decide qual usar: toast (aba aberta) ou sistema (aba em background)
+function dispararPopupMencao(n) {
+  if (document.hidden) {
+    notificarSistema(n);
+  } else {
+    mostrarToastMencao(n);
+  }
+}
+
 // Listener do Firestore para notificações do usuário atual
 function listenNotifications(uid) {
   onSnapshot(collection(db, 'notifications'), snap => {
     notifData = [];
+    const idsAtuais = new Set();
     snap.forEach(d => {
       const n = {key:d.id,...d.data()};
       // só notificações para o uid atual
       if(n.toUid === uid || n.toEmail === auth.currentUser?.email?.toLowerCase()) {
         notifData.push(n);
+        idsAtuais.add(n.key);
+        // Se é nova (não estava no carregamento inicial), dispara o pop-up
+        if (!primeiroCarregamento && !notifIdsConhecidos.has(n.key)) {
+          dispararPopupMencao(n);
+        }
       }
     });
+    notifIdsConhecidos = idsAtuais;
+    primeiroCarregamento = false;
     notifData.sort((a,b) => (b.ts||0) - (a.ts||0));
     window.renderNotif();
   });
