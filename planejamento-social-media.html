@@ -1354,7 +1354,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="modal-body">
       <div id="modal-pane-social" class="modal-pane active">
         <div class="modal-label">Ideia / descrição para social media</div>
-        <textarea id="modal-social" placeholder="Texto do post, objetivo, hashtags, CTA..." rows="5"></textarea>
+        <div style="margin-bottom:6px">
+          <label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em">Copy do post</label>
+          <textarea id="modal-social" placeholder="Texto do criativo, objetivo, CTA..." rows="3" style="margin-top:4px"></textarea>
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em">Legenda <span style="font-weight:400;color:var(--text3)">(caption do Instagram)</span></label>
+          <textarea id="modal-legenda" placeholder="Legenda completa para o Instagram, com emojis e hashtags..." rows="4" style="margin-top:4px"></textarea>
+        </div>
       </div>
       <div id="modal-pane-design" class="modal-pane">
         <div class="modal-label">Briefing para o designer</div>
@@ -1543,7 +1550,8 @@ async function generateDefaultRows(){
     let weekIdx=-1;
     let lastMonday=-1;
     let order=mi*1000;
-    for(let day=1;day<=dim;day++){
+    const startDay=(y===2026&&m===4)?20:1; // maio/2026 começa dia 20
+    for(let day=startDay;day<=dim;day++){
       const dt=new Date(y,m,day);
       const dow=dt.getDay(); // 0=Sun,1=Mon..5=Fri,6=Sat
       if(dow===0||dow===6) continue; // skip weekends
@@ -1589,7 +1597,8 @@ window.addMonth=async function(y,m){
   // generate rows for new month with correct week detection
   const dim=new Date(y,m+1,0).getDate();
   let weekIdx=-1, order=(newMonths.findIndex(mo=>mo.y===y&&mo.m===m))*1000;
-  for(let day=1;day<=dim;day++){
+  const startDay2=(y===2026&&m===4)?20:1; // maio/2026 começa dia 20
+  for(let day=startDay2;day<=dim;day++){
     const dt=new Date(y,m,day);
     const dow=dt.getDay();
     if(dow===0||dow===6) continue;
@@ -2226,6 +2235,8 @@ window.openModal=function(key,tab='social'){
   document.getElementById('modal-title').textContent=tipo.name;
   document.getElementById('modal-sub').textContent=r.date||'sem data';
   document.getElementById('modal-social').value=r.social||'';
+  const legEl=document.getElementById('modal-legenda');
+  if(legEl) legEl.value=r.legenda||'';
   document.getElementById('modal-design').value=r.design||'';
   document.getElementById('modal-maris').value=r.marisObs||'';
   // mostrar/esconder aba maris conforme permissão
@@ -2245,9 +2256,10 @@ window.closeModal=function(){document.getElementById('modal').classList.remove('
 window.saveModal=async function(){
   if(!editingKey) return;
   const s=document.getElementById('modal-social').value.trim();
+  const legenda=document.getElementById('modal-legenda')?.value.trim()||'';
   const d=document.getElementById('modal-design').value.trim();
   const obs=document.getElementById('modal-maris').value.trim();
-  await saveRow(editingKey,{social:s,design:d,marisObs:obs});
+  await saveRow(editingKey,{social:s,design:d,marisObs:obs,legenda});
   window.closeModal();
 }
 document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)window.closeModal();});
@@ -2494,8 +2506,11 @@ DIRETRIZES OBRIGATÓRIAS da Nibo para texto de criativo (post de redes sociais):
 7. TOM: próximo, direto, sem jargão excessivo.
 
 Responda SOMENTE em JSON válido, sem markdown, sem texto fora do JSON:
-{"sugestoes":[{"texto":"...","cta":"...","chars":120,"angulo":"Dor|Benefício|Transformação|Dado|Pergunta","rationale":"Por que funciona em 1 frase curta","alerta":""}]}
-Gere exatamente 4 sugestões com ângulos diferentes. "alerta" só se houver ponto de atenção, senão "".`;
+{"sugestoes":[{"texto":"...","legenda":"...","cta":"...","chars":120,"angulo":"Dor|Benefício|Transformação|Dado|Pergunta","rationale":"Por que funciona em 1 frase curta","alerta":""}]}
+Gere exatamente 4 sugestões com ângulos diferentes.
+"texto": copy curto do criativo (90–180 chars).
+"legenda": legenda completa para Instagram com emojis, hashtags relevantes da Nibo e CTA, entre 150–300 chars.
+"alerta" só se houver ponto de atenção, senão "".`;
 
 const ANGULO_COLORS={
   'Dor':{bg:'#fef2f2',border:'#fca5a5',text:'#991b1b'},
@@ -2576,6 +2591,7 @@ function renderIACards(sugestoes,entry){
         <span id="ia-card-check-${i}" style="display:none;margin-left:auto;width:20px;height:20px;border-radius:50%;background:var(--nibo1);display:none;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:700;flex-shrink:0">✓</span>
       </div>
       <div style="font-size:13px;color:var(--text);line-height:1.6;font-weight:500;flex:1">${escapeHtml(s.texto)}</div>
+      ${s.legenda?`<div style="font-size:11px;color:var(--text2);line-height:1.5;border-top:.5px solid rgba(0,0,0,.06);padding-top:8px;margin-top:4px"><span style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Legenda: </span>${escapeHtml(s.legenda)}</div>`:''}
       ${s.rationale?`<div style="font-size:11px;color:var(--text3);font-style:italic;line-height:1.5;border-top:.5px solid rgba(0,0,0,.06);padding-top:8px">${escapeHtml(s.rationale)}</div>`:''}
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         <span style="font-size:10px;padding:2px 8px;border-radius:99px;background:#F0FDF4;color:var(--green);font-family:'DM Mono',monospace">${s.chars||s.texto.length} chars</span>
@@ -2700,14 +2716,18 @@ window.escolherPost=function(key){
 window.aplicarEmPost=async function(){
   if(!iaSelectedPostKey||iaSelectedIdx===null) return;
   const campo=document.querySelector('input[name="ia-campo"]:checked')?.value||'social';
-  const texto=iaCurrentSugestoes[iaSelectedIdx]?.texto;
+  const sugestao=iaCurrentSugestoes[iaSelectedIdx];
+  const texto=sugestao?.texto;
   if(!texto) return;
   const r=rows.find(r=>r.key===iaSelectedPostKey);
   if(!r) return;
   if(r[campo]&&r[campo].trim()){
     if(!confirm(`O campo ${campo==='social'?'Social Media':'Design'} deste post já tem conteúdo. Substituir?`)) return;
   }
-  await saveRow(iaSelectedPostKey,{[campo]:texto});
+  const updateData={[campo]:texto};
+  // Se campo social, salva legenda automaticamente também
+  if(campo==='social' && sugestao.legenda) updateData.legenda = sugestao.legenda;
+  await saveRow(iaSelectedPostKey,updateData);
   document.getElementById('ia-aplicar-ok').style.display='inline-flex';
   const btn=document.getElementById('ia-aplicar-btn');
   btn.textContent='✓ Aplicado!';
