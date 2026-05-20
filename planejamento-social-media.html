@@ -622,6 +622,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 }
 .produto-select:focus{border-color:var(--nibo2)}
 .produto-select.filled{color:var(--nibo1);font-weight:600;border-color:var(--nibo4)}
+
+/* ── IA ABAS ── */
+.ia-tabs{display:flex;gap:6px;margin-bottom:1.4rem;background:var(--surface);border:.5px solid var(--border2);border-radius:99px;padding:4px;width:fit-content}
+.ia-tab-btn{font-size:12px;font-weight:600;padding:7px 18px;border-radius:99px;border:none;cursor:pointer;background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;transition:all .18s;white-space:nowrap}
+.ia-tab-btn:hover{background:var(--surface2);color:var(--text)}
+.ia-tab-btn.active{background:var(--nibo1);color:#fff;box-shadow:0 2px 8px rgba(0,45,114,.2)}
+
+/* Legenda IG */
+.leg-card{background:var(--surface);border:.5px solid var(--border2);border-radius:var(--radius-xl);overflow:hidden;margin-bottom:14px}
+.leg-card-header{padding:16px 18px 12px;border-bottom:.5px solid var(--border)}
+.leg-card-num{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;margin-bottom:6px}
+.leg-block{padding:10px 18px;border-bottom:.5px solid var(--border)}
+.leg-block:last-child{border-bottom:none}
+.leg-block-label{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.leg-block-text{font-size:13px;color:var(--text);line-height:1.6}
+.leg-card-actions{padding:10px 18px;display:flex;gap:8px;background:var(--surface2);flex-wrap:wrap}
+.leg-copy-btn{font-size:11px;font-weight:600;padding:5px 14px;border-radius:99px;border:.5px solid var(--border2);cursor:pointer;background:var(--surface);color:var(--text2);font-family:'DM Sans',sans-serif;transition:all .15s}
+.leg-copy-btn:hover{background:var(--nibo4);color:var(--nibo1);border-color:var(--nibo2)}
+.leg-copy-btn.copied{background:#D1FAE5;color:var(--green);border-color:#6EE7B7}
+.leg-apply-btn{font-size:11px;font-weight:600;padding:5px 14px;border-radius:99px;border:none;cursor:pointer;background:#ff40b3;color:#fff;font-family:'DM Sans',sans-serif;transition:all .15s}
+.leg-apply-btn:hover{background:#d4008f}
 </style>
 </head>
 <body>
@@ -917,11 +938,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="ia-hero">
     <div class="ia-hero-icon">✦</div>
     <div>
-      <div class="ia-hero-title">Sugestões de Criativo</div>
-      <div class="ia-hero-sub">Descreva o produto, o destaque e a ideia — a IA gera opções prontas para o criativo</div>
+      <div class="ia-hero-title">IA Criativa</div>
+      <div class="ia-hero-sub">Gere sugestões de criativo e legendas prontas para o Instagram</div>
     </div>
   </div>
 
+  <!-- ABAS DA IA -->
+  <div class="ia-tabs">
+    <button class="ia-tab-btn active" id="ia-tab-criativo" onclick="window.switchIATab('criativo')">✦ Sugestões de Criativo</button>
+    <button class="ia-tab-btn" id="ia-tab-legenda" onclick="window.switchIATab('legenda')">📸 Legenda Instagram</button>
+  </div>
+
+  <!-- SEÇÃO CRIATIVO -->
+  <div id="ia-section-criativo">
   <div class="ia-form-card">
     <div class="ia-form-grid">
       <div class="ia-field">
@@ -3732,6 +3761,194 @@ window.aprovarRapidoSocial = async function(key) {
   const tsFormatted = new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
   await window.enviarNotifAprovacao('clara.abrantes@nibo.com.br', from, `Post ${r?.date||''} · Social Media`, 'social', now, tsFormatted);
   window.renderGestao();
+};
+
+
+// ══════════════════════════════════════════
+// IA — ABAS
+// ══════════════════════════════════════════
+window.switchIATab = function(tab) {
+  ['criativo','legenda'].forEach(t => {
+    document.getElementById('ia-tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('ia-section-'+t).style.display = t===tab ? '' : 'none';
+  });
+};
+
+// ══════════════════════════════════════════
+// LEGENDA INSTAGRAM
+// ══════════════════════════════════════════
+const LEG_SYSTEM_PROMPT_BASE = `Voce e especialista em copywriting para Instagram da Nibo, software de gestao financeira.
+
+REGRAS OBRIGATORIAS para a legenda:
+1. PRIMEIRA FRASE: gancho forte e direto para o publico especifico. Deve parar o scroll. Max 10 palavras. Sem ponto final use reticencias ou quebra de linha.
+2. DESENVOLVIMENTO (3-5 linhas curtas):
+   - O QUE: o que e ou o que faz
+   - PARA QUE: qual dor resolve ou beneficio entrega
+   - PARA QUEM: deixar claro o publico, nunca generico
+   - SOLUCAO: como o Nibo resolve de forma simples
+3. EMOJIS: usar com moderacao, 1-2 por bloco
+4. CTA FINAL: sempre terminar com link na bio. Ex: "Link na bio para conhecer" ou "Acesse pelo link na bio e teste gratis"
+5. HASHTAGS: 8-12 relevantes ao final, misturando tags grandes e nichadas da area financeira.
+6. TOM: TOM_PLACEHOLDER. Nunca corporativo. Proximo, humano, confiante.
+7. TAMANHO TOTAL: 150-300 palavras com hashtags.
+
+Responda SOMENTE em JSON valido sem markdown:
+{"legendas":[{"gancho":"...","desenvolvimento":"...","cta":"...","hashtags":"...","legenda_completa":"..."}]}
+Gere 3 versoes com ganchos diferentes.`;
+
+let legSelectedIdx = null;
+let legSelectedPostKey = null;
+let legCurrentLegendas = [];
+
+window.gerarLegenda = async function() {
+  const apiKey = localStorage.getItem('nibo_groq_key');
+  if(!apiKey) {
+    document.getElementById('leg-error').textContent = 'Configure sua API key do Groq em Configuracoes.';
+    document.getElementById('leg-error').style.display = 'block';
+    return;
+  }
+  const produto = document.getElementById('leg-produto').value.trim();
+  const publico = document.getElementById('leg-publico').value.trim();
+  const func = document.getElementById('leg-funcionalidade').value.trim();
+  const contexto = document.getElementById('leg-contexto').value.trim();
+  const hashtags = document.getElementById('leg-hashtags').value.trim();
+  const tom = document.getElementById('leg-tom').value;
+
+  if(!produto || !publico) {
+    document.getElementById('leg-error').textContent = 'Preencha pelo menos Produto e Publico-alvo.';
+    document.getElementById('leg-error').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('leg-error').style.display = 'none';
+  document.getElementById('leg-results').style.display = 'none';
+  document.getElementById('leg-loading').style.display = 'flex';
+  document.getElementById('leg-gen-btn').disabled = true;
+  legSelectedIdx = null; legSelectedPostKey = null; legCurrentLegendas = [];
+
+  const userMsg = 'Produto: '+produto+'\nPublico: '+publico+'\nFuncionalidade: '+(func||'nao especificado')+'\nContexto: '+(contexto||'geral')+'\nTom: '+tom+(hashtags?'\nHashtags extras: '+hashtags:'');
+  const prompt = LEG_SYSTEM_PROMPT_BASE.replace('TOM_PLACEHOLDER', tom);
+
+  try {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        temperature: 0.85,
+        max_tokens: 2000,
+        messages: [
+          {role:'system', content: prompt},
+          {role:'user', content: userMsg}
+        ]
+      })
+    });
+    const data = await resp.json();
+    if(data.error) throw new Error(data.error.message||'Erro Groq');
+    const raw = data.choices?.[0]?.message?.content||'';
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(clean);
+    if(!parsed.legendas) throw new Error('Formato inesperado');
+    legCurrentLegendas = parsed.legendas;
+    renderLegCards(parsed.legendas, produto, publico);
+  } catch(e) {
+    document.getElementById('leg-error').textContent = 'Erro: ' + e.message;
+    document.getElementById('leg-error').style.display = 'block';
+  } finally {
+    document.getElementById('leg-loading').style.display = 'none';
+    document.getElementById('leg-gen-btn').disabled = false;
+  }
+};
+
+function renderLegCards(legendas, produto, publico) {
+  document.getElementById('leg-results-sub').textContent = produto + ' · ' + publico;
+  document.getElementById('leg-cards').innerHTML = legendas.map((l, i) => `
+    <div class="leg-card" id="leg-card-${i}" onclick="window.selecionarLegCard(${i})">
+      <div class="leg-card-header">
+        <div class="leg-card-num">Versao ${i+1}</div>
+        <div style="font-size:15px;font-weight:700;color:var(--nibo1);line-height:1.4">${escapeHtml(l.gancho)}</div>
+      </div>
+      <div class="leg-block">
+        <div class="leg-block-label">Desenvolvimento</div>
+        <div class="leg-block-text" style="white-space:pre-line">${escapeHtml(l.desenvolvimento)}</div>
+      </div>
+      <div class="leg-block">
+        <div class="leg-block-label">CTA</div>
+        <div class="leg-block-text">${escapeHtml(l.cta)}</div>
+      </div>
+      <div class="leg-block">
+        <div class="leg-block-label">Hashtags</div>
+        <div class="leg-block-text" style="color:var(--nibo2);font-size:12px">${escapeHtml(l.hashtags)}</div>
+      </div>
+      <div class="leg-card-actions">
+        <button class="leg-copy-btn" id="leg-copy-${i}" onclick="event.stopPropagation();window.copiarLegenda(${i})">Copiar legenda completa</button>
+        <button class="leg-apply-btn" onclick="event.stopPropagation();window.selecionarLegCard(${i});document.getElementById('leg-post-selector').style.display='block'">Aplicar em post</button>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('leg-results').style.display = 'block';
+  document.getElementById('leg-results').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+window.selecionarLegCard = function(i) {
+  legSelectedIdx = i;
+  document.querySelectorAll('[id^="leg-card-"]').forEach((el,idx) => {
+    el.style.boxShadow = idx===i ? '0 0 0 2px #ff40b3' : '';
+  });
+  renderLegPostList();
+  document.getElementById('leg-post-selector').style.display = 'block';
+};
+
+function renderLegPostList() {
+  const mo = months[activeMonthIdx];
+  if(!mo) return;
+  const mr = rows.filter(r=>r.y===mo.y&&r.m===mo.m).sort((a,b)=>(a.order||0)-(b.order||0));
+  document.getElementById('leg-post-list').innerHTML = mr.map(r => {
+    const tipo = TIPOS.find(t=>t.id===r.tipoId)||TIPOS[0];
+    const isChosen = legSelectedPostKey===r.key;
+    return `<div class="ia-post-item${isChosen?' chosen':''}" onclick="legSelectedPostKey='${r.key}';renderLegPostList()">
+      <span class="ia-post-date">${r.date||'—'}</span>
+      <span class="ia-post-tipo" style="color:${tipo.color}">${tipo.name}</span>
+      <span class="ia-post-social">${r.social?r.social.slice(0,40)+'…':'<em style=\"color:var(--text3)\">sem copy</em>'}</span>
+      ${isChosen?'<span style=\"color:#ff40b3;font-weight:700;margin-left:auto\">✓</span>':''}
+    </div>`;
+  }).join('');
+}
+
+window.aplicarLegendaPost = async function() {
+  if(!legSelectedPostKey || legSelectedIdx === null) return;
+  const l = legCurrentLegendas[legSelectedIdx];
+  const legenda = l?.legenda_completa || ((l?.gancho||'')+'\n\n'+(l?.desenvolvimento||'')+'\n\n'+(l?.cta||'')+'\n\n'+(l?.hashtags||''));
+  if(!legenda) return;
+  const r = rows.find(r=>r.key===legSelectedPostKey);
+  if(r?.legenda?.trim()) {
+    if(!confirm('Este post ja tem legenda. Substituir?')) return;
+  }
+  await saveRow(legSelectedPostKey, {legenda});
+  const btn = document.getElementById('leg-aplicar-btn');
+  btn.textContent = 'Legenda aplicada!';
+  btn.style.background = 'var(--green)';
+  setTimeout(()=>{btn.textContent='Aplicar legenda no post';btn.style.background='#ff40b3';},2500);
+};
+
+window.copiarLegenda = function(i) {
+  const l = legCurrentLegendas[i];
+  if(!l) return;
+  const full = l.legenda_completa || ((l.gancho||'')+'\n\n'+(l.desenvolvimento||'')+'\n\n'+(l.cta||'')+'\n\n'+(l.hashtags||''));
+  navigator.clipboard.writeText(full).then(()=>{
+    const btn = document.getElementById('leg-copy-'+i);
+    if(btn){btn.textContent='Copiado!';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copiar legenda completa';btn.classList.remove('copied');},2000);}
+  });
+};
+
+window.limparLegenda = function() {
+  ['leg-produto','leg-publico','leg-funcionalidade','leg-contexto','leg-hashtags'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('leg-results').style.display='none';
+  document.getElementById('leg-error').style.display='none';
+  document.getElementById('leg-post-selector').style.display='none';
+  legSelectedIdx=null;legSelectedPostKey=null;legCurrentLegendas=[];
 };
 
 </script>
