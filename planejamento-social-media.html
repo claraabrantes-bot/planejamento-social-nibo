@@ -2377,14 +2377,7 @@ function renderCalendar(){
   });
   document.getElementById('calendar').innerHTML=html;
   renderStats();
-  // Event delegation para idea-cells e maris-obs (evita problema de onclick em módulo ES)
-  document.getElementById('calendar').addEventListener('click', function(e) {
-    const target = e.target.closest('[data-modal-key]');
-    if(target) {
-      e.stopPropagation();
-      window.openModal(target.dataset.modalKey, target.dataset.modalTab||'social');
-    }
-  }, {once: false});
+
 }
 
 // ── STATS ──
@@ -4094,6 +4087,18 @@ window.setFormato = async function(key, sel) {
   sel.className = 'formato-select ' + val;
   await window.updRowField(key, 'formato', val);
 };
+
+
+// ── EVENT DELEGATION PARA CALENDÁRIO ──
+document.addEventListener('click', function(e) {
+  const target = e.target.closest('[data-modal-key]');
+  if(target) {
+    e.stopPropagation();
+    const key = target.dataset.modalKey;
+    const tab = target.dataset.modalTab || 'social';
+    if(window.openModal) window.openModal(key, tab);
+  }
+});
 
 </script>
 <!-- RODAPÉ FIXO -->
