@@ -108,7 +108,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
 
 /* table */
-.table-header{display:grid;grid-template-columns:82px 160px 1fr 1fr 82px 110px 120px 30px;gap:5px;padding:0 10px 6px;border-bottom:.5px solid var(--border2);margin-bottom:6px}
+.table-header{display:grid;grid-template-columns:82px 140px 1fr 1fr 82px 110px 120px 30px;gap:5px;padding:0 10px 6px;border-bottom:.5px solid var(--border2);margin-bottom:6px}
 .th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
 
 /* week */
@@ -121,7 +121,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .trial-badge{font-size:10px;padding:2px 8px;border-radius:99px;background:#FEF3C7;color:var(--amber);font-weight:500}
 
 /* post row */
-.post-row{display:grid;grid-template-columns:82px 160px 1fr 1fr 82px 110px 120px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s}
+.post-row{display:grid;grid-template-columns:82px 140px 1fr 1fr 82px 110px 120px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s}
 .post-row:last-child{border-bottom:none}
 .post-row:hover{background:#FAFBFD}
 .post-row.trial{background:#FFFDF0}
@@ -1428,7 +1428,36 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <h3 id="modal-title">Editar post</h3>
       <p id="modal-sub"></p>
     </div>
-    <div class="modal-tabs">
+    <!-- Produto + Formato no topo do modal -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 1.4rem 0">
+      <div>
+        <div class="modal-label">Produto Nibo</div>
+        <select id="modal-produto" onchange="window.updRowField(window._editingKey,'produto',this.value)" style="width:100%;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:7px 10px;outline:none;background:var(--bg);color:var(--text)">
+          <option value="">Produto...</option>
+          <option value="gestao">Gestão Financeira</option>
+          <option value="cobrancas">Cobranças</option>
+          <option value="obrigacoes">Obrigações Plus</option>
+          <option value="radar">Radar e-CAC</option>
+          <option value="conciliador">Conciliador</option>
+          <option value="whatsapp-cont">WhatsApp Contador</option>
+          <option value="nfse">Emissor NFS-e</option>
+          <option value="bpo">BPO Financeiro</option>
+          <option value="whatsapp-bpo">WhatsApp BPO</option>
+          <option value="ecossistema">Ecossistema Nibo</option>
+        </select>
+      </div>
+      <div>
+        <div class="modal-label">Formato</div>
+        <select id="modal-formato" onchange="window.updRowField(window._editingKey,'formato',this.value)" style="width:100%;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:7px 10px;outline:none;background:var(--bg);color:var(--text)">
+          <option value="">Formato...</option>
+          <option value="estatica">🖼 Estática</option>
+          <option value="carrossel">📑 Carrossel</option>
+          <option value="video">🎬 Vídeo/Reels</option>
+          <option value="stories">⭕ Stories</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-tabs" style="margin-top:10px">
       <button class="modal-tab active" onclick="switchMTab('social',this)">Social Media</button>
       <button class="modal-tab" onclick="switchMTab('design',this)">Design</button>
       <button class="modal-tab" id="modal-tab-maris" onclick="switchMTab('maris',this)">Obs. Maris</button>
@@ -2311,21 +2340,10 @@ function renderCalendar(){
             onchange="window.updDateLive(this,'${p.key}',${y})">
           ${dowLabel?`<span class="post-dow" id="dow-${p.key}">${dowLabel}</span>`:`<span class="post-dow" id="dow-${p.key}"></span>`}
         </div>
-        <div style="display:flex;flex-direction:column;gap:3px">
-          <div class="post-tipo" style="margin-bottom:1px">
-            <span class="dot" style="background:${tipo.color}"></span>
-            <select class="tipo-select" onchange="window.updRowField('${p.key}','tipoId',this.value)">${tipoOpts}</select>
-          </div>
-          <select class="produto-select${p.produto?' filled':''}" onchange="window.updRowField('${p.key}','produto',this.value)" title="${p.produto||''}">
-            ${NIBO_PRODUTO_OPTS.map(([v,l])=>`<option value="${v}"${v===p.produto?' selected':''}>${l}</option>`).join('')}
-          </select>
-          <select class="formato-select ${p.formato||''}" onchange="window.setFormato('${p.key}',this)">
-            <option value="">Formato...</option>
-            <option value="estatica"${p.formato==='estatica'?' selected':''}>🖼 Estática</option>
-            <option value="carrossel"${p.formato==='carrossel'?' selected':''}>📑 Carrossel</option>
-            <option value="video"${p.formato==='video'?' selected':''}>🎬 Vídeo/Reels</option>
-            <option value="stories"${p.formato==='stories'?' selected':''}>⭕ Stories</option>
-          </select>
+        <div class="post-tipo">
+          <span class="dot" style="background:${tipo.color}"></span>
+          <select class="tipo-select" onchange="window.updRowField('${p.key}','tipoId',this.value)">${tipoOpts}</select>
+          ${p.produto||p.formato ? `<span style="font-size:9px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60px" title="${p.produto||''}${p.formato?' · '+p.formato:''}">${p.produto?p.produto.split(' ').slice(-1)[0]:''}${p.formato?' · '+p.formato:''}</span>` : ''}
         </div>
         <span class="idea-cell${p.social?' filled':''}" onclick="window.openModal('${p.key}','social')" title="${(p.social||'').replace(/"/g,'&quot;')}">${sSnip}</span>
         <span class="idea-cell${p.design?' filled':''}" onclick="window.openModal('${p.key}','design')" title="${(p.design||'').replace(/"/g,'&quot;')}">${dSnip}</span>
@@ -2391,6 +2409,12 @@ window.openModal=function(key,tab='social'){
   if(legEl) legEl.value=r.legenda||'';
   document.getElementById('modal-design').value=r.design||'';
   document.getElementById('modal-maris').value=r.marisObs||'';
+  // produto + formato
+  window._editingKey = key;
+  const mpEl = document.getElementById('modal-produto');
+  if(mpEl) mpEl.value = r.produto||'';
+  const mfEl = document.getElementById('modal-formato');
+  if(mfEl) mfEl.value = r.formato||'';
   // mostrar/esconder aba maris conforme permissão
   const marisTab = document.getElementById('modal-tab-maris');
   if(marisTab) marisTab.style.display = (currentUserEmail()==='mariana.araujo@nibo.com.br'||currentUserEmail()==='clara.abrantes@nibo.com.br') ? '' : 'none';
