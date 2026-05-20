@@ -121,7 +121,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .trial-badge{font-size:10px;padding:2px 8px;border-radius:99px;background:#FEF3C7;color:var(--amber);font-weight:500}
 
 /* post row */
-.post-row{display:grid;grid-template-columns:82px 106px 1fr 1fr 82px 110px 120px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s}
+.post-row{display:grid;grid-template-columns:82px 106px 130px 1fr 1fr 82px 110px 120px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s}
 .post-row:last-child{border-bottom:none}
 .post-row:hover{background:#FAFBFD}
 .post-row.trial{background:#FFFDF0}
@@ -375,7 +375,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   .tipos-grid{grid-template-columns:repeat(3,1fr)}
   .cores-grid{grid-template-columns:repeat(2,1fr)}
   .table-header,.post-row{grid-template-columns:70px 88px 1fr 56px 80px 80px 24px}
-  .table-header .th:nth-child(4),.post-row>*:nth-child(4){display:none}
+  .table-header .th:nth-child(3),.post-row>*:nth-child(3){display:none}
+  .table-header .th:nth-child(5),.post-row>*:nth-child(5){display:none}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .desc-grid{grid-template-columns:1fr}
   .month-grid-picker{grid-template-columns:repeat(4,1fr)}
@@ -611,6 +612,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .gestao-item-action:hover{background:var(--nibo2)}
 .gestao-empty{text-align:center;padding:1.5rem;font-size:12px;color:var(--text3)}
 @media(max-width:760px){.gestao-cards-grid{grid-template-columns:1fr}}
+
+.produto-select{
+  font-size:11px;font-family:'DM Sans',sans-serif;color:var(--text2);
+  border:.5px solid var(--border2);border-radius:var(--radius);
+  padding:3px 6px;outline:none;background:var(--surface);
+  cursor:pointer;width:100%;transition:border-color .15s;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.produto-select:focus{border-color:var(--nibo2)}
+.produto-select.filled{color:var(--nibo1);font-weight:600;border-color:var(--nibo4)}
 </style>
 </head>
 <body>
@@ -1407,6 +1418,20 @@ const ALLOWED_EMAILS = [
   "millena.barros@nibo.com.br",
 ];
 
+
+const NIBO_PRODUTO_OPTS = [
+  ['','Produto...'],
+  ['gestao','Gestão Financeira'],
+  ['cobrancas','Cobranças'],
+  ['obrigacoes','Obrigações Plus'],
+  ['radar','Radar e-CAC'],
+  ['conciliador','Conciliador'],
+  ['whatsapp-cont','WhatsApp Contador'],
+  ['nfse','Emissor NFS-e'],
+  ['bpo','BPO Financeiro'],
+  ['whatsapp-bpo','WhatsApp BPO'],
+  ['ecossistema','Ecossistema Nibo'],
+];
 // ── AUTH STATE ──
 onAuthStateChanged(auth, user => {
   if (user && ALLOWED_EMAILS.includes(user.email.toLowerCase())) {
@@ -2175,6 +2200,9 @@ function renderCalendar(){
           <span class="dot" style="background:${tipo.color}"></span>
           <select class="tipo-select" onchange="window.updRowField('${p.key}','tipoId',this.value)">${tipoOpts}</select>
         </div>
+        <select class="produto-select${p.produto?' filled':''}" onchange="window.updRowField('${p.key}','produto',this.value)" title="${p.produto||''}">
+          ${NIBO_PRODUTO_OPTS.map(([v,l])=>`<option value="${v}"${v===p.produto?' selected':''}>${l}</option>`).join('')}
+        </select>
         <span class="idea-cell${p.social?' filled':''}" onclick="window.openModal('${p.key}','social')" title="${(p.social||'').replace(/"/g,'&quot;')}">${sSnip}</span>
         <span class="idea-cell${p.design?' filled':''}" onclick="window.openModal('${p.key}','design')" title="${(p.design||'').replace(/"/g,'&quot;')}">${dSnip}</span>
         <div class="cor-selector">${corBtns}</div>
