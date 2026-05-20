@@ -2345,8 +2345,8 @@ function renderCalendar(){
           <select class="tipo-select" onchange="window.updRowField('${p.key}','tipoId',this.value)">${tipoOpts}</select>
           ${p.produto||p.formato ? `<span style="font-size:9px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60px" title="${p.produto||''}${p.formato?' · '+p.formato:''}">${p.produto?p.produto.split(' ').slice(-1)[0]:''}${p.formato?' · '+p.formato:''}</span>` : ''}
         </div>
-        <span class="idea-cell${p.social?' filled':''}" onclick="window.openModal('${p.key}','social')" title="${(p.social||'').replace(/"/g,'&quot;')}">${sSnip}</span>
-        <span class="idea-cell${p.design?' filled':''}" onclick="window.openModal('${p.key}','design')" title="${(p.design||'').replace(/"/g,'&quot;')}">${dSnip}</span>
+        <span class="idea-cell${p.social?' filled':''}" data-modal-key="${p.key}" data-modal-tab="social" title="${(p.social||'').replace(/"/g,'&quot;')}">${sSnip}</span>
+        <span class="idea-cell${p.design?' filled':''}" data-modal-key="${p.key}" data-modal-tab="design" title="${(p.design||'').replace(/"/g,'&quot;')}">${dSnip}</span>
         <div class="cor-selector">${corBtns}</div>
         <div class="status-cell">
           ${(currentUserEmail()==='mariana.araujo@nibo.com.br'||currentUserEmail()==='clara.abrantes@nibo.com.br')
@@ -2356,7 +2356,7 @@ function renderCalendar(){
         </div>
         <div style="display:flex;align-items:center;gap:3px">
           ${(currentUserEmail()==='mariana.araujo@nibo.com.br'||currentUserEmail()==='clara.abrantes@nibo.com.br')
-            ? `<button class="maris-obs-btn${hasMaris?' has-obs':''}" onclick="window.openModal('${p.key}','maris')" title="${hasMaris?(p.marisObs||'').replace(/"/g,'&quot;'):'Adicionar obs. Maris'}">${hasMaris?'💬':'＋'}</button>
+            ? `<button class="maris-obs-btn${hasMaris?' has-obs':''}" data-modal-key="${p.key}" data-modal-tab="maris" title="${hasMaris?(p.marisObs||'').replace(/"/g,'&quot;'):'Adicionar obs. Maris'}">${hasMaris?'💬':'＋'}</button>
                ${hasMaris?`<span style="font-size:10px;color:#6d28d9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px" title="${(p.marisObs||'').replace(/"/g,'&quot;')}">${p.marisObs.slice(0,18)+(p.marisObs.length>18?'…':'')}</span>`:'<span style="font-size:10px;color:var(--text3);font-style:italic">sem obs.</span>'}`
             : `<span style="font-size:10px;color:var(--text3);font-style:italic;padding:0 4px">${hasMaris?`<span style="color:#6d28d9" title="${(p.marisObs||'').replace(/"/g,'&quot;')}">💬 ${p.marisObs.slice(0,18)+(p.marisObs.length>18?'…':'')}</span>`:'sem obs.'}</span>`
           }
@@ -2368,6 +2368,14 @@ function renderCalendar(){
   });
   document.getElementById('calendar').innerHTML=html;
   renderStats();
+  // Event delegation para idea-cells e maris-obs (evita problema de onclick em módulo ES)
+  document.getElementById('calendar').addEventListener('click', function(e) {
+    const target = e.target.closest('[data-modal-key]');
+    if(target) {
+      e.stopPropagation();
+      window.openModal(target.dataset.modalKey, target.dataset.modalTab||'social');
+    }
+  }, {once: false});
 }
 
 // ── STATS ──
