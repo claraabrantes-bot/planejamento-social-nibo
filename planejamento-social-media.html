@@ -108,7 +108,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
 
 /* table */
-.table-header{display:grid;grid-template-columns:82px 106px 1fr 1fr 82px 110px 120px 30px;gap:5px;padding:0 10px 6px;border-bottom:.5px solid var(--border2);margin-bottom:6px}
+.table-header{display:grid;grid-template-columns:82px 160px 1fr 1fr 82px 110px 120px 30px;gap:5px;padding:0 10px 6px;border-bottom:.5px solid var(--border2);margin-bottom:6px}
 .th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
 
 /* week */
@@ -121,7 +121,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .trial-badge{font-size:10px;padding:2px 8px;border-radius:99px;background:#FEF3C7;color:var(--amber);font-weight:500}
 
 /* post row */
-.post-row{display:grid;grid-template-columns:82px 106px 140px 1fr 1fr 82px 110px 120px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s}
+.post-row{display:grid;grid-template-columns:82px 160px 1fr 1fr 82px 110px 120px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s}
 .post-row:last-child{border-bottom:none}
 .post-row:hover{background:#FAFBFD}
 .post-row.trial{background:#FFFDF0}
@@ -2311,11 +2311,11 @@ function renderCalendar(){
             onchange="window.updDateLive(this,'${p.key}',${y})">
           ${dowLabel?`<span class="post-dow" id="dow-${p.key}">${dowLabel}</span>`:`<span class="post-dow" id="dow-${p.key}"></span>`}
         </div>
-        <div class="post-tipo">
-          <span class="dot" style="background:${tipo.color}"></span>
-          <select class="tipo-select" onchange="window.updRowField('${p.key}','tipoId',this.value)">${tipoOpts}</select>
-        </div>
         <div style="display:flex;flex-direction:column;gap:3px">
+          <div class="post-tipo" style="margin-bottom:1px">
+            <span class="dot" style="background:${tipo.color}"></span>
+            <select class="tipo-select" onchange="window.updRowField('${p.key}','tipoId',this.value)">${tipoOpts}</select>
+          </div>
           <select class="produto-select${p.produto?' filled':''}" onchange="window.updRowField('${p.key}','produto',this.value)" title="${p.produto||''}">
             ${NIBO_PRODUTO_OPTS.map(([v,l])=>`<option value="${v}"${v===p.produto?' selected':''}>${l}</option>`).join('')}
           </select>
