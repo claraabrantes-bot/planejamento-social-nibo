@@ -1491,6 +1491,36 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 
+<script>
+// Stub para funções chamadas antes do módulo ES carregar
+window._pendingCalls = [];
+function _stub(name) {
+  return function() {
+    var args = Array.prototype.slice.call(arguments);
+    if (window['_loaded_' + name]) {
+      return window['_loaded_' + name].apply(this, args);
+    }
+    window._pendingCalls.push([name, args]);
+  };
+}
+var _stubs = ['openModal','cycleStatus','deleteRow','updRowField','setCor','addSatRow',
+  'updDateLive','setMonth','toggleAddMonth','addMonth','pickerNextYear','pickerPrevYear',
+  'addPost','closeModal','saveModal','switchMTab','doLogin','doLogout','switchMainTab',
+  'showPage','toggleGestaoCard','abrirAprovacao','executarAprovacao','aprovarRapidoSocial',
+  'abrirModalMidiaProduto','salvarMidiaProduto','deletarMidiaBriefing','notificarMaris',
+  'abrirEpCell','fecharEpModal','salvarEpEntry','deletarEpEntry','setEpColor',
+  'epPrevMonth','epNextMonth','abrirModalRef','fecharModalRef','onRefImgChange',
+  'removeRefImg','salvarRef','deletarRef','adicionarComentario','editarComentario',
+  'apagarComentario','selecionarCard','aplicarEmPost','copiarSugestao','limparIA',
+  'gerarSugestoes','switchIATab','gerarLegenda','selecionarLegCard','aplicarLegendaPost',
+  'copiarLegenda','limparLegenda','toggleNotif','marcarLida','marcarTodasLidas',
+  'toggleUserMenu','fecharUserMenu','abrirModalPerfil','fecharModalPerfil','salvarPerfil',
+  'previewFotoPerfil','setFormato','renderRefs','renderGestao','insertMention',
+  'toggleRefComments','renderNotif','detectarMencoes','enviarNotifAprovacao',
+  'handleCommentKey','salvarEdicaoComentario','setMpFilter','setMpFilter'];
+_stubs.forEach(function(n) { if (!window[n]) window[n] = _stub(n); });
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getFirestore, doc, setDoc, onSnapshot, collection, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
@@ -4099,6 +4129,40 @@ document.addEventListener('click', function(e) {
     if(window.openModal) window.openModal(key, tab);
   }
 });
+
+
+// ── FLUSH PENDING CALLS ──
+(function() {
+  var fns = ['openModal','cycleStatus','deleteRow','updRowField','setCor','addSatRow',
+    'updDateLive','setMonth','toggleAddMonth','addMonth','pickerNextYear','pickerPrevYear',
+    'addPost','closeModal','saveModal','switchMTab','doLogin','doLogout','switchMainTab',
+    'showPage','toggleGestaoCard','abrirAprovacao','executarAprovacao','aprovarRapidoSocial',
+    'abrirModalMidiaProduto','salvarMidiaProduto','deletarMidiaBriefing','notificarMaris',
+    'abrirEpCell','fecharEpModal','salvarEpEntry','deletarEpEntry','setEpColor',
+    'epPrevMonth','epNextMonth','abrirModalRef','fecharModalRef','onRefImgChange',
+    'removeRefImg','salvarRef','deletarRef','adicionarComentario','editarComentario',
+    'apagarComentario','selecionarCard','aplicarEmPost','copiarSugestao','limparIA',
+    'gerarSugestoes','switchIATab','gerarLegenda','selecionarLegCard','aplicarLegendaPost',
+    'copiarLegenda','limparLegenda','toggleNotif','marcarLida','marcarTodasLidas',
+    'toggleUserMenu','fecharUserMenu','abrirModalPerfil','fecharModalPerfil','salvarPerfil',
+    'previewFotoPerfil','setFormato','renderRefs','renderGestao','insertMention',
+    'toggleRefComments','renderNotif','detectarMencoes','enviarNotifAprovacao',
+    'handleCommentKey','salvarEdicaoComentario','setMpFilter'];
+  fns.forEach(function(n) {
+    if (window[n] && window[n].toString().indexOf('_pendingCalls') !== -1) {
+      // ainda é stub, não tem implementação real ainda
+    }
+    window['_loaded_' + n] = window[n];
+  });
+  // flush pending
+  if (window._pendingCalls) {
+    window._pendingCalls.forEach(function(call) {
+      var fn = window['_loaded_' + call[0]];
+      if (fn) fn.apply(null, call[1]);
+    });
+    window._pendingCalls = [];
+  }
+})();
 
 </script>
 <!-- RODAPÉ FIXO -->
