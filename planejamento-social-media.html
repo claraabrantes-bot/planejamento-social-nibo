@@ -1232,6 +1232,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div id="ep-link-section">
       <div class="modal-label">Link <span style="color:var(--text3);font-weight:400">(Clara e Roberta)</span></div>
       <input id="ep-cell-link" type="url" placeholder="https://..." style="width:100%;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:7px 9px;outline:none;background:var(--bg);color:var(--text)" />
+      <button onclick="window.abrirEpLink()" id="ep-open-link-btn" style="display:none;font-size:11px;color:var(--nibo2);background:none;border:none;cursor:pointer;padding:4px 0 0;font-family:'DM Sans',sans-serif">↗ Abrir link em nova aba</button>
     </div>
     <div>
       <div class="modal-label">Cor</div>
@@ -3572,9 +3573,11 @@ window.renderEmailProduto = function() {
       </div>
       ${feriadoLabel ? `<div class="ep-holiday-label">${feriadoLabel}</div>` : ''}
       ${entries.map(e => {
-        const linkAttr = (e.link && (isProdutoEditor()||isMaris())) ? `href="${e.link}" target="_blank" rel="noopener"` : '';
-        const tag = linkAttr ? 'a' : 'span';
-        return `<${tag} ${linkAttr} class="ep-entry color-${e.color||'cinza'}" onclick="${!linkAttr?`window.abrirEpCell('${dayKey}','${e.key}',event);event.stopPropagation()`:'event.stopPropagation()'}" style="${linkAttr?'text-decoration:none;':''}">${e.text||'...'}</${tag}>`;
+        // Clicar SEMPRE abre o modal de edição (mesmo quando há link salvo).
+        // O link salvo pode ser aberto pelo botão "↗ Abrir link" dentro do modal.
+        const podeEditar = isProdutoEditor() || isMaris();
+        const cursor = podeEditar ? 'cursor:pointer' : 'cursor:default';
+        return `<span class="ep-entry color-${e.color||'cinza'}" style="${cursor}" onclick="window.abrirEpCell('${dayKey}','${e.key}',event);event.stopPropagation()">${e.text||'...'}</span>`;
       }).join('')}
     </div>`;
   }
@@ -3607,6 +3610,10 @@ window.abrirEpCell = function(dayKey, entryKey, event) {
   const linkSection = document.getElementById('ep-link-section');
   if(linkSection) linkSection.style.display = isProdutoEditor() ? '' : 'none';
 
+  // botão "abrir link" só aparece se houver link salvo
+  const openLinkBtn = document.getElementById('ep-open-link-btn');
+  if(openLinkBtn) openLinkBtn.style.display = (entry?.link) ? '' : 'none';
+
   // botão remover só se entry existir e for editor
   const delBtn = document.getElementById('ep-del-btn');
   if(delBtn) delBtn.style.display = (entryKey && isProdutoEditor()) ? '' : 'none';
@@ -3634,6 +3641,11 @@ window.fecharEpModal = function() {
   modal.style.display = 'none';
   modal.classList.remove('open');
   epCellEditKey = null;
+};
+
+window.abrirEpLink = function() {
+  const link = document.getElementById('ep-cell-link').value.trim();
+  if (link) window.open(link, '_blank', 'noopener');
 };
 
 // Fechar ao clicar fora
