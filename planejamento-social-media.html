@@ -122,11 +122,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .trial-badge{font-size:10px;padding:2px 8px;border-radius:99px;background:#FEF3C7;color:var(--amber);font-weight:500}
 
 /* post row */
-.post-row{display:grid;grid-template-columns:82px 106px 130px 100px 1fr 1fr 82px 110px 120px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s}
+.post-row{display:grid;grid-template-columns:82px 106px 130px 100px 1fr 1fr 82px 110px 120px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s;cursor:grab}
+.post-row:active{cursor:grabbing}
 .post-row:last-child{border-bottom:none}
 .post-row:hover{background:#FAFBFD}
 .post-row.trial{background:#FFFDF0}
 .post-row.trial:hover{background:#FFFBEB}
+.post-row.dragging{opacity:.4}
+.post-row.drag-over{background:#FCE7F3 !important;outline:2px dashed #ff40b3;outline-offset:-2px}
+/* impedir que selects/inputs disparem o drag */
+.post-row input,.post-row select,.post-row button,.post-row textarea{cursor:auto}
+.post-row .post-date-input{cursor:text}
 
 .post-date-wrap{display:flex;flex-direction:column;gap:1px}
 .post-date-input{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;border:none;background:transparent;outline:none;width:76px}
@@ -2179,6 +2185,82 @@ window.deleteRow=async function(key){
 // ── UPDATE ROW ──
 window.updRowField=async function(key,field,val){await saveRow(key,{[field]:val});}
 
+// ── DRAG & DROP entre posts (troca data + semana) ──
+let dragKey = null;
+
+window.onRowDragStart = function(e, key) {
+  // Se o usuário clicou pra arrastar a partir de input/select/botão, cancela o drag
+  const tag = (e.target.tagName||'').toLowerCase();
+  if (['input','select','textarea','button','option'].includes(tag)) {
+    e.preventDefault();
+    return;
+  }
+  dragKey = key;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  // Firefox precisa de algum dado pra iniciar o drag
+  try { e.dataTransfer.setData('text/plain', key); } catch(_) {}
+};
+
+window.onRowDragEnd = function(e) {
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.post-row.drag-over').forEach(el => el.classList.remove('drag-over'));
+  dragKey = null;
+};
+
+window.onRowDragOver = function(e, key) {
+  if (!dragKey || dragKey === key) return;
+  e.preventDefault(); // permite o drop
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+};
+
+window.onRowDragLeave = function(e) {
+  e.currentTarget.classList.remove('drag-over');
+};
+
+window.onRowDrop = async function(e, destKey) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (!dragKey || dragKey === destKey) return;
+
+  const origem  = rows.find(r => r.key === dragKey);
+  const destino = rows.find(r => r.key === destKey);
+  if (!origem || !destino) return;
+
+  // Só permite trocar dentro do mesmo mês
+  if (origem.y !== destino.y || origem.m !== destino.m) {
+    alert('Por enquanto só dá pra mover posts dentro do mesmo mês.');
+    return;
+  }
+
+  // Troca data, semana e dia-da-semana entre os dois posts
+  // (o conteúdo de cada um — copy, briefing, tipo etc — fica como tava;
+  //  o que muda é só QUANDO esse conteúdo será publicado)
+  const patchOrigem = {
+    date: destino.date || '',
+    week: destino.week != null ? destino.week : 99,
+    di:   destino.di   != null ? destino.di   : 0,
+    order: destino.order || 0,
+  };
+  const patchDestino = {
+    date: origem.date || '',
+    week: origem.week != null ? origem.week : 99,
+    di:   origem.di   != null ? origem.di   : 0,
+    order: origem.order || 0,
+  };
+
+  try {
+    await Promise.all([
+      saveRow(dragKey,  patchOrigem),
+      saveRow(destKey,  patchDestino),
+    ]);
+  } catch(err) {
+    console.error('Erro ao trocar posts:', err);
+    alert('Não consegui trocar os posts: ' + (err?.message||err));
+  }
+};
+
 // ── CYCLE STATUS ──
 window.cycleStatus=async function(key){
   if(currentUserEmail()!=='mariana.araujo@nibo.com.br' && currentUserEmail()!=='clara.abrantes@nibo.com.br') return;
@@ -2290,7 +2372,13 @@ function renderCalendar(){
       }
       const hasMaris=p.marisObs&&p.marisObs.trim();
       html+=`
-      <div class="post-row${p.isTrial?' trial':''}" id="row-${p.key}">
+      <div class="post-row${p.isTrial?' trial':''}" id="row-${p.key}"
+           draggable="true"
+           ondragstart="window.onRowDragStart(event,'${p.key}')"
+           ondragend="window.onRowDragEnd(event)"
+           ondragover="window.onRowDragOver(event,'${p.key}')"
+           ondragleave="window.onRowDragLeave(event)"
+           ondrop="window.onRowDrop(event,'${p.key}')">
         <div class="post-date-wrap">
           <input class="post-date-input" type="text" value="${p.date||''}" placeholder="dd/mm" 
             oninput="window.updDateLive(this,'${p.key}',${y})"
