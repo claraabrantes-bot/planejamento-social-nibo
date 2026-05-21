@@ -2351,6 +2351,35 @@ function calcularSemanaEDia(y, m, dia) {
   return { week: resultWeek, di: resultDi };
 }
 
+// Debounce: só salva após 600ms parado, pra não perder o foco ao apagar/digitar
+const dateDebounceTimers = {};
+window.updDateDebounced = function(input, key, y) {
+  // Atualiza label "Seg/Ter..." na hora pra dar feedback visual
+  const val = input.value.trim();
+  const dowEl = document.getElementById('dow-'+key);
+  if (dowEl) {
+    if (val && val.length === 5 && val.includes('/')) {
+      const parts = val.split('/');
+      const dd = parseInt(parts[0]), mm = parseInt(parts[1]) - 1;
+      if (!isNaN(dd) && !isNaN(mm)) {
+        const row = rows.find(r => r.key === key);
+        const dt = new Date(row?.y || y, mm, dd);
+        dowEl.textContent = DAYS_PT[dt.getDay()] || '';
+      } else {
+        dowEl.textContent = '';
+      }
+    } else {
+      dowEl.textContent = '';
+    }
+  }
+  // Salva no banco só depois que parar de digitar
+  if (dateDebounceTimers[key]) clearTimeout(dateDebounceTimers[key]);
+  dateDebounceTimers[key] = setTimeout(() => {
+    window.updDateLive(input, key, y);
+    delete dateDebounceTimers[key];
+  }, 600);
+};
+
 window.updDateLive = async function(input, key, y) {
   const val = input.value.trim();
   const row = rows.find(r => r.key === key);
@@ -2506,8 +2535,8 @@ function renderCalendar(){
            ondrop="window.onRowDrop(event,'${p.key}')">
         <div class="post-date-wrap">
           <input class="post-date-input" type="text" value="${p.date||''}" placeholder="dd/mm" 
-            oninput="window.updDateLive(this,'${p.key}',${y})"
-            onchange="window.updDateLive(this,'${p.key}',${y})">
+            oninput="window.updDateDebounced(this,'${p.key}',${y})"
+            onblur="window.updDateLive(this,'${p.key}',${y})">
           ${dowLabel?`<span class="post-dow" id="dow-${p.key}">${dowLabel}</span>`:`<span class="post-dow" id="dow-${p.key}"></span>`}
         </div>
         <div class="post-tipo">
