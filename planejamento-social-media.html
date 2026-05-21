@@ -2142,7 +2142,7 @@ window.renderRefs = function() {
       `<span onclick="window.insertMention('${r.key}','${m.name}')" style="font-size:10px;padding:2px 8px;border-radius:99px;background:var(--surface2);border:.5px solid var(--border2);cursor:pointer;color:var(--text2);transition:all .12s" onmouseover="this.style.background='#fff0f9';this.style.color='#ff40b3'" onmouseout="this.style.background='var(--surface2)';this.style.color='var(--text2)'">@${m.name}</span>`
     ).join('');
 
-    return `<div style="background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 18px rgba(0,45,114,.08)'" onmouseout="this.style.boxShadow='none'">
+    return `<div id="ref-card-${r.key}" style="background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 18px rgba(0,45,114,.08)'" onmouseout="this.style.boxShadow='none'">
       <!-- imagem preview -->
       ${r.imgBase64 ? `<div style="width:100%;max-height:180px;overflow:hidden;border-bottom:.5px solid var(--border);border-radius:var(--radius-lg) var(--radius-lg) 0 0;cursor:zoom-in" onclick="window.abrirLightbox('${r.key}')"><img src="${r.imgBase64}" style="width:100%;height:180px;object-fit:cover;display:block" /></div>` : ''}
       <!-- card header -->
@@ -3333,7 +3333,7 @@ window.renderMidiaProduto = function() {
 
     const obsHtml = mp.obsAprovacao ? `<div style="font-size:11px;color:var(--text2);background:#FFFBEB;border:.5px solid #FDE68A;border-radius:6px;padding:6px 10px;margin-top:6px">💬 Maris: ${mp.obsAprovacao}</div>` : '';
 
-    return `<div style="background:var(--surface);border:.5px solid ${status==='aprovado'?'#6EE7B7':status==='reprovado'?'#FCA5A5':'var(--border)'};border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(0,45,114,.07)'" onmouseout="this.style.boxShadow='none'">
+    return `<div id="mp-card-${r.key}" style="background:var(--surface);border:.5px solid ${status==='aprovado'?'#6EE7B7':status==='reprovado'?'#FCA5A5':'var(--border)'};border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(0,45,114,.07)'" onmouseout="this.style.boxShadow='none'">
       <div style="display:flex;align-items:flex-start;gap:12px">
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
@@ -3464,7 +3464,7 @@ window.renderEmailProduto = function() {
     }[status];
     const obsHtml = ep.obsAprovacao ? `<div style="font-size:11px;color:var(--text2);background:#FFFBEB;border:.5px solid #FDE68A;border-radius:6px;padding:6px 10px;margin-top:6px">💬 Maris: ${ep.obsAprovacao}</div>` : '';
 
-    return `<div style="background:var(--surface);border:.5px solid ${status==='aprovado'?'#6EE7B7':status==='reprovado'?'#FCA5A5':'var(--border)'};border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(0,45,114,.07)'" onmouseout="this.style.boxShadow='none'">
+    return `<div id="ep-card-${ep.key}" style="background:var(--surface);border:.5px solid ${status==='aprovado'?'#6EE7B7':status==='reprovado'?'#FCA5A5':'var(--border)'};border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 14px rgba(0,45,114,.07)'" onmouseout="this.style.boxShadow='none'">
       <div style="display:flex;align-items:flex-start;gap:12px">
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
@@ -4032,7 +4032,7 @@ window.renderNotif = function() {
   }
 
   list.innerHTML = notifData.slice(0,30).map(n => `
-    <div class="notif-item ${n.read?'':'unread'}" onclick="window.marcarLida('${n.key}')">
+    <div class="notif-item ${n.read?'':'unread'}" onclick="window.irParaNotificacao('${n.key}')" style="cursor:pointer">
       <div class="notif-dot ${n.read?'read':''}"></div>
       <div style="flex:1">
         <div class="notif-text"><b>@${n.fromName}</b> te mencionou em <b>${n.context}</b></div>
@@ -4042,6 +4042,74 @@ window.renderNotif = function() {
     </div>
   `).join('');
 };
+
+// ── IR PARA O ITEM MENCIONADO ──
+window.irParaNotificacao = async function(notifKey) {
+  const n = notifData.find(x => x.key === notifKey);
+  if (!n) return;
+
+  // Fecha o dropdown de notificações
+  notifOpen = false;
+  document.getElementById('notif-dropdown')?.classList.remove('open');
+
+  // Marca como lida (sem remover do banco — só atualiza pra não distrair)
+  if (!n.read) {
+    try { await setDoc(doc(db,'notifications',notifKey), {read:true}, {merge:true}); } catch(_){}
+  }
+
+  // Função helper pra ativar uma main tab programaticamente
+  const ativarMainTab = (id) => {
+    const btn = document.getElementById('mtab-'+id);
+    if (btn && !btn.classList.contains('active')) btn.click();
+  };
+  // Função helper pra ativar uma sub tab (página)
+  const ativarSubTab = (id) => {
+    const stab = document.getElementById('stab-'+id);
+    if (stab && !stab.classList.contains('active')) stab.click();
+  };
+
+  // Rota baseada no tipo
+  switch(n.type) {
+    case 'ref':
+      ativarMainTab('design');
+      ativarSubTab('refs');
+      setTimeout(() => destacarItem('ref-card-'+n.refKey), 250);
+      break;
+    case 'social':
+    case 'produto': // post de produto = parte do social
+      ativarMainTab('social');
+      ativarSubTab('calendario');
+      setTimeout(() => destacarItem('row-'+n.refKey), 250);
+      break;
+    case 'midia':
+    case 'midia-produto':
+      ativarMainTab('produto');
+      ativarSubTab('midia-produto');
+      setTimeout(() => destacarItem('mp-card-'+n.refKey), 250);
+      break;
+    case 'email-produto':
+      ativarMainTab('produto');
+      ativarSubTab('email-produto');
+      setTimeout(() => destacarItem('ep-card-'+n.refKey), 250);
+      break;
+    default:
+      // se vier tipo desconhecido, pelo menos abre design+refs (mais comum)
+      ativarMainTab('design');
+      ativarSubTab('refs');
+  }
+};
+
+// Faz scroll até o elemento e destaca por alguns segundos
+function destacarItem(elId) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.scrollIntoView({behavior:'smooth', block:'center'});
+  // efeito de destaque (anel rosa pulsando 2x)
+  const corOriginal = el.style.boxShadow;
+  el.style.transition = 'box-shadow .3s';
+  el.style.boxShadow = '0 0 0 3px #ff40b3, 0 0 0 8px rgba(255,64,179,.2)';
+  setTimeout(() => { el.style.boxShadow = corOriginal; }, 2200);
+}
 
 window.toggleNotif = function() {
   const dd = document.getElementById('notif-dropdown');
