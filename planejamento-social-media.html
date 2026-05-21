@@ -122,23 +122,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .trial-badge{font-size:10px;padding:2px 8px;border-radius:99px;background:#FEF3C7;color:var(--amber);font-weight:500}
 
 /* post row */
-.post-row{display:grid;grid-template-columns:82px 106px 130px 100px 1fr 1fr 82px 110px 120px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s;cursor:grab}
+.post-row{display:grid;grid-template-columns:82px 106px 130px 100px 1fr 1fr 82px 110px 120px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s;cursor:grab;background:#fff}
 .post-row:active{cursor:grabbing}
 .post-row:last-child{border-bottom:none}
 .post-row:hover{background:#FAFBFD}
 .post-row.trial{background:#FFFDF0}
 .post-row.trial:hover{background:#FFFBEB}
 
-/* Fundo da linha pintado pela cor escolhida (versão suave pra texto continuar legível) */
-.post-row[data-cor="0"]{background:rgba(0,45,114,.06)}      /* Azul Petróleo */
-.post-row[data-cor="1"]{background:rgba(0,114,206,.08)}     /* Azul Escuro */
-.post-row[data-cor="2"]{background:rgba(65,182,230,.12)}    /* Azul Claro */
-.post-row[data-cor="3"]{background:rgba(184,204,234,.35)}   /* Gelo */
-.post-row[data-cor="0"]:hover{background:rgba(0,45,114,.10)}
-.post-row[data-cor="1"]:hover{background:rgba(0,114,206,.13)}
-.post-row[data-cor="2"]:hover{background:rgba(65,182,230,.18)}
-.post-row[data-cor="3"]:hover{background:rgba(184,204,234,.5)}
-/* Trial mantém prioridade (fundo amarelinho) mesmo com cor escolhida */
+/* Indicador de cor: barra lateral grossa na esquerda + fundo super sutil */
+.post-row[data-cor]{position:relative;padding-left:18px}
+.post-row[data-cor]::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:8px;
+  background:transparent;transition:background .15s;
+}
+.post-row[data-cor="0"]::before{background:#002d72}
+.post-row[data-cor="1"]::before{background:#0072ce}
+.post-row[data-cor="2"]::before{background:#41b6e6}
+.post-row[data-cor="3"]::before{background:#b8ccea}
+/* fundo super sutil só pra dar contexto, sem competir com a barra */
+.post-row[data-cor="0"],.post-row[data-cor="1"],.post-row[data-cor="2"],.post-row[data-cor="3"]{background:#fff}
+.post-row[data-cor="0"]:hover,.post-row[data-cor="1"]:hover,.post-row[data-cor="2"]:hover,.post-row[data-cor="3"]:hover{background:#FAFBFD}
+/* Trial mantém prioridade no fundo amarelinho, mas a barra colorida aparece igual */
 .post-row.trial[data-cor]{background:#FFFDF0}
 .post-row.trial[data-cor]:hover{background:#FFFBEB}
 .post-row.dragging{opacity:.4}
