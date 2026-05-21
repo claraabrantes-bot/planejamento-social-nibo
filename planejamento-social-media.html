@@ -1590,6 +1590,18 @@ onSnapshot(collection(db,'rows'), snap=>{
   rows.sort((a,b)=>(a.order||0)-(b.order||0));
   if(rows.length===0) generateDefaultRows();
   else { renderCalendar(); setConn(); }
+  // ── MIGRAÇÃO ÚNICA: remover post 20/05/2026 ──
+  if(!localStorage.getItem('migr-remove-20-05-2026')) {
+    const alvos = rows.filter(r => r.y===2026 && r.m===4 && r.date==='20/05');
+    if(alvos.length) {
+      Promise.all(alvos.map(r => deleteDoc(doc(db,'rows',r.key))))
+        .then(() => { localStorage.setItem('migr-remove-20-05-2026','1'); console.log('Migração: posts 20/05/2026 removidos.'); })
+        .catch(err => console.error('Erro na migração 20/05:', err));
+    } else {
+      // nada pra remover, marca como feito
+      localStorage.setItem('migr-remove-20-05-2026','1');
+    }
+  }
 });
 
 // ── GENERATE DEFAULT ROWS ──
@@ -1603,7 +1615,7 @@ async function generateDefaultRows(){
     let weekIdx=-1;
     let lastMonday=-1;
     let order=mi*1000;
-    const startDay=(y===2026&&m===4)?20:1; // maio/2026 começa dia 20
+    const startDay=(y===2026&&m===4)?21:1; // maio/2026 começa dia 21
     for(let day=startDay;day<=dim;day++){
       const dt=new Date(y,m,day);
       const dow=dt.getDay(); // 0=Sun,1=Mon..5=Fri,6=Sat
@@ -1650,7 +1662,7 @@ window.addMonth=async function(y,m){
   // generate rows for new month with correct week detection
   const dim=new Date(y,m+1,0).getDate();
   let weekIdx=-1, order=(newMonths.findIndex(mo=>mo.y===y&&mo.m===m))*1000;
-  const startDay2=(y===2026&&m===4)?20:1; // maio/2026 começa dia 20
+  const startDay2=(y===2026&&m===4)?21:1; // maio/2026 começa dia 21
   for(let day=startDay2;day<=dim;day++){
     const dt=new Date(y,m,day);
     const dow=dt.getDay();
