@@ -3545,7 +3545,7 @@ const CRIADOR_POR_AREA = {
 
 function htmlSecao(label, valor, vazioMsg) {
   const conteudo = (valor && valor.trim())
-    ? `<div style="font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap">${valor.replace(/</g,'&lt;')}</div>`
+    ? `<div style="font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap">${escapeHtml(valor)}</div>`
     : `<div style="font-size:12px;color:var(--text3);font-style:italic">${vazioMsg||'— vazio —'}</div>`;
   return `<div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px">
     <div class="modal-label" style="margin-bottom:6px">${label}</div>
@@ -3655,7 +3655,12 @@ window.executarAprovacaoCompleta = async function(decisao) {
   if(tipo === 'social') {
     const r = rows.find(r => r.key === key);
     const patch = {status: decisao};
-    if(decisao === 'reprovado') patch.obsReprovacao = obs;
+    if(decisao === 'reprovado') {
+      patch.obsReprovacao = obs;
+      // também grava em marisObs pra aparecer na coluna OBS. MARIS da tabela
+      const obsAtual = (r?.marisObs||'').trim();
+      patch.marisObs = `✗ ${obs}${obsAtual ? '\n\n— anterior —\n'+obsAtual : ''}`;
+    }
     await saveRow(key, patch);
     if(decisao === 'reprovado') {
       await window.enviarNotifReprovacao(CRIADOR_POR_AREA.social, from, `Post ${r?.date||''} · Social Media`, 'social', obs, now, tsFormatted);
@@ -3671,6 +3676,12 @@ window.executarAprovacaoCompleta = async function(decisao) {
     if(decisao === 'reprovado') patch.obsReprovacao = obs;
     else patch.obsAprovacao = obs;
     await setDoc(doc(db,'midia-produto',mpKey), patch, {merge:true});
+    // também grava em marisObs do row pra aparecer na coluna OBS. MARIS da tabela
+    if(decisao === 'reprovado') {
+      const obsAtual = (r?.marisObs||'').trim();
+      const novaMarisObs = `✗ ${obs}${obsAtual ? '\n\n— anterior —\n'+obsAtual : ''}`;
+      await setDoc(doc(db,'rows',key), {marisObs: novaMarisObs}, {merge:true});
+    }
     if(decisao === 'aprovado') {
       await setDoc(doc(db,'rows',key), {status:'aprovado'}, {merge:true});
       await window.enviarNotifAprovacao(CRIADOR_POR_AREA.midia, from, `Post ${r?.date||''} · Produto`, 'produto', now, tsFormatted);
