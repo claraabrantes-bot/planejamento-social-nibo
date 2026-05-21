@@ -2745,11 +2745,33 @@ DIRETRIZES OBRIGATÓRIAS da Nibo para texto de criativo (post de redes sociais):
 6. FUNCIONALIDADE ESPECÍFICA: mencionar em qual produto está (ex: "no Nibo Obrigações Plus").
 7. TOM: próximo, direto, sem jargão excessivo.
 
+REGRA ESPECIAL PARA TIPO "Editorial" (post educativo, geralmente CARROSSEL):
+Quando o tipo de post for "Editorial", o campo "texto" do criativo deve ser EXPANDIDO em um conteúdo educativo completo, organizado em SLIDES, porque o objetivo é ENSINAR algo de verdade ao leitor.
+O "texto" Editorial DEVE ser estruturado assim, em forma de carrossel de 5 a 7 slides, separados por "---" (três traços) entre cada slide:
+
+SLIDE 1 — CAPA: gancho forte de 1 frase (até 60 chars) que faça a pessoa parar de rolar. Pode ser pergunta, dor, ou afirmação polêmica.
+SLIDE 2 — CONTEXTO: explicar em 2-3 frases curtas POR QUE esse tema importa pro contador/escritório/BPO. Citar a dor real.
+SLIDES 3 a 5 (ou 6) — DESENVOLVIMENTO: cada slide com um passo, dica ou conceito (título curto + 2-4 frases explicativas didáticas, com exemplo prático).
+SLIDE FINAL — CTA: conclusão prática conectando ao produto Nibo + chamada para ação (demonstração / especialista).
+
+Cada slide deve ter título destacado (pode usar EMOJI no início) e o corpo explicativo abaixo, separado por quebra de linha (\\n). Use linguagem simples, exemplos numéricos quando possível, e mantenha o tom consultivo. Total entre 800 e 1500 caracteres pra todos os slides juntos.
+
+Para Editorial, a LEGENDA continua sendo curta (150–300 chars) com hashtags e CTA — quem expande é o criativo (carrossel).
+
+DIRETRIZES DE FORMATAÇÃO DOS SLIDES (Editorial):
+- Use "---" exatamente como separador entre slides (nada mais)
+- Cada slide começa com "SLIDE N — TÍTULO" em maiúsculas
+- Quebra de linha após o título, depois o corpo
+- Não use markdown (sem ** ou ##)
+
 Responda SOMENTE em JSON válido, sem markdown, sem texto fora do JSON:
 {"sugestoes":[{"texto":"...","legenda":"...","cta":"...","chars":120,"angulo":"Dor|Benefício|Transformação|Dado|Pergunta","rationale":"Por que funciona em 1 frase curta","alerta":""}]}
 Gere exatamente 4 sugestões com ângulos diferentes.
-"texto": copy curto do criativo (90–180 chars).
-"legenda": legenda completa para Instagram com emojis, hashtags relevantes da Nibo e CTA, entre 150–300 chars.
+"texto":
+  - Para posts NÃO-Editorial: copy curto do criativo (90–180 chars).
+  - Para posts EDITORIAL: carrossel completo de 5–7 slides separados por "---", entre 800 e 1500 chars no total.
+"legenda": legenda para Instagram, 150–300 chars com emojis, hashtags e CTA.
+"chars": para Editorial, contar o tamanho total do carrossel.
 "alerta" só se houver ponto de atenção, senão "".`;
 
 const ANGULO_COLORS={
@@ -2792,7 +2814,7 @@ window.gerarSugestoes=async function(){
       body:JSON.stringify({
         model:'llama-3.3-70b-versatile',
         temperature:0.8,
-        max_tokens:1200,
+        max_tokens: tipo === 'Editorial' ? 4000 : 1200,
         messages:[
           {role:'system',content:NIBO_SYSTEM_PROMPT},
           {role:'user',content:userMsg}
@@ -2819,18 +2841,36 @@ window.gerarSugestoes=async function(){
   }
 }
 
+function formatarTextoCriativo(texto) {
+  if (!texto) return '';
+  // Se tem separador "---", é carrossel Editorial → renderiza cada slide num bloquinho
+  if (texto.includes('---')) {
+    const slides = texto.split(/\n*---+\n*/).map(s => s.trim()).filter(Boolean);
+    return slides.map((s, idx) => `
+      <div style="background:#fff;border:.5px solid rgba(0,0,0,.08);border-radius:8px;padding:10px 12px;margin-bottom:6px">
+        <div style="font-size:9px;font-weight:700;color:var(--nibo2);text-transform:uppercase;letter-spacing:.1em;font-family:'DM Mono',monospace;margin-bottom:4px">▸ Slide ${idx+1} de ${slides.length}</div>
+        <div style="white-space:pre-wrap;font-size:13px;color:var(--text);line-height:1.5">${escapeHtml(s)}</div>
+      </div>
+    `).join('');
+  }
+  // Texto simples
+  return `<div style="font-size:13px;color:var(--text);line-height:1.6;font-weight:500;white-space:pre-wrap">${escapeHtml(texto)}</div>`;
+}
+
 function renderIACards(sugestoes,entry){
   const el=document.getElementById('ia-results');
   document.getElementById('ia-results-sub').textContent=`${entry.produto} · ${entry.publico} · ${entry.ts} — clique em uma sugestão para usá-la`;
   document.getElementById('ia-cards').innerHTML=sugestoes.map((s,i)=>{
     const ac=ANGULO_COLORS[s.angulo]||{bg:'var(--surface)',border:'var(--border)',text:'var(--text2)'};
+    const ehCarrossel = s.texto && s.texto.includes('---');
     return `<div class="ia-card" id="ia-card-${i}" onclick="window.selecionarCard(${i})" style="background:${ac.bg};border-color:${ac.border}">
       <div style="display:flex;align-items:center;gap:7px;margin-bottom:2px">
         <span style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:'DM Mono',monospace">Sugestão ${i+1}</span>
         ${s.angulo?`<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:${ac.bg};border:1px solid ${ac.border};color:${ac.text};font-weight:600">${s.angulo}</span>`:''}
+        ${ehCarrossel?`<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:#EEF2FF;color:#4338CA;font-weight:600">📑 Carrossel</span>`:''}
         <span id="ia-card-check-${i}" style="display:none;margin-left:auto;width:20px;height:20px;border-radius:50%;background:var(--nibo1);display:none;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:700;flex-shrink:0">✓</span>
       </div>
-      <div style="font-size:13px;color:var(--text);line-height:1.6;font-weight:500;flex:1">${escapeHtml(s.texto)}</div>
+      <div style="flex:1">${formatarTextoCriativo(s.texto)}</div>
       ${s.legenda?`<div style="font-size:11px;color:var(--text2);line-height:1.5;border-top:.5px solid rgba(0,0,0,.06);padding-top:8px;margin-top:4px"><span style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Legenda: </span>${escapeHtml(s.legenda)}</div>`:''}
       ${s.rationale?`<div style="font-size:11px;color:var(--text3);font-style:italic;line-height:1.5;border-top:.5px solid rgba(0,0,0,.06);padding-top:8px">${escapeHtml(s.rationale)}</div>`:''}
       <div style="display:flex;gap:6px;flex-wrap:wrap">
