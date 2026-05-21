@@ -2404,7 +2404,6 @@ function renderCalendar(){
           ${dowLabel?`<span class="post-dow" id="dow-${p.key}">${dowLabel}</span>`:`<span class="post-dow" id="dow-${p.key}"></span>`}
         </div>
         <div class="post-tipo">
-          <span class="dot" style="background:${tipo.color}"></span>
           <select class="tipo-select" onchange="window.updRowField('${p.key}','tipoId',this.value)">${tipoOpts}</select>
         </div>
         <select class="produto-select${p.produto?' filled':''}" onchange="window.updRowField('${p.key}','produto',this.value)" title="${p.produto||''}">
