@@ -2329,22 +2329,95 @@ window.cycleStatus=async function(key){
 }
 
 // ── UPDATE DATE + DOW LIVE ──
-window.updDateLive=async function(input,key,y){
-  const val=input.value.trim();
-  // update the day-of-week label live without full re-render
-  const dowEl=document.getElementById('dow-'+key);
-  if(dowEl){
-    if(val&&val.length===5&&val.includes('/')){
-      const parts=val.split('/');
-      const dd=parseInt(parts[0]),mm=parseInt(parts[1])-1;
-      if(!isNaN(dd)&&!isNaN(mm)){
-        const dt=new Date(y,mm,dd);
-        dowEl.textContent=DAYS_PT[dt.getDay()]||'';
-      } else { dowEl.textContent=''; }
-    } else { dowEl.textContent=''; }
+// Calcula week (índice da semana no mês) e di (índice do dia útil) pra uma data
+// Mesma lógica usada na geração inicial dos meses, pra ficar consistente.
+function calcularSemanaEDia(y, m, dia) {
+  const dim = new Date(y, m+1, 0).getDate(); // último dia do mês
+  let weekIdx = -1;
+  let resultWeek = 99, resultDi = 0;
+  for (let day = 1; day <= dim; day++) {
+    const dt = new Date(y, m, day);
+    const dow = dt.getDay();
+    if (dow === 0 || dow === 6) continue; // pula fim de semana
+    if (dow === 1) weekIdx++;
+    else if (weekIdx === -1) weekIdx = 0;
+    if (day === dia) {
+      resultWeek = weekIdx;
+      resultDi = dow - 1; // 0=seg, 4=sex
+      break;
+    }
   }
-  await saveRow(key,{date:val});
+  // Se cair em sábado/domingo, mantém week=99 (vai pro fim) e di=0
+  return { week: resultWeek, di: resultDi };
 }
+
+window.updDateLive = async function(input, key, y) {
+  const val = input.value.trim();
+  const row = rows.find(r => r.key === key);
+  if (!row) return;
+
+  // Atualiza a label "Seg/Ter/Qua..." em tempo real (sem re-render completo)
+  const dowEl = document.getElementById('dow-'+key);
+  let dd = null, mm = null;
+  if (val && val.length === 5 && val.includes('/')) {
+    const parts = val.split('/');
+    dd = parseInt(parts[0]);
+    mm = parseInt(parts[1]) - 1; // 0-based
+    if (!isNaN(dd) && !isNaN(mm)) {
+      // ano da data digitada: usa o ano da row (provavelmente igual ao atual)
+      const dt = new Date(row.y, mm, dd);
+      if (dowEl) dowEl.textContent = DAYS_PT[dt.getDay()] || '';
+    } else {
+      dd = null; mm = null;
+      if (dowEl) dowEl.textContent = '';
+    }
+  } else {
+    if (dowEl) dowEl.textContent = '';
+  }
+
+  // Se a data não é válida, só salva o texto
+  if (dd === null || mm === null) {
+    await saveRow(key, { date: val });
+    return;
+  }
+
+  // Se o mês digitado é DIFERENTE do mês da row, move o post pro outro mês
+  if (mm !== row.m) {
+    // Verifica se o mês destino existe na lista de meses configurados
+    const destinoExiste = months.some(mo => mo.y === row.y && mo.m === mm);
+    if (!destinoExiste) {
+      alert(`O mês ${String(mm+1).padStart(2,'0')}/${row.y} não está habilitado.\n\nAdicione esse mês primeiro no botão "+ mês" no topo do calendário.`);
+      // mantém a data antiga, só atualiza o que o usuário digitou pra UX (Firestore vai re-renderizar com o valor antigo)
+      await saveRow(key, { date: val });
+      return;
+    }
+
+    // Calcula a nova semana e dia da semana no mês destino
+    const { week: novaWeek, di: novoDi } = calcularSemanaEDia(row.y, mm, dd);
+
+    // Calcula novo order pra ficar no final daquele mês
+    const idxDestino = months.findIndex(mo => mo.y === row.y && mo.m === mm);
+    const maxOrderDestino = rows
+      .filter(r => r.y === row.y && r.m === mm)
+      .reduce((mx, r) => Math.max(mx, r.order || 0), idxDestino * 1000);
+
+    await saveRow(key, {
+      date: val,
+      m: mm,
+      week: novaWeek,
+      di: novoDi,
+      order: maxOrderDestino + 1,
+    });
+    return;
+  }
+
+  // Mesmo mês: atualiza só a data, e se necessário ajusta semana/di pra reordenar dentro do mês
+  const { week: novaWeek, di: novoDi } = calcularSemanaEDia(row.y, row.m, dd);
+  const patch = { date: val };
+  if (novaWeek !== row.week) patch.week = novaWeek;
+  if (novoDi !== row.di)     patch.di   = novoDi;
+  await saveRow(key, patch);
+};
 
 // ── ADD SÁBADO ROW ──
 window.addSatRow=async function(y,m,wk){
