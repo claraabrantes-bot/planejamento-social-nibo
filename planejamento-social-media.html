@@ -1775,8 +1775,98 @@ window.deleteMonth=async function(idx,e){
 }
 
 // ── SAVE HELPERS ──
+// ── HISTÓRICO DE UNDO (Ctrl+Z) ──
+const UNDO_LIMIT = 10;
+let undoStack = [];
+let isUndoing = false; // pra não empilhar a própria operação de undo
+
+// Empilha uma ação. tipo='update' (precisa do estado anterior) ou 'delete' (precisa do doc inteiro pra recriar)
+function pushUndo(action) {
+  if (isUndoing) return;
+  undoStack.push({...action, ts: Date.now()});
+  if (undoStack.length > UNDO_LIMIT) undoStack.shift();
+}
+
+// Toast curto no canto pra avisar que desfez
+function toastUndo(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:10001;
+    background:#1a1a2e;color:#fff;padding:10px 18px;border-radius:99px;font-size:13px;
+    font-family:'DM Sans',sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.2);
+    animation:slideInToast .25s ease-out;opacity:0;transition:opacity .3s`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(() => t.style.opacity = '1');
+  setTimeout(() => t.style.opacity = '0', 2200);
+  setTimeout(() => t.remove(), 2700);
+}
+
+async function executarUndo() {
+  if (undoStack.length === 0) {
+    toastUndo('Nada para desfazer');
+    return;
+  }
+  const action = undoStack.pop();
+  isUndoing = true;
+  try {
+    if (action.type === 'update-row') {
+      // Volta os campos pro estado antigo
+      await setDoc(doc(db,'rows',action.key), action.before, {merge:true});
+      toastUndo('↶ Desfeito');
+    } else if (action.type === 'delete-row') {
+      // Recria o doc inteiro
+      await setDoc(doc(db,'rows',action.key), action.data);
+      toastUndo('↶ Post restaurado');
+    } else if (action.type === 'delete-ref') {
+      await setDoc(doc(db,'refs',action.key), action.data);
+      toastUndo('↶ Referência restaurada');
+    } else if (action.type === 'update-ref') {
+      await setDoc(doc(db,'refs',action.key), action.before, {merge:true});
+      toastUndo('↶ Desfeito');
+    } else if (action.type === 'delete-mp') {
+      await setDoc(doc(db,'midia-produto',action.key), action.data);
+      toastUndo('↶ Briefing restaurado');
+    } else if (action.type === 'delete-ep') {
+      await setDoc(doc(db,'email-produto',action.key), action.data);
+      toastUndo('↶ Email restaurado');
+    }
+  } catch(err) {
+    console.error('Erro ao desfazer:', err);
+    toastUndo('Erro ao desfazer');
+  } finally {
+    setTimeout(() => { isUndoing = false; }, 100);
+  }
+}
+
+// Atalho Ctrl+Z / Cmd+Z
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') {
+    // Se foco tá num input/textarea, deixa o navegador desfazer texto local primeiro
+    const tag = (document.activeElement?.tagName||'').toLowerCase();
+    if (tag === 'input' || tag === 'textarea') return;
+    e.preventDefault();
+    executarUndo();
+  }
+});
+
 async function saveRow(key,data){
   setSyncing();
+  // Captura o estado anterior dos campos que vão mudar (pra undo)
+  if (!isUndoing) {
+    const existing = rows.find(r => r.key === key);
+    if (existing) {
+      const before = {};
+      let temMudanca = false;
+      Object.keys(data).forEach(field => {
+        // só guarda se o valor é diferente do atual
+        if (JSON.stringify(existing[field]) !== JSON.stringify(data[field])) {
+          before[field] = existing[field] !== undefined ? existing[field] : null;
+          temMudanca = true;
+        }
+      });
+      if (temMudanca) pushUndo({type:'update-row', key, before});
+    }
+  }
   await setDoc(doc(db,'rows',key),data,{merge:true});
   setSynced();
 }
@@ -2051,6 +2141,11 @@ window.salvarRef = async function() {
 
 window.deletarRef = async function(key) {
   if(!confirm('Remover esta referência e todos os comentários?')) return;
+  const existing = refsData.find(r => r.key === key);
+  if (existing && !isUndoing) {
+    const {key:_, ...data} = existing;
+    pushUndo({type:'delete-ref', key, data: {...data, key}});
+  }
   await deleteDoc(doc(db,'refs',key));
 };
 
@@ -2276,6 +2371,12 @@ window.addRow=async function(){
 // ── DELETE ROW ──
 window.deleteRow=async function(key){
   if(!confirm('Remover este post?')) return;
+  // Captura o doc inteiro pra poder restaurar com undo
+  const existing = rows.find(r => r.key === key);
+  if (existing && !isUndoing) {
+    const {key:_, ...data} = existing;
+    pushUndo({type:'delete-row', key, data: {...data, key}});
+  }
   await deleteDoc(doc(db,'rows',key));
 }
 
@@ -3567,6 +3668,10 @@ window.deletarMidiaBriefing = async function(socialKey) {
   if(!isProdutoEditor()) return;
   if(!confirm('Apagar o briefing deste post? O post continua no calendário.')) return;
   const mpKey = 'mp-' + socialKey;
+  const existing = midiaProdutoData.find(m => m.socialKey === socialKey);
+  if (existing && !isUndoing) {
+    pushUndo({type:'delete-mp', key: mpKey, data: existing});
+  }
   await deleteDoc(doc(db,'midia-produto', mpKey));
 };
 
