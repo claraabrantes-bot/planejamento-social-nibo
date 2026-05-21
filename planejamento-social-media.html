@@ -1634,6 +1634,52 @@ onSnapshot(collection(db,'rows'), snap=>{
       localStorage.setItem('migr-remove-20-05-2026','1');
     }
   }
+
+  // ── MIGRAÇÃO ÚNICA: reordenar junho/2026 cronologicamente + recalcular week/di ──
+  if(!localStorage.getItem('migr-reorder-jun-2026') && rows.length>0) {
+    const postsJun = rows.filter(r => r.y===2026 && r.m===5);
+    if(postsJun.length > 0) {
+      const idxJun = months.findIndex(mo => mo.y===2026 && mo.m===5);
+      if(idxJun >= 0) {
+        // parseia a data, ordena cronologicamente, regrava week/di/order corretos
+        const ordenados = postsJun
+          .map(r => {
+            let dia = 99;
+            if(r.date && r.date.includes('/')) {
+              const partes = r.date.split('/');
+              const d = parseInt(partes[0]);
+              if(!isNaN(d) && d>=1 && d<=31) dia = d;
+            }
+            return {row: r, dia};
+          })
+          .sort((a,b) => a.dia - b.dia);
+
+        const promises = ordenados.map((item, idx) => {
+          const dia = item.dia;
+          let week = 99, di = 0;
+          if(dia <= 31) {
+            const calc = calcularSemanaEDia(2026, 5, dia);
+            week = calc.week;
+            di   = calc.di;
+          }
+          const novoOrder = idxJun*1000 + dia*10 + di;
+          return setDoc(doc(db,'rows',item.row.key), {
+            week, di, order: novoOrder
+          }, {merge:true});
+        });
+
+        Promise.all(promises)
+          .then(() => {
+            localStorage.setItem('migr-reorder-jun-2026','1');
+            console.log(`Migração: ${promises.length} posts de junho/2026 reordenados.`);
+          })
+          .catch(err => console.error('Erro na migração jun/2026:', err));
+      }
+    } else {
+      // não tem nada em junho, marca como feito
+      localStorage.setItem('migr-reorder-jun-2026','1');
+    }
+  }
 });
 
 // ── GENERATE DEFAULT ROWS ──
@@ -2424,27 +2470,27 @@ window.updDateLive = async function(input, key, y) {
     // Calcula a nova semana e dia da semana no mês destino
     const { week: novaWeek, di: novoDi } = calcularSemanaEDia(row.y, mm, dd);
 
-    // Calcula novo order pra ficar no final daquele mês
+    // order baseado em (índice do mês * 1000) + (dia * 10) + dia da semana
+    // garante ordem cronológica automática
     const idxDestino = months.findIndex(mo => mo.y === row.y && mo.m === mm);
-    const maxOrderDestino = rows
-      .filter(r => r.y === row.y && r.m === mm)
-      .reduce((mx, r) => Math.max(mx, r.order || 0), idxDestino * 1000);
+    const novoOrder = idxDestino * 1000 + dd * 10 + novoDi;
 
     await saveRow(key, {
       date: val,
       m: mm,
       week: novaWeek,
       di: novoDi,
-      order: maxOrderDestino + 1,
+      order: novoOrder,
     });
     return;
   }
 
-  // Mesmo mês: atualiza só a data, e se necessário ajusta semana/di pra reordenar dentro do mês
+  // Mesmo mês: atualiza data + recalcula semana/di + recalcula order pra manter ordem cronológica
   const { week: novaWeek, di: novoDi } = calcularSemanaEDia(row.y, row.m, dd);
-  const patch = { date: val };
-  if (novaWeek !== row.week) patch.week = novaWeek;
-  if (novoDi !== row.di)     patch.di   = novoDi;
+  // Calcula order baseado na nova data (dia do mês * 10 + di), partindo do offset do mês
+  const idxAtual = months.findIndex(mo => mo.y === row.y && mo.m === row.m);
+  const novoOrder = idxAtual * 1000 + dd * 10 + novoDi;
+  const patch = { date: val, week: novaWeek, di: novoDi, order: novoOrder };
   await saveRow(key, patch);
 };
 
