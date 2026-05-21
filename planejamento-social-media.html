@@ -109,7 +109,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
 
 /* table */
-.table-header{display:grid;grid-template-columns:82px 106px 1fr 1fr 82px 110px 120px 30px;gap:5px;padding:0 10px 6px;border-bottom:.5px solid var(--border2);margin-bottom:6px}
+.table-header{display:grid;grid-template-columns:82px 106px 130px 100px 1fr 1fr 82px 110px 120px 30px;gap:5px;padding:0 10px 6px;border-bottom:.5px solid var(--border2);margin-bottom:6px}
 .th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
 
 /* week */
@@ -122,7 +122,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .trial-badge{font-size:10px;padding:2px 8px;border-radius:99px;background:#FEF3C7;color:var(--amber);font-weight:500}
 
 /* post row */
-.post-row{display:grid;grid-template-columns:82px 106px 130px 1fr 1fr 82px 110px 120px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s}
+.post-row{display:grid;grid-template-columns:82px 106px 130px 100px 1fr 1fr 82px 110px 120px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s}
 .post-row:last-child{border-bottom:none}
 .post-row:hover{background:#FAFBFD}
 .post-row.trial{background:#FFFDF0}
@@ -377,7 +377,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   .cores-grid{grid-template-columns:repeat(2,1fr)}
   .table-header,.post-row{grid-template-columns:70px 88px 1fr 56px 80px 80px 24px}
   .table-header .th:nth-child(3),.post-row>*:nth-child(3){display:none}
-  .table-header .th:nth-child(5),.post-row>*:nth-child(5){display:none}
+  .table-header .th:nth-child(4),.post-row>*:nth-child(4){display:none}
+  .table-header .th:nth-child(6),.post-row>*:nth-child(6){display:none}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .desc-grid{grid-template-columns:1fr}
   .month-grid-picker{grid-template-columns:repeat(4,1fr)}
@@ -835,6 +836,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="table-header" style="margin-top:8px">
     <div class="th">Data</div>
     <div class="th">Tipo</div>
+    <div class="th">Produto</div>
+    <div class="th">Formato</div>
     <div class="th">Social media</div>
     <div class="th">Design</div>
     <div class="th">Cor</div>
@@ -2288,6 +2291,12 @@ function renderCalendar(){
         </div>
         <select class="produto-select${p.produto?' filled':''}" onchange="window.updRowField('${p.key}','produto',this.value)" title="${p.produto||''}">
           ${NIBO_PRODUTO_OPTS.map(([v,l])=>`<option value="${v}"${v===p.produto?' selected':''}>${l}</option>`).join('')}
+        </select>
+        <select class="produto-select${p.formato?' filled':''}" onchange="window.updRowField('${p.key}','formato',this.value)" title="${MP_FORMATO_LABEL[p.formato]||''}">
+          <option value=""${!p.formato?' selected':''}>—</option>
+          <option value="reels"${p.formato==='reels'?' selected':''}>Reels</option>
+          <option value="estatico"${p.formato==='estatico'?' selected':''}>Estático</option>
+          <option value="carrossel"${p.formato==='carrossel'?' selected':''}>Carrossel</option>
         </select>
         <span class="idea-cell${p.social?' filled':''}" onclick="window.openModal('${p.key}','social')" title="${(p.social||'').replace(/"/g,'&quot;')}">${sSnip}</span>
         <span class="idea-cell${p.design?' filled':''}" onclick="window.openModal('${p.key}','design')" title="${(p.design||'').replace(/"/g,'&quot;')}">${dSnip}</span>
