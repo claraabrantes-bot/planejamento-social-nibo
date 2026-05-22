@@ -1680,6 +1680,50 @@ onSnapshot(collection(db,'rows'), snap=>{
       localStorage.setItem('migr-reorder-jun-2026','1');
     }
   }
+
+  // ── MIGRAÇÃO ÚNICA: reordenar julho/2026 cronologicamente + recalcular week/di ──
+  if(!localStorage.getItem('migr-reorder-jul-2026-v2') && rows.length>0) {
+    const postsJul = rows.filter(r => r.y===2026 && r.m===6);
+    if(postsJul.length > 0) {
+      const idxJul = months.findIndex(mo => mo.y===2026 && mo.m===6);
+      if(idxJul >= 0) {
+        const ordenados = postsJul
+          .map(r => {
+            let dia = 99;
+            if(r.date && r.date.includes('/')) {
+              const partes = r.date.split('/');
+              const d = parseInt(partes[0]);
+              if(!isNaN(d) && d>=1 && d<=31) dia = d;
+            }
+            return {row: r, dia};
+          })
+          .sort((a,b) => a.dia - b.dia);
+
+        const promises = ordenados.map(item => {
+          const dia = item.dia;
+          let week = 99, di = 0;
+          if(dia <= 31) {
+            const calc = calcularSemanaEDia(2026, 6, dia);
+            week = calc.week;
+            di   = calc.di;
+          }
+          const novoOrder = idxJul*1000 + dia*10 + di;
+          return setDoc(doc(db,'rows',item.row.key), {
+            week, di, order: novoOrder
+          }, {merge:true});
+        });
+
+        Promise.all(promises)
+          .then(() => {
+            localStorage.setItem('migr-reorder-jul-2026-v2','1');
+            console.log(`Migração: ${promises.length} posts de julho/2026 reordenados.`);
+          })
+          .catch(err => console.error('Erro na migração jul/2026:', err));
+      }
+    } else {
+      localStorage.setItem('migr-reorder-jul-2026-v2','1');
+    }
+  }
 });
 
 // ── GENERATE DEFAULT ROWS ──
@@ -2479,22 +2523,37 @@ window.cycleStatus=async function(key){
 // Calcula week (índice da semana no mês) e di (índice do dia útil) pra uma data
 // Mesma lógica usada na geração inicial dos meses, pra ficar consistente.
 function calcularSemanaEDia(y, m, dia) {
-  const dim = new Date(y, m+1, 0).getDate(); // último dia do mês
+  const dim = new Date(y, m+1, 0).getDate();
   let weekIdx = -1;
   let resultWeek = 99, resultDi = 0;
+  let ultimaWeekUtil = 0; // pra sábado herdar a última semana útil vista
   for (let day = 1; day <= dim; day++) {
     const dt = new Date(y, m, day);
     const dow = dt.getDay();
-    if (dow === 0 || dow === 6) continue; // pula fim de semana
+
+    // Atualiza weekIdx em segundas (start da semana útil)
     if (dow === 1) weekIdx++;
-    else if (weekIdx === -1) weekIdx = 0;
+    else if (weekIdx === -1 && dow >= 2 && dow <= 5) weekIdx = 0; // mês começa em ter/qua/qui/sex
+
+    if (dow >= 1 && dow <= 5) ultimaWeekUtil = weekIdx;
+
     if (day === dia) {
-      resultWeek = weekIdx;
-      resultDi = dow - 1; // 0=seg, 4=sex
+      if (dow >= 1 && dow <= 5) {
+        // dia útil — vai pra semana atual com di = 0..4
+        resultWeek = weekIdx;
+        resultDi   = dow - 1;
+      } else if (dow === 6) {
+        // sábado — herda a última semana útil vista, di=5
+        resultWeek = (ultimaWeekUtil >= 0 ? ultimaWeekUtil : 0);
+        resultDi   = 5;
+      } else {
+        // domingo — fica em Semana Extra
+        resultWeek = 99;
+        resultDi   = 6;
+      }
       break;
     }
   }
-  // Se cair em sábado/domingo, mantém week=99 (vai pro fim) e di=0
   return { week: resultWeek, di: resultDi };
 }
 
@@ -2650,11 +2709,28 @@ function renderCalendar(){
     // use custom label if saved, otherwise default
     const weekLabelKey=`wl-${y}-${m}-${wk}`;
     const savedLabel=localStorage.getItem(weekLabelKey)||`Semana ${wNum}`;
+    // estado da semana pra aprovação
+    const wPostsValidos = wRows.filter(r => !r.isSat);
+    const totalSemana = wPostsValidos.length;
+    const enviados = wPostsValidos.filter(r => r.enviadoParaAprovacao).length;
+    const aprovados = wPostsValidos.filter(r => r.status === 'aprovado').length;
+    const reprovados = wPostsValidos.filter(r => r.status === 'reprovado').length;
+    let btnEnviar = '';
+    if (totalSemana > 0) {
+      if (aprovados === totalSemana) {
+        btnEnviar = `<span class="add-sat-btn" style="background:#D1FAE5;color:#065F46;border-color:#6EE7B7;cursor:default">✓ Semana aprovada</span>`;
+      } else if (enviados === totalSemana) {
+        btnEnviar = `<span class="add-sat-btn" style="background:#FEF3C7;color:#92400E;border-color:#FDE68A;cursor:default">⏳ Aguardando Maris</span>`;
+      } else {
+        btnEnviar = `<button class="add-sat-btn" style="background:#EFF6FF;color:var(--nibo1);border-color:#93C5FD" onclick="window.enviarSemanaParaAprovacao(${y},${m},${wk})">→ Enviar pra aprovação</button>`;
+      }
+    }
     html+=`<div class="week-block"><div class="week-header">
       <input class="week-title-input" value="${savedLabel.replace(/"/g,'&quot;')}" 
         onchange="localStorage.setItem('wl-${y}-${m}-${wk}',this.value)" 
         onclick="this.select()" title="Clique para editar o nome da semana">
       ${hasTrial?'<span class="trial-badge">⭐ trial financeiro</span>':''}
+      ${btnEnviar}
       <button class="add-sat-btn" onclick="window.addSatRow(${y},${m},${wk})" title="Adicionar post no sábado desta semana">+ sábado</button>
     </div>`;
     wRows.forEach(p=>{
@@ -4255,6 +4331,8 @@ window.executarAprovacaoCompleta = async function(decisao) {
       await window.enviarNotifReprovacao(CRIADOR_POR_AREA.social, from, `Post ${r?.date||''} · Social Media`, 'social', obs, now, tsFormatted);
     } else {
       await window.enviarNotifAprovacao(CRIADOR_POR_AREA.social, from, `Post ${r?.date||''} · Social Media`, 'social', now, tsFormatted);
+      // checa se o mês inteiro foi aprovado → notifica Millena (com pequeno delay pro rows atualizar)
+      setTimeout(() => window.checarMesAprovadoCompleto(r), 800);
     }
   }
   else if(tipo === 'midia') {
@@ -4733,7 +4811,91 @@ window.aprovarRapidoSocial = async function(key) {
   const now = Date.now();
   const tsFormatted = new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
   await window.enviarNotifAprovacao('clara.abrantes@nibo.com.br', from, `Post ${r?.date||''} · Social Media`, 'social', now, tsFormatted);
+  // verifica se o mês inteiro foi aprovado, pra notificar a Millena (com delay pro snapshot atualizar)
+  setTimeout(() => window.checarMesAprovadoCompleto(r), 800);
   window.renderGestao();
+};
+
+// ── ENVIAR SEMANA PRA APROVAÇÃO ──
+window.enviarSemanaParaAprovacao = async function(y, m, wk) {
+  const postsSemana = rows.filter(r => r.y===y && r.m===m && r.week===wk && !r.isSat);
+  if (postsSemana.length === 0) {
+    alert('Não há posts nesta semana pra enviar.');
+    return;
+  }
+  // valida: todo post precisa ter pelo menos copy ou briefing preenchido
+  const semConteudo = postsSemana.filter(r => !(r.social||'').trim() && !(r.design||'').trim());
+  if (semConteudo.length > 0) {
+    const ok = confirm(`${semConteudo.length} post(s) desta semana ainda estão sem copy nem briefing.\n\nEnviar pra aprovação mesmo assim?`);
+    if (!ok) return;
+  }
+
+  const from = userProfile.nome || (currentUserEmail().split('@')[0]) || 'time';
+  const now = Date.now();
+  const tsFormatted = new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const MES_PT=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  // marca cada post como enviado pra aprovação
+  await Promise.all(postsSemana.map(r => saveRow(r.key, {enviadoParaAprovacao: true, enviadoParaAprovacaoEm: tsFormatted})));
+
+  // monta resumo da semana pra notificação
+  const datas = postsSemana.map(r => r.date||'?').join(', ');
+  const excerpt = `${postsSemana.length} post${postsSemana.length>1?'s':''} (${datas})`;
+  const semanaLabel = localStorage.getItem(`wl-${y}-${m}-${wk}`) || `Semana ${wk+1}`;
+
+  // notifica a Maris
+  const key = `notif-semana-${y}-${m}-${wk}-${now}`;
+  await setDoc(doc(db,'notifications',key), {
+    key,
+    toEmail: MARIS_EMAIL,
+    fromName: from,
+    context: `${semanaLabel} · ${MES_PT[m]} ${y}`,
+    excerpt: `📩 Enviada pra aprovação: ${excerpt}`,
+    type: 'semana-aprovacao',
+    read: false,
+    ts: now,
+    tsFormatted,
+  });
+
+  alert(`✓ Semana enviada pra aprovação da Mariana!\n\n${postsSemana.length} post(s) aguardando aprovação.`);
+};
+
+// ── CHECAR SE O MÊS INTEIRO FOI APROVADO → notifica Millena (design) ──
+window.checarMesAprovadoCompleto = async function(rowReferencia) {
+  if (!rowReferencia) return;
+  const {y, m} = rowReferencia;
+
+  const postsMes = rows.filter(r => r.y===y && r.m===m && !r.isSat);
+  if (postsMes.length === 0) return;
+
+  // Considera "aprovado" também o que acabou de ser salvo (este caso vai sincronizar via snapshot, mas pra evitar race condition, checamos depois de pequeno delay)
+  // Aqui assumimos que rows já foi atualizado pelo snapshot do Firestore
+  const todosAprovados = postsMes.every(r => r.status === 'aprovado');
+  if (!todosAprovados) return;
+
+  // Verifica se já notificamos esse mês antes (pra não duplicar)
+  const MES_PT=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const flagKey = `notif-mes-millena-${y}-${m}`;
+  // Procura nas notificações se já existe
+  const jaNotificou = notifData.some(n => n.key && n.key.startsWith(flagKey));
+  if (jaNotificou) return;
+
+  const from = userProfile.nome || (isMaris() ? 'Mariana' : currentUserEmail().split('@')[0]);
+  const now = Date.now();
+  const tsFormatted = new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+
+  await setDoc(doc(db,'notifications',`${flagKey}-${now}`), {
+    key: `${flagKey}-${now}`,
+    toEmail: 'millena.barros@nibo.com.br',
+    fromName: from,
+    context: `${MES_PT[m]} ${y} aprovado!`,
+    excerpt: `🎨 ${postsMes.length} posts liberados pra design — Maris aprovou o mês inteiro.`,
+    type: 'mes-aprovado-design',
+    read: false,
+    ts: now,
+    tsFormatted,
+  });
+  console.log(`✓ Millena notificada: ${MES_PT[m]}/${y} aprovado.`);
 };
 
 </script>
