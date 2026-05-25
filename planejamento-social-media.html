@@ -1421,6 +1421,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="modal-tabs">
       <button class="modal-tab active" onclick="switchMTab('social',this)">Social Media</button>
       <button class="modal-tab" onclick="switchMTab('design',this)">Design</button>
+      <button class="modal-tab" onclick="switchMTab('refs',this)">🔗 Referências<span id="modal-refs-badge" style="display:none;margin-left:6px;font-size:10px;font-weight:700;background:#ff40b3;color:#fff;border-radius:99px;padding:1px 7px;min-width:18px;display:none;align-items:center;justify-content:center"></span></button>
       <button class="modal-tab" id="modal-tab-maris" onclick="switchMTab('maris',this)">Obs. Maris</button>
     </div>
     <div class="modal-body">
@@ -1438,6 +1439,28 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div id="modal-pane-design" class="modal-pane">
         <div class="modal-label">Briefing para o designer</div>
         <textarea id="modal-design" placeholder="Layout, referências visuais, elementos gráficos, formato..." rows="5"></textarea>
+      </div>
+      <div id="modal-pane-refs" class="modal-pane">
+        <div class="modal-label">Referências e trends pra este post</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.4">Cole links de TikTok, Insta, Pinterest ou qualquer outro lugar, com descrição. Pode subir um screenshot da trend pra a Maris e a Millena verem.</div>
+
+        <!-- Formulário pra adicionar nova referência -->
+        <div id="post-refs-form" style="background:var(--surface2);border-radius:var(--radius);padding:12px;margin-bottom:10px">
+          <input id="post-ref-link" type="url" placeholder="https://www.tiktok.com/... ou https://www.instagram.com/..." style="width:100%;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;outline:none;background:var(--bg);color:var(--text);margin-bottom:6px" />
+          <textarea id="post-ref-desc" rows="2" placeholder="Descrição: o que essa referência inspira? Ex: 'trend do áudio X com transição rápida'..." style="width:100%;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.5;margin-bottom:6px"></textarea>
+          <div style="display:flex;align-items:center;gap:8px">
+            <label style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;border:.5px solid var(--border2);background:var(--bg);cursor:pointer;font-size:11px;color:var(--text2)">
+              📎 <span id="post-ref-img-label">Adicionar screenshot</span>
+              <input id="post-ref-img-input" type="file" accept="image/*" style="display:none" onchange="window.onPostRefImgChange(this)">
+            </label>
+            <img id="post-ref-img-preview" style="display:none;width:36px;height:36px;object-fit:cover;border-radius:6px;border:.5px solid var(--border2)" />
+            <button id="post-ref-img-remove" style="display:none;font-size:11px;background:none;border:none;color:var(--red);cursor:pointer" onclick="window.removerPostRefImg()">remover</button>
+            <button class="btn btn-primary" onclick="window.adicionarPostRef()" style="margin-left:auto;font-size:12px;padding:6px 14px">+ Adicionar</button>
+          </div>
+        </div>
+
+        <!-- Lista de referências já vinculadas -->
+        <div id="post-refs-list" style="display:flex;flex-direction:column;gap:8px"></div>
       </div>
       <div id="modal-pane-maris" class="modal-pane">
         <div class="modal-label">Observações da Maris</div>
@@ -2776,7 +2799,7 @@ function renderCalendar(){
           <option value="estatico"${p.formato==='estatico'?' selected':''}>Estático</option>
           <option value="carrossel"${p.formato==='carrossel'?' selected':''}>Carrossel</option>
         </select>
-        <span class="idea-cell${p.social?' filled':''}" onclick="window.openModal('${p.key}','social')" title="${(p.social||'').replace(/"/g,'&quot;')}">${sSnip}</span>
+        <span class="idea-cell${p.social?' filled':''}" onclick="window.openModal('${p.key}','social')" title="${(p.social||'').replace(/"/g,'&quot;')}${(p.postRefs||[]).length?` · ${(p.postRefs||[]).length} ref(s)`:''}">${sSnip}${(p.postRefs||[]).length?` <span style="font-size:9px;color:var(--nibo2);font-weight:700" onclick="event.stopPropagation();window.openModal('${p.key}','refs')" title="${(p.postRefs||[]).length} referência(s) vinculada(s)">🔗${(p.postRefs||[]).length}</span>`:''}</span>
         <span class="idea-cell${p.design?' filled':''}" onclick="window.openModal('${p.key}','design')" title="${(p.design||'').replace(/"/g,'&quot;')}">${dSnip}</span>
         <div class="cor-selector">${corBtns}</div>
         <div class="status-cell">
@@ -2802,12 +2825,15 @@ function renderCalendar(){
           ];
           const atual = PUB_OPTS.find(o => o.value === pub) || PUB_OPTS[0];
           if (!podePub) {
-            // somente visualização — pílula sem dropdown
             return `<span style="font-size:11px;padding:3px 9px;border-radius:99px;background:${atual.bg};color:${atual.color};border:.5px solid ${atual.border};white-space:nowrap;text-align:center">${atual.label}</span>`;
           }
-          return `<select class="pub-select" onchange="window.updRowField('${p.key}','pubStatus',this.value)" style="font-size:11px;padding:3px 6px;border-radius:99px;background:${atual.bg};color:${atual.color};border:.5px solid ${atual.border};cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;width:100%">
-            ${PUB_OPTS.map(o => `<option value="${o.value}"${o.value===pub?' selected':''}>${o.label}</option>`).join('')}
-          </select>`;
+          const temConteudo = !!(p.social||'').trim();
+          return `<div style="display:flex;gap:3px;align-items:center">
+            <select class="pub-select" onchange="window.updRowField('${p.key}','pubStatus',this.value)" style="font-size:11px;padding:3px 6px;border-radius:99px;background:${atual.bg};color:${atual.color};border:.5px solid ${atual.border};cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;flex:1;min-width:0">
+              ${PUB_OPTS.map(o => `<option value="${o.value}"${o.value===pub?' selected':''}>${o.label}</option>`).join('')}
+            </select>
+            <button onclick="window.abrirBusinessSuite('${p.key}')" title="${temConteudo?'Copiar copy e abrir Business Suite':'Sem copy preenchida'}" ${!temConteudo?'disabled':''} style="width:24px;height:24px;border-radius:50%;border:.5px solid ${temConteudo?'#1877F2':'#E5E7EB'};background:${temConteudo?'#E7F3FF':'#F3F4F6'};color:${temConteudo?'#1877F2':'#9CA3AF'};cursor:${temConteudo?'pointer':'not-allowed'};font-size:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center" onmouseover="if(!this.disabled)this.style.background='#1877F2',this.style.color='#fff'" onmouseout="if(!this.disabled)this.style.background='#E7F3FF',this.style.color='#1877F2'">🚀</button>
+          </div>`;
         })()}
         <button class="del-btn" onclick="window.deleteRow('${p.key}')" title="Remover">×</button>
       </div>`;
@@ -2860,17 +2886,151 @@ window.openModal=function(key,tab='social'){
   // mostrar/esconder aba maris conforme permissão
   const marisTab = document.getElementById('modal-tab-maris');
   if(marisTab) marisTab.style.display = (currentUserEmail()==='mariana.araujo@nibo.com.br'||currentUserEmail()==='clara.abrantes@nibo.com.br') ? '' : 'none';
+  // Atualiza badge de refs
+  window.atualizarRefsBadge();
   window.switchMTab(tab);
   document.getElementById('modal').classList.add('open');
   setTimeout(()=>document.getElementById('modal-'+tab).focus(),80);
 }
+
+// Atualiza o balãozinho com a contagem de refs do post atual
+window.atualizarRefsBadge = function() {
+  const badge = document.getElementById('modal-refs-badge');
+  if(!badge || !editingKey) return;
+  const r = rows.find(r => r.key === editingKey);
+  const n = (r?.postRefs || []).length;
+  if(n > 0) {
+    badge.textContent = n;
+    badge.style.display = 'inline-flex';
+  } else {
+    badge.style.display = 'none';
+  }
+};
 window.switchMTab=function(tab){
   mTab=tab;
-  document.querySelectorAll('.modal-tab').forEach((b,i)=>b.classList.toggle('active',['social','design','maris'][i]===tab));
+  document.querySelectorAll('.modal-tab').forEach((b,i)=>b.classList.toggle('active',['social','design','refs','maris'][i]===tab));
   document.querySelectorAll('.modal-pane').forEach(p=>p.classList.remove('active'));
   document.getElementById('modal-pane-'+tab).classList.add('active');
+  if(tab==='refs') window.renderPostRefs();
 }
 window.closeModal=function(){document.getElementById('modal').classList.remove('open');editingKey=null;}
+
+// ── REFERÊNCIAS DO POST (trends, prints, links) ──
+let postRefImgTemp = '';
+
+window.onPostRefImgChange = async function(input) {
+  const file = input.files[0];
+  if(!file) return;
+  const label = document.getElementById('post-ref-img-label');
+  const preview = document.getElementById('post-ref-img-preview');
+  const removeBtn = document.getElementById('post-ref-img-remove');
+  const txtOriginal = label.textContent;
+  label.textContent = 'Comprimindo...';
+  try {
+    let dataUrl = await comprimirImagem(file, 1200, 0.82);
+    if (dataUrl.length > 800_000) dataUrl = await comprimirImagem(file, 900, 0.7);
+    if (dataUrl.length > 800_000) dataUrl = await comprimirImagem(file, 700, 0.6);
+    postRefImgTemp = dataUrl;
+    preview.src = dataUrl;
+    preview.style.display = 'inline-block';
+    removeBtn.style.display = 'inline-block';
+    label.textContent = 'Trocar';
+  } catch(err) {
+    label.textContent = txtOriginal;
+    alert('Não consegui processar essa imagem: ' + (err?.message||''));
+    input.value = '';
+  }
+};
+
+window.removerPostRefImg = function() {
+  postRefImgTemp = '';
+  document.getElementById('post-ref-img-preview').style.display = 'none';
+  document.getElementById('post-ref-img-remove').style.display = 'none';
+  document.getElementById('post-ref-img-label').textContent = 'Adicionar screenshot';
+  document.getElementById('post-ref-img-input').value = '';
+};
+
+window.adicionarPostRef = async function() {
+  if(!editingKey) return;
+  const link = document.getElementById('post-ref-link').value.trim();
+  const desc = document.getElementById('post-ref-desc').value.trim();
+  if(!link && !desc && !postRefImgTemp) {
+    alert('Adicione pelo menos um link, uma descrição ou uma imagem.');
+    return;
+  }
+  const r = rows.find(r => r.key === editingKey);
+  if(!r) return;
+  const refsAtuais = Array.isArray(r.postRefs) ? r.postRefs : [];
+  const novaRef = {
+    id: 'pref-' + Date.now(),
+    link, desc,
+    img: postRefImgTemp,
+    author: currentUserEmail().split('@')[0],
+    ts: new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),
+  };
+  const novasRefs = [...refsAtuais, novaRef];
+  // Verifica tamanho antes de salvar (limite Firestore 1MB)
+  const tamanho = JSON.stringify(novasRefs).length;
+  if (tamanho > 800_000) {
+    alert('As referências deste post estão ficando muito grandes. Remova alguma imagem antes de adicionar nova.');
+    return;
+  }
+  await saveRow(editingKey, {postRefs: novasRefs});
+  // limpa o formulário
+  document.getElementById('post-ref-link').value = '';
+  document.getElementById('post-ref-desc').value = '';
+  window.removerPostRefImg();
+  window.renderPostRefs();
+};
+
+window.removerPostRef = async function(refId) {
+  if(!editingKey) return;
+  if(!confirm('Remover esta referência?')) return;
+  const r = rows.find(r => r.key === editingKey);
+  if(!r) return;
+  const novasRefs = (r.postRefs||[]).filter(ref => ref.id !== refId);
+  await saveRow(editingKey, {postRefs: novasRefs});
+  window.renderPostRefs();
+};
+
+window.renderPostRefs = function() {
+  const lista = document.getElementById('post-refs-list');
+  if(!lista || !editingKey) return;
+  // Atualiza balãozinho da aba
+  window.atualizarRefsBadge();
+  const r = rows.find(r => r.key === editingKey);
+  const refs = (r?.postRefs||[]);
+  if(refs.length === 0) {
+    lista.innerHTML = '<div style="font-size:12px;color:var(--text3);font-style:italic;text-align:center;padding:14px 0">Nenhuma referência adicionada ainda</div>';
+    return;
+  }
+  lista.innerHTML = refs.map(ref => {
+    let domain = '';
+    try { domain = new URL(ref.link).hostname.replace('www.',''); } catch(_){}
+    return `<div style="background:var(--surface);border:.5px solid var(--border2);border-radius:var(--radius);padding:10px 12px;display:flex;gap:10px">
+      ${ref.img ? `<img src="${ref.img}" onclick="window.abrirLightboxPostRef('${ref.id}')" style="width:60px;height:60px;object-fit:cover;border-radius:6px;cursor:zoom-in;flex-shrink:0" />` : ''}
+      <div style="flex:1;min-width:0">
+        ${ref.link ? `<a href="${ref.link}" target="_blank" rel="noopener" style="font-size:12px;color:var(--nibo2);text-decoration:none;font-weight:600;word-break:break-all;display:block;margin-bottom:3px">🔗 ${domain || 'abrir link'}</a>` : ''}
+        ${ref.desc ? `<div style="font-size:12px;color:var(--text);line-height:1.4;white-space:pre-wrap">${escapeHtml(ref.desc)}</div>` : ''}
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;font-family:'DM Mono',monospace">por ${ref.author||'—'} · ${ref.ts||''}</div>
+      </div>
+      <button onclick="window.removerPostRef('${ref.id}')" title="Remover" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;align-self:flex-start">×</button>
+    </div>`;
+  }).join('');
+};
+
+// Lightbox específico pras refs do post
+window.abrirLightboxPostRef = function(refId) {
+  if(!editingKey) return;
+  const r = rows.find(r => r.key === editingKey);
+  const ref = (r?.postRefs||[]).find(x => x.id === refId);
+  if(!ref || !ref.img) return;
+  document.getElementById('lightbox-img').src = ref.img;
+  document.getElementById('lightbox-title').textContent = ref.desc || ref.link || '';
+  const lb = document.getElementById('lightbox');
+  lb.style.display = 'flex';
+};
+
 window.saveModal=async function(){
   if(!editingKey) return;
   const s=document.getElementById('modal-social').value.trim();
@@ -4262,6 +4422,24 @@ window.abrirVisaoCompleta = function(tipo, key) {
     sub.textContent = `${tipoInfo.name} · ${produtoLabel} · Status: ${r.status||'pendente'}`;
     secoes += htmlSecao('Copy / texto do post (Social Media)', r.social, 'Copy ainda não foi escrita');
     secoes += htmlSecao('Briefing de design', r.design, 'Briefing de design ainda não foi preenchido');
+    // Referências vinculadas (trends, prints, links)
+    if(Array.isArray(r.postRefs) && r.postRefs.length > 0) {
+      const refsHtml = r.postRefs.map(ref => {
+        let dom = '';
+        try { dom = new URL(ref.link).hostname.replace('www.',''); } catch(_){}
+        return `<div style="display:flex;gap:8px;padding:8px 0;border-bottom:.5px solid rgba(0,0,0,.05)">
+          ${ref.img ? `<img src="${ref.img}" style="width:50px;height:50px;object-fit:cover;border-radius:5px;flex-shrink:0" />` : ''}
+          <div style="flex:1;min-width:0">
+            ${ref.link ? `<a href="${ref.link}" target="_blank" rel="noopener" style="font-size:11px;color:var(--nibo2);word-break:break-all;display:block;margin-bottom:2px">🔗 ${dom||ref.link}</a>` : ''}
+            ${ref.desc ? `<div style="font-size:11px;color:var(--text);line-height:1.4;white-space:pre-wrap">${escapeHtml(ref.desc)}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+      secoes += `<div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px">
+        <div class="modal-label" style="margin-bottom:6px">🔗 Referências e trends (${r.postRefs.length})</div>
+        ${refsHtml}
+      </div>`;
+    }
     if(r.marisObs) secoes += htmlSecao('Observação da Maris', r.marisObs);
     if(r.obsReprovacao) secoes += htmlSecao('⚠ Última reprovação', r.obsReprovacao);
     podeAprovar = !!(r.social && r.social.trim());
@@ -4821,6 +4999,51 @@ window.toggleGestaoCard = function(tipo) {
   const aprovados = socialRows.filter(r => r.status === 'aprovado').length;
   const reprovados = socialRows.filter(r => r.status === 'reprovado').length;
   const pendentes = socialRows.filter(r => r.status === 'pendente' || !r.status).length;
+
+// ── ABRIR BUSINESS SUITE ──
+// Limitação: o Meta Business Suite NÃO aceita texto via URL params (limitação deles).
+// O que dá pra fazer: copiar a copy pro clipboard + abrir o Composer.
+// Aí no Composer é só Ctrl+V que cola a copy. Economiza vários cliques por post.
+window.abrirBusinessSuite = async function(key) {
+  const r = rows.find(x => x.key === key);
+  if (!r) return;
+  const copy = (r.social||'').trim();
+  if (!copy) {
+    alert('Esta linha está sem copy preenchida.');
+    return;
+  }
+
+  // Copia pra área de transferência
+  try {
+    await navigator.clipboard.writeText(copy);
+  } catch(err) {
+    // Fallback: tenta com execCommand (navegadores antigos)
+    const ta = document.createElement('textarea');
+    ta.value = copy;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch(_){}
+    document.body.removeChild(ta);
+  }
+
+  // Abre o Business Suite no Composer (criação de post novo)
+  const url = 'https://business.facebook.com/latest/composer';
+  window.open(url, '_blank', 'noopener');
+
+  // Toast com instruções
+  const toast = document.createElement('div');
+  toast.style.cssText = `position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:10001;
+    background:#1a1a2e;color:#fff;padding:14px 22px;border-radius:12px;font-size:13px;
+    font-family:'DM Sans',sans-serif;box-shadow:0 12px 32px rgba(0,0,0,.25);
+    max-width:380px;line-height:1.5;animation:slideInToast .3s ease-out;transition:opacity .4s`;
+  toast.innerHTML = `<div style="font-weight:700;margin-bottom:4px">✓ Copy copiada!</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.85)">No Business Suite, aperte <b>Ctrl+V</b> no campo de texto e suba a arte manualmente.</div>`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.style.opacity = '0', 4500);
+  setTimeout(() => toast.remove(), 5000);
+};
 
 // Aprovar rapidamente um post social direto do painel
 window.aprovarRapidoSocial = async function(key) {
