@@ -110,7 +110,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
 
 /* table */
-.table-header{display:grid;grid-template-columns:82px 106px 130px 100px 1fr 1fr 82px 110px 120px 30px;gap:5px;padding:0 10px 6px;border-bottom:.5px solid var(--border2);margin-bottom:6px}
+.table-header{display:grid;grid-template-columns:82px 106px 130px 100px 1fr 1fr 82px 110px 120px 110px 30px;gap:5px;padding:0 10px 6px;border-bottom:.5px solid var(--border2);margin-bottom:6px}
 .th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
 
 /* week */
@@ -123,7 +123,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .trial-badge{font-size:10px;padding:2px 8px;border-radius:99px;background:#FEF3C7;color:var(--amber);font-weight:500}
 
 /* post row */
-.post-row{display:grid;grid-template-columns:82px 106px 130px 100px 1fr 1fr 82px 110px 120px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s;cursor:grab;background:#fff}
+.post-row{display:grid;grid-template-columns:82px 106px 130px 100px 1fr 1fr 82px 110px 120px 110px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s;cursor:grab;background:#fff}
 .post-row:active{cursor:grabbing}
 .post-row:last-child{border-bottom:none}
 .post-row:hover{background:#FAFBFD}
@@ -403,6 +403,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   .table-header .th:nth-child(3),.post-row>*:nth-child(3){display:none}
   .table-header .th:nth-child(4),.post-row>*:nth-child(4){display:none}
   .table-header .th:nth-child(6),.post-row>*:nth-child(6){display:none}
+  .table-header .th:nth-child(10),.post-row>*:nth-child(10){display:none}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .desc-grid{grid-template-columns:1fr}
   .month-grid-picker{grid-template-columns:repeat(4,1fr)}
@@ -867,6 +868,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="th">Cor</div>
     <div class="th">Status Maris</div>
     <div class="th">Obs. Maris</div>
+    <div class="th">Pub.</div>
     <div class="th"></div>
   </div>
 
@@ -2790,6 +2792,23 @@ function renderCalendar(){
             : `<span style="font-size:10px;color:var(--text3);font-style:italic;padding:0 4px">${hasMaris?`<span style="color:#6d28d9" title="${(p.marisObs||'').replace(/"/g,'&quot;')}">💬 ${p.marisObs.slice(0,18)+(p.marisObs.length>18?'…':'')}</span>`:'sem obs.'}</span>`
           }
         </div>
+        ${(() => {
+          const podePub = currentUserEmail()==='mariana.araujo@nibo.com.br' || currentUserEmail()==='clara.abrantes@nibo.com.br';
+          const pub = p.pubStatus || 'nao-postado';
+          const PUB_OPTS = [
+            {value:'nao-postado', label:'⏳ Não postado', bg:'#F3F4F6', color:'#6B7280', border:'#E5E7EB'},
+            {value:'agendado',    label:'📅 Agendado',    bg:'#DBEAFE', color:'#1D4ED8', border:'#93C5FD'},
+            {value:'postado',     label:'✅ Postado',     bg:'#D1FAE5', color:'#065F46', border:'#6EE7B7'},
+          ];
+          const atual = PUB_OPTS.find(o => o.value === pub) || PUB_OPTS[0];
+          if (!podePub) {
+            // somente visualização — pílula sem dropdown
+            return `<span style="font-size:11px;padding:3px 9px;border-radius:99px;background:${atual.bg};color:${atual.color};border:.5px solid ${atual.border};white-space:nowrap;text-align:center">${atual.label}</span>`;
+          }
+          return `<select class="pub-select" onchange="window.updRowField('${p.key}','pubStatus',this.value)" style="font-size:11px;padding:3px 6px;border-radius:99px;background:${atual.bg};color:${atual.color};border:.5px solid ${atual.border};cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;width:100%">
+            ${PUB_OPTS.map(o => `<option value="${o.value}"${o.value===pub?' selected':''}>${o.label}</option>`).join('')}
+          </select>`;
+        })()}
         <button class="del-btn" onclick="window.deleteRow('${p.key}')" title="Remover">×</button>
       </div>`;
     });
