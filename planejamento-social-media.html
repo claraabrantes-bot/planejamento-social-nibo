@@ -1566,6 +1566,21 @@ onAuthStateChanged(auth, user => {
     listenProfile(user.uid);
     listenNotifications(user.uid);
     pedirPermissaoNotif();
+    // Restaura a última tab que o usuário estava (a menos que tenha ?post=... pra abrir)
+    const params = new URLSearchParams(window.location.search);
+    if (!params.get('post')) {
+      const lastMain = localStorage.getItem('nibo_last_main_tab');
+      const lastSub  = localStorage.getItem('nibo_last_sub_tab');
+      if (lastMain && lastMain !== 'welcome') {
+        setTimeout(() => {
+          window.switchMainTab(lastMain);
+          if (lastSub) {
+            const stab = document.getElementById('stab-' + lastSub);
+            if (stab) stab.click();
+          }
+        }, 100);
+      }
+    }
     // Se a URL veio com ?post=..., tenta abrir depois que tudo carregar
     setTimeout(() => window.tryResolveDeepLink && window.tryResolveDeepLink(), 800);
   } else {
@@ -1980,6 +1995,8 @@ const MAIN_TAB_MAP = {
 };
 
 window.switchMainTab = function(tab) {
+  // Persiste pra restaurar no próximo F5
+  try { localStorage.setItem('nibo_last_main_tab', tab); } catch(_){}
   // highlight main tab
   document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
   const tabBtn = document.getElementById('mtab-' + tab);
@@ -2023,6 +2040,8 @@ window.switchMainTab = function(tab) {
 
 // ── PAGES ──
 window.showPage=function(id,btn){
+  // Persiste a sub-tab atual
+  try { localStorage.setItem('nibo_last_sub_tab', id); } catch(_){}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.page-tab').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
@@ -2990,20 +3009,21 @@ window.tryResolveDeepLink = function() {
   }
   _deepLinkResolved = true;
 
-  // 1) Vai pra aba Social Media → Calendário
-  const mainBtn = document.getElementById('mtab-social');
-  if (mainBtn && !mainBtn.classList.contains('active')) mainBtn.click();
-  const subTab = document.getElementById('stab-calendario');
-  if (subTab && !subTab.classList.contains('active')) subTab.click();
+  // 1) Vai pra aba Social Media → Calendário (chamando direto pra forçar mesmo se já estiver "ativa")
+  window.switchMainTab('social');
+  setTimeout(() => {
+    const subTab = document.getElementById('stab-calendario');
+    if (subTab) subTab.click();
 
-  // 2) Seleciona o mês do post
-  const idxMes = months.findIndex(mo => mo.y === r.y && mo.m === r.m);
-  if (idxMes >= 0 && idxMes !== activeMonthIdx) {
-    window.setMonth(idxMes);
-  }
+    // 2) Seleciona o mês do post
+    const idxMes = months.findIndex(mo => mo.y === r.y && mo.m === r.m);
+    if (idxMes >= 0 && idxMes !== activeMonthIdx) {
+      window.setMonth(idxMes);
+    }
 
-  // 3) Abre o modal (com pequeno delay pra renderização terminar)
-  setTimeout(() => window.openModal(postKey, 'social'), 250);
+    // 3) Abre o modal (com delay pra renderização terminar)
+    setTimeout(() => window.openModal(postKey, 'social'), 250);
+  }, 100);
 
   // 4) Limpa o parâmetro da URL pra não reabrir em F5
   const url = new URL(window.location.href);
