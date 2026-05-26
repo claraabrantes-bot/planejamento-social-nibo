@@ -823,7 +823,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <!-- SUB-ABAS DESIGN -->
 <nav class="page-tabs" id="subtabs-design" style="display:none">
   <button class="page-tab active" id="stab-refs" onclick="showPage('refs',this)">Referências</button>
-  <button class="page-tab" id="stab-fila" onclick="showPage('fila',this)">Fila Design</button>
+  <button class="page-tab" id="stab-fila" onclick="showPage('fila',this)">📋 Fila Design</button>
   <button class="page-tab" id="stab-grid" onclick="showPage('grid',this)">Grid Instagram</button>
 </nav>
 
@@ -842,7 +842,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <!-- ══ CALENDÁRIO ══ -->
 <!-- ══ BOAS-VINDAS ══ -->
 <div id="page-welcome" class="page-welcome-screen active">
-  <div class="welcome-title">Olá! Bem-vinda ao Planejamento de Marketing</div>
+  <div class="welcome-title">Olá! 👋 Bem-vinda ao Planejamento de Marketing</div>
   <div class="welcome-sub">Selecione uma área para começar</div>
   <div class="welcome-cards" id="welcome-cards-grid">
     <div class="welcome-card" onclick="switchMainTab('social')">
@@ -2651,7 +2651,45 @@ window.renderFila = function() {
 
 // Marca/desmarca arte como pronta
 window.marcarArteStatus = async function(key, status) {
+  const r = rows.find(x => x.key === key);
   await saveRow(key, { arteStatus: status });
+
+  // Dispara notificação pra quem precisa ver
+  const from = userProfile.nome || (currentUserEmail().split('@')[0]) || 'time';
+  const now = Date.now();
+  const tsFormatted = new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const tipo = TIPOS.find(t => t.id === r?.tipoId) || TIPOS[0];
+  const produtoLabel = (NIBO_PRODUTO_OPTS.find(([v]) => v === r?.produto) || [,'—'])[1];
+  const contexto = `Post ${r?.date||''} · ${tipo.name} · ${produtoLabel}`;
+
+  if (status === 'pronto') {
+    // Notifica Clara que a arte ficou pronta
+    const notifKey = `notif-arte-pronta-${key}-${now}`;
+    await setDoc(doc(db,'notifications', notifKey), {
+      key: notifKey,
+      toEmail: 'clara.abrantes@nibo.com.br',
+      fromName: from,
+      context: contexto,
+      excerpt: `🎨 Arte pronta! Disponível pra revisão.`,
+      type: 'arte-pronta',
+      refKey: key,
+      read: false, ts: now, tsFormatted,
+    });
+  } else if (status === 'pendente') {
+    // Reabriu — notifica Millena pra refazer/ajustar
+    const notifKey = `notif-arte-reaberta-${key}-${now}`;
+    await setDoc(doc(db,'notifications', notifKey), {
+      key: notifKey,
+      toEmail: 'millena.barros@nibo.com.br',
+      fromName: from,
+      context: contexto,
+      excerpt: `↶ Arte reaberta. Verifique observações.`,
+      type: 'arte-reaberta',
+      refKey: key,
+      read: false, ts: now, tsFormatted,
+    });
+  }
+
   // Re-render se ainda estiver na fila
   if(document.getElementById('page-fila')?.classList.contains('active')) window.renderFila();
 };
@@ -3186,11 +3224,12 @@ function renderCalendar(){
         <span class="idea-cell${p.social?' filled':''}" onclick="window.openModal('${p.key}','social')" title="${(p.social||'').replace(/"/g,'&quot;')}${(p.postRefs||[]).length?` · ${(p.postRefs||[]).length} ref(s)`:''}">${sSnip}${(p.postRefs||[]).length?` <span style="font-size:9px;color:var(--nibo2);font-weight:700" onclick="event.stopPropagation();window.openModal('${p.key}','refs')" title="${(p.postRefs||[]).length} referência(s) vinculada(s)">🔗${(p.postRefs||[]).length}</span>`:''}</span>
         <span class="idea-cell${p.design?' filled':''}" onclick="window.openModal('${p.key}','design')" title="${(p.design||'').replace(/"/g,'&quot;')}">${dSnip}</span>
         <div class="cor-selector">${corBtns}</div>
-        <div class="status-cell">
+        <div class="status-cell" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
           ${(currentUserEmail()==='mariana.araujo@nibo.com.br'||currentUserEmail()==='clara.abrantes@nibo.com.br')
             ? `<span class="status-badge ${p.status||'pendente'}" onclick="window.cycleStatus('${p.key}')">${STATUS_LABEL[p.status||'pendente']}</span>`
             : `<span class="status-badge ${p.status||'pendente'}" style="cursor:default;pointer-events:none">${STATUS_LABEL[p.status||'pendente']}</span>`
           }
+          ${p.arteStatus==='pronto'?`<span title="Arte pronta pra revisão" style="font-size:10px;padding:1px 6px;border-radius:99px;background:#D1FAE5;color:#065F46;border:.5px solid #6EE7B7;font-weight:700">🎨 Pronta</span>`:''}
         </div>
         <div style="display:flex;align-items:center;gap:3px">
           ${(currentUserEmail()==='mariana.araujo@nibo.com.br'||currentUserEmail()==='clara.abrantes@nibo.com.br')
@@ -5242,6 +5281,18 @@ window.irParaNotificacao = async function(notifKey) {
       ativarMainTab('produto');
       ativarSubTab('email-produto');
       setTimeout(() => destacarItem('ep-card-'+n.refKey), 250);
+      break;
+    case 'arte-pronta':
+      // Clara vê: leva pro post no calendário pra revisar
+      ativarMainTab('social');
+      ativarSubTab('calendario');
+      setTimeout(() => destacarItem('row-'+n.refKey), 250);
+      break;
+    case 'arte-reaberta':
+      // Millena vê: leva pra fila de design
+      ativarMainTab('design');
+      ativarSubTab('fila');
+      setTimeout(() => destacarItem('row-'+n.refKey), 250);
       break;
     default:
       // se vier tipo desconhecido, pelo menos abre design+refs (mais comum)
