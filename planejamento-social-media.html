@@ -5094,31 +5094,32 @@ ${r.design}
 A legenda DEVE expandir e desenvolver o que está ${temBriefing ? 'no briefing de design' : (temCopy ? 'na copy do criativo' : 'no contexto do produto')}. Não invente um tema novo. Se o briefing fala em "comparação antes/depois", a legenda também explora antes/depois. Se a copy é uma pergunta, a legenda responde ou aprofunda essa pergunta. A legenda deve PARECER que foi escrita pra acompanhar EXATAMENTE essa arte específica.
 
 ═══ ESTRUTURA OBRIGATÓRIA (siga À RISCA) ═══
-A legenda tem 3 BLOCOS, separados por \\n\\n:
+A legenda tem BLOCOS, separados por \\n\\n:
 
 BLOCO 1 (1 frase única): chamada que fisga + indicação EXPLÍCITA do público (${publicoAlvo}).
 Exemplo de tom: "Contador, sabe quando..." / "Empresário, você já parou pra calcular..." / "BPO financeiro: chegou a hora de..."
 Termo OBRIGATÓRIO no bloco 1: a palavra "${publicoAlvo === 'BPO financeiro' ? 'BPO' : (publicoAlvo === 'empresas e empresários' ? 'empresa' : 'contador')}" (ou equivalente claro).
 
-BLOCO 2 (parágrafo de no máximo 3 LINHAS): desenvolvimento — qual a dor real e como uma funcionalidade ESPECÍFICA do ${produtoLabel || 'Nibo'} resolve isso. Cite a feature pelo nome real (da base de conhecimento).
+BLOCOS SEGUINTES: desenvolvimento da ideia.
+REGRA CRÍTICA DE FORMATAÇÃO: cada parágrafo deve ter NO MÁXIMO 3 LINHAS quando aparecer no feed do Instagram (largura ~40 caracteres por linha → cerca de 120 caracteres por parágrafo NO MÁXIMO).
+Se a ideia for maior, QUEBRE em mais parágrafos. Pode ter 2, 3 ou 4 parágrafos curtos — desde que cada um tenha máx. 3 linhas.
+Conteúdo dos parágrafos: dor real + funcionalidade ESPECÍFICA do ${produtoLabel || 'Nibo'} (cite pelo nome real da base de conhecimento) + exemplo/aprofundamento se couber.
 
-BLOCO 3 (parágrafo de no máximo 3 LINHAS): pode ser aprofundamento, exemplo, dado, OU parte do CTA. Aqui pode haver hashtags relacionadas ao produto (máx. 3-4 hashtags relevantes).
-
-CTA: deve estar no fim, integrado ao bloco 3 OU em uma linha curta extra. Sempre direcionar pro LINK DA BIO. Exemplos:
+CTA FINAL: parágrafo curto separado, sempre direcionando pro LINK DA BIO. Exemplos:
 - "Conheça o ${produtoLabel || 'Nibo'} no link da bio."
-- "Saiba mais no link da bio."
-- "Acesse o link na bio e converse com nosso especialista."
+- "Acesse o link na bio."
+- "Fale com nosso especialista pelo link na bio."
 
 ═══ RESTRIÇÕES ═══
-- Total de NO MÁXIMO 3 blocos (1 frase + 2 parágrafos de 3 linhas).
+- CADA parágrafo: MÁXIMO 3 linhas (≈120 chars). Se passar, quebra em outro parágrafo.
 - Máx. 2 emojis em toda a legenda.
+- PROIBIDO usar hashtags. NENHUMA hashtag, nem no final, nem no meio do texto.
 - Sem clichês ("não pode mais perder tempo", "transforme seu negócio", "dor de cabeça", "tirar do papel").
 - Sem frases motivacionais ("você merece", "chegou o momento").
 - Use UMA funcionalidade REAL do produto ${produtoLabel || 'Nibo'} citada na base de conhecimento.
 - Mantém o TOM do briefing (didático/provocativo/direto).
-- Hashtags só no bloco final, máx. 3-4.
 
-Responda SOMENTE com o texto da legenda. Sem JSON, sem aspas, sem markdown, sem cabeçalho. Apenas o texto pronto pra colar no Instagram.`;
+Responda SOMENTE com o texto da legenda. Sem JSON, sem aspas, sem markdown, sem cabeçalho, sem hashtags. Apenas o texto pronto pra colar no Instagram.`;
 
   try {
     const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -5142,6 +5143,8 @@ Responda SOMENTE com o texto da legenda. Sem JSON, sem aspas, sem markdown, sem 
     let texto = (data.choices?.[0]?.message?.content || '').trim();
     // remove markdown caso a IA tenha colocado
     texto = texto.replace(/^```[\w]*\n?|\n?```$/g, '').replace(/^["']|["']$/g, '').trim();
+    // remove hashtags por segurança (caso a IA tenha ignorado a regra)
+    texto = texto.replace(/#\S+/g, '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
     if (!texto) throw new Error('IA retornou vazio');
     ta.value = texto;
     status.textContent = '✓ Legenda gerada. Edite se quiser e clique em copiar.';
