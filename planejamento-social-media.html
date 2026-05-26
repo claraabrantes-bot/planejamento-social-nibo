@@ -346,6 +346,36 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   font-family:'DM Sans',sans-serif;
 }
 #login-screen.hidden{display:none}
+
+/* Loading screen — aparece antes de tudo, some quando o app decide qual tab mostrar */
+#app-loading{
+  position:fixed;inset:0;z-index:10001;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  gap:24px;font-family:'DM Sans',sans-serif;
+  transition:opacity .35s ease-out;
+}
+#app-loading.hidden{opacity:0;pointer-events:none}
+.app-loading-logo{
+  width:72px;height:72px;border-radius:18px;
+  background:#002d72;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 32px rgba(0,45,114,.18);
+  animation:appLoadingPulse 1.6s ease-in-out infinite;
+}
+.app-loading-logo svg{width:48px;height:48px}
+.app-loading-text{
+  font-size:14px;color:var(--text2);font-weight:500;letter-spacing:.02em;
+  animation:appLoadingFade 1.6s ease-in-out infinite;
+}
+@keyframes appLoadingPulse{
+  0%,100%{transform:scale(1);box-shadow:0 8px 32px rgba(0,45,114,.18)}
+  50%{transform:scale(1.05);box-shadow:0 12px 40px rgba(0,45,114,.28)}
+}
+@keyframes appLoadingFade{
+  0%,100%{opacity:.6}
+  50%{opacity:1}
+}
 .login-card{
   background:var(--surface);
   border:.5px solid var(--border2);
@@ -652,6 +682,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 </style>
 </head>
 <body>
+<!-- ══ LOADING SCREEN (some quando o app decide qual tab mostrar) ══ -->
+<div id="app-loading">
+  <div class="app-loading-logo">
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="22" cy="32" r="6" fill="#41b6e6"/>
+      <circle cx="42" cy="32" r="6" fill="#ff40b3"/>
+      <path d="M22 32 L42 32" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="app-loading-text">Carregando seu planejamento...</div>
+</div>
+
 <!-- ══ LOGIN SCREEN ══ -->
 <div id="login-screen">
   <div class="login-card">
@@ -1540,6 +1582,14 @@ const NIBO_PRODUTO_OPTS = [
   ['whatsapp-bpo','WhatsApp BPO'],
 ];
 // ── AUTH STATE ──
+function hideAppLoading() {
+  const el = document.getElementById('app-loading');
+  if (el && !el.classList.contains('hidden')) {
+    el.classList.add('hidden');
+    setTimeout(() => el.style.display = 'none', 400);
+  }
+}
+
 onAuthStateChanged(auth, user => {
   if (user && ALLOWED_EMAILS.includes(user.email.toLowerCase())) {
     document.getElementById('login-screen').classList.add('hidden');
@@ -1578,8 +1628,15 @@ onAuthStateChanged(auth, user => {
             const stab = document.getElementById('stab-' + lastSub);
             if (stab) stab.click();
           }
+          hideAppLoading();
         }, 100);
+      } else {
+        // sem tab salva — mostra welcome
+        setTimeout(hideAppLoading, 150);
       }
+    } else {
+      // tem ?post=... — esconde depois de o deep-link tentar abrir
+      setTimeout(hideAppLoading, 600);
     }
     // Se a URL veio com ?post=..., tenta abrir depois que tudo carregar
     setTimeout(() => window.tryResolveDeepLink && window.tryResolveDeepLink(), 800);
@@ -1590,6 +1647,7 @@ onAuthStateChanged(auth, user => {
     }
     document.getElementById('login-screen').classList.remove('hidden');
     document.getElementById('user-menu-wrap').style.display = 'none';
+    hideAppLoading();
   }
 });
 
