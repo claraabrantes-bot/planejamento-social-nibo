@@ -1635,11 +1635,20 @@ onAuthStateChanged(auth, user => {
         setTimeout(hideAppLoading, 150);
       }
     } else {
-      // tem ?post=... — esconde depois de o deep-link tentar abrir
-      setTimeout(hideAppLoading, 600);
+      // tem ?post=... — NÃO esconde o loading aqui. Quem esconde é o tryResolveDeepLink
+      // quando conseguir abrir o modal (ou um fallback de 5s caso falhe)
+      setTimeout(() => {
+        if (!_deepLinkResolved) {
+          console.warn('Deep-link não resolveu em 5s, escondendo loading mesmo assim');
+          hideAppLoading();
+        }
+      }, 5000);
     }
     // Se a URL veio com ?post=..., tenta abrir depois que tudo carregar
-    setTimeout(() => window.tryResolveDeepLink && window.tryResolveDeepLink(), 800);
+    // Tenta múltiplas vezes pra esperar as rows chegarem do Firebase
+    [400, 900, 1500, 2500].forEach(ms => {
+      setTimeout(() => window.tryResolveDeepLink && window.tryResolveDeepLink(), ms);
+    });
   } else {
     if (user) {
       signOut(auth);
@@ -3079,8 +3088,11 @@ window.tryResolveDeepLink = function() {
       window.setMonth(idxMes);
     }
 
-    // 3) Abre o modal (com delay pra renderização terminar)
-    setTimeout(() => window.openModal(postKey, 'social'), 250);
+    // 3) Abre o modal (com delay pra renderização terminar) e esconde o loading
+    setTimeout(() => {
+      window.openModal(postKey, 'social');
+      if (typeof hideAppLoading === 'function') hideAppLoading();
+    }, 250);
   }, 100);
 
   // 4) Limpa o parâmetro da URL pra não reabrir em F5
