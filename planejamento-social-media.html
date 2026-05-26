@@ -1335,6 +1335,28 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 
+<!-- MODAL POSTAR NO BUSINESS SUITE -->
+<div class="modal-overlay" id="modal-postar">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head">
+      <h3>🚀 Pronto pra postar?</h3>
+      <p id="postar-sub">Revise a legenda. Ao clicar em "Copiar e abrir", o texto vai pra área de transferência e o Business Suite abre numa nova aba — cole com Ctrl+V e suba a arte.</p>
+    </div>
+    <div class="modal-body" style="padding:1rem 1.4rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div class="modal-label" style="margin:0">Legenda</div>
+        <button onclick="window.gerarLegendaIA()" id="btn-gerar-legenda" style="font-size:11px;padding:5px 11px;border-radius:99px;border:.5px solid #d8b4fe;background:#f5f3ff;color:#7c3aed;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600">✨ Gerar com IA</button>
+      </div>
+      <textarea id="postar-legenda" rows="9" placeholder="Sua legenda completa, com emojis e hashtags..." style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:10px 12px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.6"></textarea>
+      <div id="postar-status" style="font-size:11px;color:var(--text3);margin-top:6px"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-postar').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-primary" onclick="window.copiarEAbrirBusinessSuite()">📋 Copiar e abrir Business Suite</button>
+    </div>
+  </div>
+</div>
+
 <!-- LIGHTBOX (visualização de imagem em tela cheia) -->
 <div id="lightbox" onclick="window.fecharLightbox()" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.92);align-items:center;justify-content:center;padding:40px;cursor:zoom-out">
   <img id="lightbox-img" src="" alt="" style="max-width:95vw;max-height:90vh;object-fit:contain;box-shadow:0 20px 60px rgba(0,0,0,.5);border-radius:6px" />
@@ -2827,12 +2849,12 @@ function renderCalendar(){
           if (!podePub) {
             return `<span style="font-size:11px;padding:3px 9px;border-radius:99px;background:${atual.bg};color:${atual.color};border:.5px solid ${atual.border};white-space:nowrap;text-align:center">${atual.label}</span>`;
           }
-          const temConteudo = !!(p.social||'').trim();
+          const temConteudo = !!(p.social||'').trim() || !!(p.legenda||'').trim();
           return `<div style="display:flex;gap:3px;align-items:center">
             <select class="pub-select" onchange="window.updRowField('${p.key}','pubStatus',this.value)" style="font-size:11px;padding:3px 6px;border-radius:99px;background:${atual.bg};color:${atual.color};border:.5px solid ${atual.border};cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;flex:1;min-width:0">
               ${PUB_OPTS.map(o => `<option value="${o.value}"${o.value===pub?' selected':''}>${o.label}</option>`).join('')}
             </select>
-            <button onclick="window.abrirBusinessSuite('${p.key}')" title="${temConteudo?'Copiar copy e abrir Business Suite':'Sem copy preenchida'}" ${!temConteudo?'disabled':''} style="width:24px;height:24px;border-radius:50%;border:.5px solid ${temConteudo?'#1877F2':'#E5E7EB'};background:${temConteudo?'#E7F3FF':'#F3F4F6'};color:${temConteudo?'#1877F2':'#9CA3AF'};cursor:${temConteudo?'pointer':'not-allowed'};font-size:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center" onmouseover="if(!this.disabled)this.style.background='#1877F2',this.style.color='#fff'" onmouseout="if(!this.disabled)this.style.background='#E7F3FF',this.style.color='#1877F2'">🚀</button>
+            <button onclick="window.abrirBusinessSuite('${p.key}')" title="Revisar legenda e abrir Business Suite" style="width:24px;height:24px;border-radius:50%;border:.5px solid #1877F2;background:#E7F3FF;color:#1877F2;cursor:pointer;font-size:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center" onmouseover="this.style.background='#1877F2',this.style.color='#fff'" onmouseout="this.style.background='#E7F3FF',this.style.color='#1877F2'">🚀</button>
           </div>`;
         })()}
         <button class="del-btn" onclick="window.deleteRow('${p.key}')" title="Remover">×</button>
@@ -5000,45 +5022,135 @@ window.toggleGestaoCard = function(tipo) {
   const reprovados = socialRows.filter(r => r.status === 'reprovado').length;
   const pendentes = socialRows.filter(r => r.status === 'pendente' || !r.status).length;
 
-// ── ABRIR BUSINESS SUITE ──
-// Limitação: o Meta Business Suite NÃO aceita texto via URL params (limitação deles).
-// O que dá pra fazer: copiar a copy pro clipboard + abrir o Composer.
-// Aí no Composer é só Ctrl+V que cola a copy. Economiza vários cliques por post.
-window.abrirBusinessSuite = async function(key) {
+// ── POSTAR NO BUSINESS SUITE ──
+let postarKeyAtual = null;
+
+window.abrirBusinessSuite = function(key) {
   const r = rows.find(x => x.key === key);
   if (!r) return;
-  const copy = (r.social||'').trim();
-  if (!copy) {
-    alert('Esta linha está sem copy preenchida.');
+  postarKeyAtual = key;
+  const ta = document.getElementById('postar-legenda');
+  ta.value = r.legenda || '';
+  // sub com contexto
+  const tipo = TIPOS.find(t => t.id === r.tipoId) || TIPOS[0];
+  const produtoLabel = (NIBO_PRODUTO_OPTS.find(([v]) => v === r.produto) || [,'—'])[1];
+  document.getElementById('postar-sub').textContent = `${r.date||'—'} · ${tipo.name} · ${produtoLabel}`;
+  document.getElementById('postar-status').textContent = '';
+  document.getElementById('modal-postar').classList.add('open');
+  setTimeout(() => ta.focus(), 80);
+};
+
+window.gerarLegendaIA = async function() {
+  if (!postarKeyAtual) return;
+  const r = rows.find(x => x.key === postarKeyAtual);
+  if (!r) return;
+  const apiKey = localStorage.getItem('nibo_groq_key');
+  if (!apiKey) {
+    alert('Configure sua chave da IA primeiro na aba IA Criativa.');
     return;
   }
+  const btn = document.getElementById('btn-gerar-legenda');
+  const status = document.getElementById('postar-status');
+  const ta = document.getElementById('postar-legenda');
+  btn.disabled = true;
+  btn.textContent = '⏳ Gerando...';
+  status.textContent = '';
+
+  const tipo = TIPOS.find(t => t.id === r.tipoId) || TIPOS[0];
+  const produtoLabel = (NIBO_PRODUTO_OPTS.find(([v]) => v === r.produto) || [,''])[1];
+
+  const userPrompt = `Gere UMA legenda completa para Instagram seguindo a estrutura obrigatória (3 parágrafos curtos, no máximo 3 linhas cada).
+
+Dados do post:
+- Tipo de post: ${tipo.name}
+- Produto Nibo: ${produtoLabel || '(não definido)'}
+- Copy do criativo (texto da arte): ${r.social || '(sem copy)'}
+- Briefing de design: ${r.design || '(sem briefing)'}
+
+Regras pra esta legenda específica:
+- 3 parágrafos curtos, separados por \\n\\n
+- P1: chamada forte + para quem é
+- P2: como a funcionalidade resolve o problema (impacto operacional concreto)
+- P3: CTA pro link da bio
+- Máx. 2 emojis no total
+- Sem clichês, sem frases motivacionais, sem termos vagos
+- Use UMA funcionalidade REAL do produto ${produtoLabel || 'Nibo'} citada na base de conhecimento
+
+Responda SOMENTE com o texto da legenda. Sem JSON, sem aspas, sem markdown, sem cabeçalho. Apenas o texto pronto pra colar no Instagram.`;
+
+  try {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        temperature: 0.75,
+        max_tokens: 600,
+        messages: [
+          {role: 'system', content: NIBO_SYSTEM_PROMPT},
+          {role: 'user', content: userPrompt},
+        ],
+      }),
+    });
+    if (!resp.ok) throw new Error(`API erro ${resp.status}`);
+    const data = await resp.json();
+    let texto = (data.choices?.[0]?.message?.content || '').trim();
+    // remove markdown caso a IA tenha colocado
+    texto = texto.replace(/^```[\w]*\n?|\n?```$/g, '').replace(/^["']|["']$/g, '').trim();
+    if (!texto) throw new Error('IA retornou vazio');
+    ta.value = texto;
+    status.textContent = '✓ Legenda gerada. Edite se quiser e clique em copiar.';
+    status.style.color = 'var(--green)';
+  } catch (err) {
+    status.textContent = '❌ Erro: ' + (err?.message || err);
+    status.style.color = 'var(--red)';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✨ Gerar com IA';
+  }
+};
+
+window.copiarEAbrirBusinessSuite = async function() {
+  if (!postarKeyAtual) return;
+  const textoFinal = document.getElementById('postar-legenda').value.trim();
+  if (!textoFinal) {
+    alert('A legenda está vazia. Escreva algo ou clique em "Gerar com IA".');
+    return;
+  }
+  // Salva no Firebase a legenda editada, pra ficar persistida
+  await saveRow(postarKeyAtual, {legenda: textoFinal});
 
   // Copia pra área de transferência
   try {
-    await navigator.clipboard.writeText(copy);
+    await navigator.clipboard.writeText(textoFinal);
   } catch(err) {
-    // Fallback: tenta com execCommand (navegadores antigos)
-    const ta = document.createElement('textarea');
-    ta.value = copy;
-    ta.style.position = 'fixed';
-    ta.style.left = '-9999px';
-    document.body.appendChild(ta);
-    ta.select();
+    const t = document.createElement('textarea');
+    t.value = textoFinal;
+    t.style.position = 'fixed';
+    t.style.left = '-9999px';
+    document.body.appendChild(t);
+    t.select();
     try { document.execCommand('copy'); } catch(_){}
-    document.body.removeChild(ta);
+    document.body.removeChild(t);
   }
 
-  // Abre o Business Suite no Composer (criação de post novo)
-  const url = 'https://business.facebook.com/latest/composer';
-  window.open(url, '_blank', 'noopener');
+  // Abre o Business Suite Composer
+  window.open('https://business.facebook.com/latest/composer', '_blank', 'noopener');
 
-  // Toast com instruções
+  // Fecha o modal
+  document.getElementById('modal-postar').classList.remove('open');
+  postarKeyAtual = null;
+
+  // Toast
   const toast = document.createElement('div');
   toast.style.cssText = `position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:10001;
     background:#1a1a2e;color:#fff;padding:14px 22px;border-radius:12px;font-size:13px;
     font-family:'DM Sans',sans-serif;box-shadow:0 12px 32px rgba(0,0,0,.25);
     max-width:380px;line-height:1.5;animation:slideInToast .3s ease-out;transition:opacity .4s`;
-  toast.innerHTML = `<div style="font-weight:700;margin-bottom:4px">✓ Copy copiada!</div>
+  toast.innerHTML = `<div style="font-weight:700;margin-bottom:4px">✓ Legenda copiada e salva!</div>
     <div style="font-size:12px;color:rgba(255,255,255,.85)">No Business Suite, aperte <b>Ctrl+V</b> no campo de texto e suba a arte manualmente.</div>`;
   document.body.appendChild(toast);
   setTimeout(() => toast.style.opacity = '0', 4500);
