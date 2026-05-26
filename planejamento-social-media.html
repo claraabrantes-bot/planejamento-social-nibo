@@ -5059,22 +5059,35 @@ window.gerarLegendaIA = async function() {
   const tipo = TIPOS.find(t => t.id === r.tipoId) || TIPOS[0];
   const produtoLabel = (NIBO_PRODUTO_OPTS.find(([v]) => v === r.produto) || [,''])[1];
 
-  const userPrompt = `Gere UMA legenda completa para Instagram seguindo a estrutura obrigatória (3 parágrafos curtos, no máximo 3 linhas cada).
+  const temBriefing = !!(r.design||'').trim();
+  const temCopy = !!(r.social||'').trim();
 
-Dados do post:
-- Tipo de post: ${tipo.name}
+  const userPrompt = `Gere UMA legenda completa para Instagram que CONVERSE diretamente com o conteúdo do post abaixo.
+
+═══ CONTEXTO DO POST ═══
+- Tipo: ${tipo.name}
 - Produto Nibo: ${produtoLabel || '(não definido)'}
-- Copy do criativo (texto da arte): ${r.social || '(sem copy)'}
-- Briefing de design: ${r.design || '(sem briefing)'}
 
-Regras pra esta legenda específica:
+${temCopy ? `═══ COPY DO CRIATIVO (texto que vai na arte) ═══
+${r.social}
+
+` : ''}${temBriefing ? `═══ BRIEFING DE DESIGN (CONCEITO/DIRECIONAMENTO DO POST — use isto como ÂNCORA principal) ═══
+${r.design}
+
+` : ''}═══ REGRA INEGOCIÁVEL DE COERÊNCIA ═══
+A legenda DEVE expandir e desenvolver o que está ${temBriefing ? 'no briefing de design' : (temCopy ? 'na copy do criativo' : 'no contexto do produto')}. Não invente um tema novo. Se o briefing fala de "comparação antes/depois", a legenda também explora antes/depois. Se a copy é uma pergunta, a legenda responde ou aprofunda essa pergunta. A legenda deve PARECER que foi escrita pra acompanhar EXATAMENTE essa arte específica — não uma legenda genérica do produto.
+
+═══ ESTRUTURA OBRIGATÓRIA ═══
 - 3 parágrafos curtos, separados por \\n\\n
-- P1: chamada forte + para quem é
-- P2: como a funcionalidade resolve o problema (impacto operacional concreto)
-- P3: CTA pro link da bio
+- P1: chamada forte (conectada ao gancho do criativo/briefing) + para quem é
+- P2: como a funcionalidade do ${produtoLabel || 'Nibo'} resolve o problema (impacto operacional concreto)
+- P3: CTA pro link da bio (direto, comercial, sem forçar)
+
+═══ RESTRIÇÕES ═══
 - Máx. 2 emojis no total
 - Sem clichês, sem frases motivacionais, sem termos vagos
 - Use UMA funcionalidade REAL do produto ${produtoLabel || 'Nibo'} citada na base de conhecimento
+- Mantém o TOM do briefing (se é didático, fica didático; se é provocativo, fica provocativo)
 
 Responda SOMENTE com o texto da legenda. Sem JSON, sem aspas, sem markdown, sem cabeçalho. Apenas o texto pronto pra colar no Instagram.`;
 
