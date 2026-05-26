@@ -893,6 +893,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="month-grid-picker" id="month-picker"></div>
   </div>
 
+  <!-- ── FILTROS ── -->
+  <div id="filtros-bar" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;padding:10px 14px;background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif">
+    <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-right:4px">Filtros</span>
+    <select id="filter-status" onchange="window.aplicarFiltros()" style="font-size:12px;padding:5px 10px;border-radius:99px;border:.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif">
+      <option value="">Todos os status</option>
+      <option value="pendente">⏳ Pendente</option>
+      <option value="aprovado">✓ Aprovado</option>
+      <option value="reprovado">✗ Reprovado</option>
+    </select>
+    <select id="filter-produto" onchange="window.aplicarFiltros()" style="font-size:12px;padding:5px 10px;border-radius:99px;border:.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif">
+      <option value="">Todos os produtos</option>
+    </select>
+    <button id="filter-clear" onclick="window.limparFiltros()" style="display:none;font-size:11px;padding:4px 10px;border-radius:99px;border:.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif">✕ limpar</button>
+    <span id="filter-resultado" style="font-size:11px;color:var(--text3);margin-left:auto"></span>
+  </div>
+
   <div class="legend" style="margin-top:10px">
     <div class="legend-item"><span style="width:8px;height:8px;border-radius:50%;background:#D1FAE5;border:1px solid #6EE7B7;display:inline-block"></span>Aprovado pela Maris</div>
     <div class="legend-item"><span style="width:8px;height:8px;border-radius:50%;background:#F1F0EC;border:1px solid #ccc;display:inline-block"></span>Pendente</div>
@@ -1487,6 +1503,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <button class="modal-tab" onclick="switchMTab('design',this)">Design</button>
       <button class="modal-tab" onclick="switchMTab('refs',this)">🔗 Referências<span id="modal-refs-badge" style="display:none;margin-left:6px;font-size:10px;font-weight:700;background:#ff40b3;color:#fff;border-radius:99px;padding:1px 7px;min-width:18px;display:none;align-items:center;justify-content:center"></span></button>
       <button class="modal-tab" id="modal-tab-maris" onclick="switchMTab('maris',this)">Obs. Maris</button>
+      <button class="modal-tab" onclick="switchMTab('historico',this)">🕐 Histórico</button>
     </div>
     <div class="modal-body">
       <div id="modal-pane-social" class="modal-pane active">
@@ -1529,6 +1546,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div id="modal-pane-maris" class="modal-pane">
         <div class="modal-label">Observações da Maris</div>
         <textarea id="modal-maris" placeholder="Feedback, ajustes solicitados, observações sobre aprovação..." rows="5"></textarea>
+      </div>
+      <div id="modal-pane-historico" class="modal-pane">
+        <div class="modal-label">Histórico de mudanças</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.4">Tudo que foi alterado neste post, por quem e quando. Limitado às últimas 50 ações.</div>
+        <div id="hist-lista" style="display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow-y:auto"></div>
       </div>
     </div>
     <div class="modal-actions">
@@ -2027,11 +2049,29 @@ document.addEventListener('keydown', e => {
   }
 });
 
+// Campos que entram no histórico (mudanças "importantes")
+const HIST_CAMPOS = {
+  social:'Copy social', design:'Briefing design', legenda:'Legenda',
+  marisObs:'Obs. Maris', tipoId:'Tipo', produto:'Produto', formato:'Formato',
+  corIdx:'Cor', status:'Status Maris', pubStatus:'Publicação',
+  date:'Data', postRefs:'Referências',
+};
+// Campos ignorados explicitamente (mudam sozinhos, sem ação direta da usuária)
+const HIST_IGNORAR = ['historico','order','week','di','y','m','enviadoParaAprovacao','enviadoParaAprovacaoEm','obsReprovacao','obsAprovacao','approvedAt','approvedBy','isTrial','isSat'];
+
+function resumirValor(v) {
+  if (v == null || v === '') return '(vazio)';
+  if (Array.isArray(v)) return `${v.length} item(ns)`;
+  const s = String(v);
+  return s.length > 40 ? s.slice(0,40)+'…' : s;
+}
+
 async function saveRow(key,data){
   setSyncing();
   // Captura o estado anterior dos campos que vão mudar (pra undo)
+  const existing = rows.find(r => r.key === key);
+  const mudancasParaHistorico = [];
   if (!isUndoing) {
-    const existing = rows.find(r => r.key === key);
     if (existing) {
       const before = {};
       let temMudanca = false;
@@ -2040,11 +2080,35 @@ async function saveRow(key,data){
         if (JSON.stringify(existing[field]) !== JSON.stringify(data[field])) {
           before[field] = existing[field] !== undefined ? existing[field] : null;
           temMudanca = true;
+          // Registra no histórico se for um campo "importante" e não estiver na lista de ignorados
+          if (HIST_CAMPOS[field] && !HIST_IGNORAR.includes(field)) {
+            mudancasParaHistorico.push({
+              campo: field,
+              campoLabel: HIST_CAMPOS[field],
+              antes: resumirValor(existing[field]),
+              depois: resumirValor(data[field]),
+            });
+          }
         }
       });
       if (temMudanca) pushUndo({type:'update-row', key, before});
     }
   }
+
+  // Adiciona entrada no histórico se houve mudanças relevantes
+  if (mudancasParaHistorico.length > 0 && existing && !isUndoing) {
+    const entrada = {
+      ts: Date.now(),
+      tsFormatted: new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),
+      autor: currentUserEmail().split('@')[0] || 'sistema',
+      mudancas: mudancasParaHistorico,
+    };
+    const histAtual = Array.isArray(existing.historico) ? existing.historico : [];
+    // Limita a 50 entradas (FIFO)
+    const novoHistorico = [...histAtual, entrada].slice(-50);
+    data.historico = novoHistorico;
+  }
+
   await setDoc(doc(db,'rows',key),data,{merge:true});
   setSynced();
 }
@@ -2820,14 +2884,51 @@ window.addSatRow=async function(y,m,wk){
 window.setCor=async function(key,idx){await saveRow(key,{corIdx:idx});}
 
 // ── RENDER CALENDAR ──
+// Funções de filtro
+window.aplicarFiltros = function() { renderCalendar(); };
+window.limparFiltros = function() {
+  const fs = document.getElementById('filter-status');
+  const fp = document.getElementById('filter-produto');
+  if (fs) fs.value = '';
+  if (fp) fp.value = '';
+  renderCalendar();
+};
+
 function renderCalendar(){
   if(!months.length){document.getElementById('calendar').innerHTML='';renderStats();return;}
   const mo=months[activeMonthIdx];
   if(!mo){renderStats();return;}
+  // Popula select de produtos se ainda não foi populado
+  const fProdSel = document.getElementById('filter-produto');
+  if (fProdSel && fProdSel.options.length <= 1) {
+    NIBO_PRODUTO_OPTS.filter(([v]) => v).forEach(([v, l]) => {
+      const opt = document.createElement('option');
+      opt.value = v; opt.textContent = l;
+      fProdSel.appendChild(opt);
+    });
+  }
   const {y,m}=mo;
-  const mr=rows.filter(r=>r.y===y&&r.m===m).sort((a,b)=>(a.order||0)-(b.order||0));
+  let mr=rows.filter(r=>r.y===y&&r.m===m).sort((a,b)=>(a.order||0)-(b.order||0));
+  const totalAntesFiltro = mr.length;
+  // Aplica filtros se houver
+  const fStatus  = (document.getElementById('filter-status')?.value)||'';
+  const fProduto = (document.getElementById('filter-produto')?.value)||'';
+  if (fStatus)  mr = mr.filter(r => (r.status||'pendente') === fStatus);
+  if (fProduto) mr = mr.filter(r => (r.produto||'') === fProduto);
+  const filtroAtivo = !!(fStatus||fProduto);
+  // Atualiza indicador de filtros
+  const resEl = document.getElementById('filter-resultado');
+  const clearEl = document.getElementById('filter-clear');
+  if (resEl) {
+    if (filtroAtivo) resEl.textContent = `${mr.length} de ${totalAntesFiltro} posts`;
+    else resEl.textContent = '';
+  }
+  if (clearEl) clearEl.style.display = filtroAtivo ? '' : 'none';
+
   if(!mr.length){
-    document.getElementById('calendar').innerHTML='<p style="color:var(--text3);font-size:13px;padding:1rem 0">Nenhum post neste mês.</p>';
+    document.getElementById('calendar').innerHTML = filtroAtivo
+      ? '<p style="color:var(--text3);font-size:13px;padding:1rem 0">Nenhum post neste mês com esse filtro.</p>'
+      : '<p style="color:var(--text3);font-size:13px;padding:1rem 0">Nenhum post neste mês.</p>';
     renderStats();return;
   }
 
@@ -3021,10 +3122,11 @@ window.atualizarRefsBadge = function() {
 };
 window.switchMTab=function(tab){
   mTab=tab;
-  document.querySelectorAll('.modal-tab').forEach((b,i)=>b.classList.toggle('active',['social','design','refs','maris'][i]===tab));
+  document.querySelectorAll('.modal-tab').forEach((b,i)=>b.classList.toggle('active',['social','design','refs','maris','historico'][i]===tab));
   document.querySelectorAll('.modal-pane').forEach(p=>p.classList.remove('active'));
   document.getElementById('modal-pane-'+tab).classList.add('active');
   if(tab==='refs') window.renderPostRefs();
+  if(tab==='historico') window.renderHistorico();
 }
 window.closeModal=function(){document.getElementById('modal').classList.remove('open');editingKey=null;}
 
@@ -3177,6 +3279,33 @@ window.removerPostRef = async function(refId) {
   const novasRefs = (r.postRefs||[]).filter(ref => ref.id !== refId);
   await saveRow(editingKey, {postRefs: novasRefs});
   window.renderPostRefs();
+};
+
+window.renderHistorico = function() {
+  const lista = document.getElementById('hist-lista');
+  if(!lista || !editingKey) return;
+  const r = rows.find(r => r.key === editingKey);
+  const hist = (r?.historico || []).slice().reverse(); // mais recentes primeiro
+  if(hist.length === 0) {
+    lista.innerHTML = '<div style="font-size:12px;color:var(--text3);font-style:italic;text-align:center;padding:14px 0">Nenhuma alteração registrada ainda.<br/>O histórico começa a partir da próxima mudança.</div>';
+    return;
+  }
+  lista.innerHTML = hist.map(e => {
+    const linhas = (e.mudancas || []).map(m =>
+      `<div style="font-size:11px;color:var(--text);line-height:1.5">
+        <b style="color:var(--text2)">${escapeHtml(m.campoLabel)}:</b>
+        <span style="color:var(--text3);text-decoration:line-through">${escapeHtml(m.antes)}</span>
+        <span style="color:var(--text3)"> → </span>
+        <span style="color:var(--text);font-weight:500">${escapeHtml(m.depois)}</span>
+      </div>`
+    ).join('');
+    return `<div style="background:var(--surface2);border-left:3px solid var(--nibo2);border-radius:6px;padding:10px 12px">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'DM Mono',monospace">
+        <b style="color:var(--text2)">@${escapeHtml(e.autor||'—')}</b> · ${escapeHtml(e.tsFormatted||'')}
+      </div>
+      ${linhas}
+    </div>`;
+  }).join('');
 };
 
 window.renderPostRefs = function() {
