@@ -1490,6 +1490,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       </div>
     </div>
     <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="window.copiarLinkPost()" title="Copiar link permanente deste post" style="margin-right:auto">🔗 Copiar link</button>
       <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
       <button class="btn btn-primary" onclick="saveModal()">Salvar</button>
     </div>
@@ -1565,6 +1566,8 @@ onAuthStateChanged(auth, user => {
     listenProfile(user.uid);
     listenNotifications(user.uid);
     pedirPermissaoNotif();
+    // Se a URL veio com ?post=..., tenta abrir depois que tudo carregar
+    setTimeout(() => window.tryResolveDeepLink && window.tryResolveDeepLink(), 800);
   } else {
     if (user) {
       signOut(auth);
@@ -1669,6 +1672,8 @@ onSnapshot(collection(db,'rows'), snap=>{
   rows.sort((a,b)=>(a.order||0)-(b.order||0));
   if(rows.length===0) generateDefaultRows();
   else { renderCalendar(); setConn(); }
+  // Tenta resolver deep-link (?post=KEY) após carregar rows
+  setTimeout(() => window.tryResolveDeepLink && window.tryResolveDeepLink(), 100);
   // ── MIGRAÇÃO ÚNICA: remover post 20/05/2026 ──
   if(!localStorage.getItem('migr-remove-20-05-2026')) {
     const alvos = rows.filter(r => r.y===2026 && r.m===4 && r.date==='20/05');
@@ -2936,6 +2941,75 @@ window.switchMTab=function(tab){
   if(tab==='refs') window.renderPostRefs();
 }
 window.closeModal=function(){document.getElementById('modal').classList.remove('open');editingKey=null;}
+
+// Copiar link permalink do post atual
+window.copiarLinkPost = async function() {
+  if(!editingKey) return;
+  // Monta URL atual + parâmetro ?post=KEY
+  const url = new URL(window.location.href);
+  url.searchParams.set('post', editingKey);
+  url.hash = ''; // limpa hash se houver
+  const link = url.toString();
+  try {
+    await navigator.clipboard.writeText(link);
+  } catch(_) {
+    const ta = document.createElement('textarea');
+    ta.value = link;
+    ta.style.position='fixed'; ta.style.left='-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(__){}
+    document.body.removeChild(ta);
+  }
+  // Toast pequenininho
+  const toast = document.createElement('div');
+  toast.style.cssText = `position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:10001;
+    background:#1a1a2e;color:#fff;padding:10px 18px;border-radius:99px;font-size:13px;
+    font-family:'DM Sans',sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.2);
+    animation:slideInToast .25s ease-out;opacity:0;transition:opacity .3s`;
+  toast.textContent = '🔗 Link do post copiado!';
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => toast.style.opacity = '1');
+  setTimeout(() => toast.style.opacity = '0', 2200);
+  setTimeout(() => toast.remove(), 2700);
+};
+
+// Resolve deep-link ?post=KEY → abre o modal automaticamente
+let _deepLinkResolved = false;
+window.tryResolveDeepLink = function() {
+  if (_deepLinkResolved) return;
+  const params = new URLSearchParams(window.location.search);
+  const postKey = params.get('post');
+  if (!postKey) return;
+  if (!auth.currentUser) return; // espera login
+  if (!rows.length) return;       // espera rows
+  const r = rows.find(x => x.key === postKey);
+  if (!r) {
+    // Post não encontrado — pode ser que ainda esteja carregando algum mês, esperamos mais um pouco
+    console.warn('Deep-link: post não encontrado:', postKey);
+    return;
+  }
+  _deepLinkResolved = true;
+
+  // 1) Vai pra aba Social Media → Calendário
+  const mainBtn = document.getElementById('mtab-social');
+  if (mainBtn && !mainBtn.classList.contains('active')) mainBtn.click();
+  const subTab = document.getElementById('stab-calendario');
+  if (subTab && !subTab.classList.contains('active')) subTab.click();
+
+  // 2) Seleciona o mês do post
+  const idxMes = months.findIndex(mo => mo.y === r.y && mo.m === r.m);
+  if (idxMes >= 0 && idxMes !== activeMonthIdx) {
+    window.setMonth(idxMes);
+  }
+
+  // 3) Abre o modal (com pequeno delay pra renderização terminar)
+  setTimeout(() => window.openModal(postKey, 'social'), 250);
+
+  // 4) Limpa o parâmetro da URL pra não reabrir em F5
+  const url = new URL(window.location.href);
+  url.searchParams.delete('post');
+  window.history.replaceState({}, '', url.toString());
+};
 
 // ── REFERÊNCIAS DO POST (trends, prints, links) ──
 let postRefImgTemp = '';
