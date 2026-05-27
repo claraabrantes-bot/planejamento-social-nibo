@@ -986,10 +986,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="ig-header">
         <div class="ig-avatar"></div>
         <div class="ig-profile-info">
-          <div class="ig-username">nibo.oficial</div>
+          <div class="ig-username">nibo.software</div>
           <div class="ig-stats">
             <span><b id="ig-post-count">0</b>posts</span>
-            <span><b>12,4k</b>seguidores</span>
+            <span><b>21k</b>seguidores</span>
             <span><b>842</b>seguindo</span>
           </div>
           <div class="ig-bio">Gestão financeira para pequenas empresas 🚀<br><span style="color:#0072ce;font-size:10px">nibo.com.br</span></div>
@@ -3751,9 +3751,15 @@ function renderGrid(){
 function renderGridTabs(){
   // use same months list as calendar
   document.getElementById('grid-month-tabs').innerHTML=months.map((mo,i)=>`
-    <button class="tab${i===gridMonth?' active':''}" onclick="gridMonth=${i};renderGrid();renderGridTabs()">${MES_NAMES[mo.m].slice(0,3)} ${mo.y}</button>
+    <button class="tab${i===gridMonth?' active':''}" onclick="window.setGridMonth(${i})">${MES_NAMES[mo.m].slice(0,3)} ${mo.y}</button>
   `).join('');
 }
+
+window.setGridMonth = function(i) {
+  gridMonth = i;
+  renderGrid();
+  renderGridTabs();
+};
 
 // ── INIT ──
 renderTipos();
