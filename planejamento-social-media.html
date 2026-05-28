@@ -755,7 +755,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <button class="main-tab" id="mtab-welcome" onclick="switchMainTab('welcome')">Início</button>
     <button class="main-tab" id="mtab-social" onclick="switchMainTab('social')">Social Media</button>
     <button class="main-tab" id="mtab-design" onclick="switchMainTab('design')">Design</button>
-    <button class="main-tab" id="mtab-produto" onclick="switchMainTab('produto')">Produto</button>
+    <button class="main-tab" id="mtab-produto" onclick="switchMainTab('produto')" style="display:none">Produto</button>
     <button class="main-tab" id="mtab-gestao" onclick="switchMainTab('gestao')" style="display:none">Gestão</button>
   </nav>
   <!-- Espaço direito (vazio, só pra balancear) -->
@@ -855,7 +855,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="welcome-card-title">Design</div>
       <div class="welcome-card-sub">Grid do Instagram e referências visuais da equipe</div>
     </div>
-    <div class="welcome-card" onclick="switchMainTab('produto')">
+    <div class="welcome-card" onclick="switchMainTab('produto')" style="display:none">
       <div class="welcome-card-icon">🚀</div>
       <div class="welcome-card-title">Produto</div>
       <div class="welcome-card-sub">Calendário de mídia e campanhas de email de produto</div>
@@ -1188,7 +1188,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
 
     <!-- PRODUTO -->
-    <div class="gestao-big-card" id="gestao-card-produto" onclick="window.toggleGestaoCard('produto')">
+    <div class="gestao-big-card" id="gestao-card-produto" onclick="window.toggleGestaoCard('produto')" style="display:none">
       <div class="gestao-big-card-header">
         <div class="gestao-big-card-icon">🚀</div>
         <div class="gestao-big-card-info">
@@ -1248,7 +1248,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <div id="page-fila" class="page">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:10px">
     <div>
-      <div class="section-label" style="margin:0 0 4px">📋 Fila de Design</div>
+      <div class="section-label" style="margin:0 0 4px">Fila de Design</div>
       <p style="font-size:12px;color:var(--text2)">Posts aprovados pela Maris aguardando arte. Ordenado por data de publicação.</p>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
