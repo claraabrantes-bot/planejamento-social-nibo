@@ -1774,7 +1774,7 @@ function setConn()   {document.getElementById('sync-dot').className='sync-dot ok
 // ── FIRESTORE LISTENERS ──
 onSnapshot(doc(db,'config','cores'), snap=>{
   if(snap.exists()) cores=snap.data().list||COR_DEF.map(c=>({...c}));
-  renderCores(); renderCalendar(); setConn();
+  renderCalendar(); setConn();
 });
 
 onSnapshot(doc(db,'config','months'), snap=>{
