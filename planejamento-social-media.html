@@ -110,7 +110,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
 
 /* table */
-.table-header{display:grid;grid-template-columns:82px 106px 130px 100px 1fr 1fr 82px 110px 120px 110px 30px;gap:5px;padding:0 10px 6px;border-bottom:.5px solid var(--border2);margin-bottom:6px}
+.table-header{display:grid;grid-template-columns:82px 106px 130px 100px 1fr 1fr 82px 110px 120px 140px 30px;gap:5px;padding:0 10px 6px;border-bottom:.5px solid var(--border2);margin-bottom:6px}
 .th{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
 
 /* week */
@@ -123,7 +123,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .trial-badge{font-size:10px;padding:2px 8px;border-radius:99px;background:#FEF3C7;color:var(--amber);font-weight:500}
 
 /* post row */
-.post-row{display:grid;grid-template-columns:82px 106px 130px 100px 1fr 1fr 82px 110px 120px 110px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s;cursor:grab;background:#fff}
+.post-row{display:grid;grid-template-columns:82px 106px 130px 100px 1fr 1fr 82px 110px 120px 140px 30px;gap:5px;align-items:center;padding:8px 12px;border-bottom:.5px solid var(--border);transition:background .1s;cursor:grab;background:#fff}
 .post-row:active{cursor:grabbing}
 .post-row:last-child{border-bottom:none}
 .post-row:hover{background:#FAFBFD}
@@ -3367,9 +3367,9 @@ function renderCalendar(){
             // Pega primeira URL do texto (caso tenha múltiplas)
             const url = desTexto.split(/\s+/)[0];
             const titleAttr = `Abrir arte: ${url}`.replace(/"/g,'&quot;');
-            return `<div style="display:flex;align-items:center;gap:4px;min-width:0">
-              <a href="${url}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="${titleAttr}" style="flex:1;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:600;padding:5px 10px;border-radius:99px;background:#EFF6FF;color:var(--nibo1);text-decoration:none;border:.5px solid #93C5FD;transition:all .12s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" onmouseover="this.style.background='var(--nibo1)';this.style.color='#fff'" onmouseout="this.style.background='#EFF6FF';this.style.color='var(--nibo1)'">Abrir arte ↗</a>
-              <button onclick="window.openModal('${p.key}','design')" title="Ver/editar briefing" style="flex-shrink:0;width:22px;height:22px;border-radius:50%;border:.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-size:11px;display:inline-flex;align-items:center;justify-content:center" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">✏</button>
+            return `<div style="display:flex;align-items:center;gap:6px;min-width:0;justify-content:center">
+              <a href="${url}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="${titleAttr}" style="display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:600;padding:6px 14px;border-radius:99px;background:#EFF6FF;color:var(--nibo1);text-decoration:none;border:.5px solid #93C5FD;transition:all .12s;white-space:nowrap" onmouseover="this.style.background='var(--nibo1)';this.style.color='#fff'" onmouseout="this.style.background='#EFF6FF';this.style.color='var(--nibo1)'">↗ Arte</a>
+              <button onclick="window.openModal('${p.key}','design')" title="Editar briefing" style="flex-shrink:0;width:24px;height:24px;border-radius:50%;border:.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-size:11px;display:inline-flex;align-items:center;justify-content:center;transition:all .12s" onmouseover="this.style.background='var(--surface2)';this.style.color='var(--text2)'" onmouseout="this.style.background='transparent';this.style.color='var(--text3)'">✏</button>
               ${badgeArtes}
             </div>`;
           }
@@ -3395,9 +3395,9 @@ function renderCalendar(){
           const podePub = currentUserEmail()==='mariana.araujo@nibo.com.br' || currentUserEmail()==='clara.abrantes@nibo.com.br';
           const pub = p.pubStatus || 'nao-postado';
           const PUB_OPTS = [
-            {value:'nao-postado', label:'⏳ Não postado', bg:'#F3F4F6', color:'#6B7280', border:'#E5E7EB'},
-            {value:'agendado',    label:'📅 Agendado',    bg:'#DBEAFE', color:'#1D4ED8', border:'#93C5FD'},
-            {value:'postado',     label:'✅ Postado',     bg:'#D1FAE5', color:'#065F46', border:'#6EE7B7'},
+            {value:'nao-postado', label:'Não postado', bg:'#F3F4F6', color:'#6B7280', border:'#E5E7EB'},
+            {value:'agendado',    label:'Agendado',    bg:'#DBEAFE', color:'#1D4ED8', border:'#93C5FD'},
+            {value:'postado',     label:'Postado',     bg:'#D1FAE5', color:'#065F46', border:'#6EE7B7'},
           ];
           const atual = PUB_OPTS.find(o => o.value === pub) || PUB_OPTS[0];
           if (!podePub) {
