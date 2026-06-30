@@ -130,6 +130,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .post-row.trial{background:#FFFDF0}
 .post-row.trial:hover{background:#FFFBEB}
 
+/* Estados de publicação na linha inteira */
+.post-row.pub-postado{background:#F0FDF4}
+.post-row.pub-postado:hover{background:#DCFCE7}
+.post-row.pub-atrasado{background:#FEF2F2}
+.post-row.pub-atrasado:hover{background:#FEE2E2}
+
 /* Indicador de cor: barra lateral grossa na esquerda + fundo super sutil */
 .post-row[data-cor]{position:relative;padding-left:18px}
 .post-row[data-cor]::before{
@@ -877,6 +883,31 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <button onclick="window.abrirGerenciadorDatas()" style="font-size:11px;padding:6px 14px;border-radius:99px;border:.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif">⚙ Gerenciar</button>
     </div>
     <div id="welcome-datas-lista" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+
+  <!-- Calendário visual mensal -->
+  <div id="welcome-calendario" style="max-width:860px;width:100%;margin-top:32px;margin-bottom:24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:'DM Mono',monospace">📅 Visão do mês</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">Calendário visual dos posts. Clique num dia pra abrir o detalhe.</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button onclick="window.welcomeCalNavegarMes(-1)" title="Mês anterior" style="width:28px;height:28px;border-radius:99px;border:.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px">‹</button>
+        <span id="welcome-cal-titulo" style="font-size:13px;font-weight:600;color:var(--text);min-width:140px;text-align:center"></span>
+        <button onclick="window.welcomeCalNavegarMes(1)" title="Próximo mês" style="width:28px;height:28px;border-radius:99px;border:.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px">›</button>
+      </div>
+    </div>
+    <!-- Legenda -->
+    <div style="display:flex;align-items:center;gap:14px;font-size:10px;color:var(--text3);margin-bottom:10px;flex-wrap:wrap">
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:#fff;border:.5px solid var(--border2)"></span> Sem post</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:#DBEAFE;border:.5px solid #93C5FD"></span> Planejado</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:#D1FAE5;border:.5px solid #6EE7B7"></span> Postado</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:#FEE2E2;border:.5px solid #FCA5A5"></span> Atrasado</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:#FCE7F3;border:.5px solid #F9A8D4"></span> Data importante</span>
+    </div>
+    <!-- Grid -->
+    <div id="welcome-cal-grid" style="background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);overflow:hidden"></div>
   </div>
 </div>
 
@@ -1885,6 +1916,8 @@ onSnapshot(collection(db,'rows'), snap=>{
   else { renderCalendar(); setConn(); }
   // Re-render fila se estiver visível
   if(document.getElementById('page-fila')?.classList.contains('active')) window.renderFila && window.renderFila();
+  // Re-render do calendário visual no Início
+  window.renderWelcomeCalendario && window.renderWelcomeCalendario();
   // Tenta resolver deep-link (?post=KEY) após carregar rows
   setTimeout(() => window.tryResolveDeepLink && window.tryResolveDeepLink(), 100);
   // ── MIGRAÇÃO ÚNICA: remover post 20/05/2026 ──
@@ -3276,8 +3309,25 @@ function renderCalendar(){
         dowLabel=DAYS_PT[dt.getDay()]||'';
       }
       const hasMaris=p.marisObs&&p.marisObs.trim();
+      // Calcular status de publicação pra aplicar cor de fundo
+      let pubClass = '';
+      if(p.pubStatus === 'postado') {
+        pubClass = ' pub-postado';
+      } else if(!p.isSat && p.date && p.date.includes('/')) {
+        // Verifica se está atrasado (data já passou e não foi marcado como postado)
+        try {
+          const [dd, mm] = p.date.split('/').map(n => parseInt(n));
+          if(dd >= 1 && dd <= 31 && mm >= 1 && mm <= 12) {
+            const dataPost = new Date(p.y, p.m, dd);
+            dataPost.setHours(0,0,0,0);
+            const hojeRow = new Date();
+            hojeRow.setHours(0,0,0,0);
+            if(dataPost < hojeRow) pubClass = ' pub-atrasado';
+          }
+        } catch(_){}
+      }
       html+=`
-      <div class="post-row${p.isTrial?' trial':''}" id="row-${p.key}"
+      <div class="post-row${p.isTrial?' trial':''}${pubClass}" id="row-${p.key}"
            data-cor="${p.corIdx??''}"
            draggable="true"
            ondragstart="window.onRowDragStart(event,'${p.key}')"
@@ -3480,6 +3530,7 @@ onSnapshot(doc(db,'config','datas'), snap => {
   }
   // Re-render do card welcome
   window.renderDatasWelcome && window.renderDatasWelcome();
+  window.renderWelcomeCalendario && window.renderWelcomeCalendario();
   // Re-render do modal se aberto
   if(document.getElementById('modal-datas')?.classList.contains('open')) window.renderDatasModal();
 });
@@ -3532,6 +3583,163 @@ function formatarDataPt(dataStr) {
 }
 
 // Card no welcome — mostra próximas 5 datas
+// ══════════════════════════════════════════════════════════
+// CALENDÁRIO VISUAL MENSAL no Início (estilo Nibo Obrigações)
+// ══════════════════════════════════════════════════════════
+let welcomeCalAno = new Date().getFullYear();
+let welcomeCalMes = new Date().getMonth();
+
+window.welcomeCalNavegarMes = function(delta) {
+  welcomeCalMes += delta;
+  if(welcomeCalMes < 0) { welcomeCalMes = 11; welcomeCalAno--; }
+  else if(welcomeCalMes > 11) { welcomeCalMes = 0; welcomeCalAno++; }
+  window.renderWelcomeCalendario();
+};
+
+window.renderWelcomeCalendario = function() {
+  const grid = document.getElementById('welcome-cal-grid');
+  const titulo = document.getElementById('welcome-cal-titulo');
+  if(!grid || !titulo) return;
+
+  const MESES_NOMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const DIAS_SEM = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  titulo.textContent = `${MESES_NOMES[welcomeCalMes]} ${welcomeCalAno}`;
+
+  // Posts do mês indexados por dia
+  const postsDoMes = rows.filter(r => r.y === welcomeCalAno && r.m === welcomeCalMes && !r.isSat);
+  const postsPorDia = {};
+  postsDoMes.forEach(r => {
+    if(!r.date || !r.date.includes('/')) return;
+    const dia = parseInt(r.date.split('/')[0]);
+    if(isNaN(dia) || dia < 1 || dia > 31) return;
+    if(!postsPorDia[dia]) postsPorDia[dia] = [];
+    postsPorDia[dia].push(r);
+  });
+
+  // Datas importantes do mês
+  const datasPorDia = {};
+  datasImportantes.forEach(d => {
+    const dt = new Date(d.data+'T00:00:00');
+    if(dt.getFullYear() === welcomeCalAno && dt.getMonth() === welcomeCalMes) {
+      const dia = dt.getDate();
+      if(!datasPorDia[dia]) datasPorDia[dia] = [];
+      datasPorDia[dia].push(d);
+    }
+  });
+
+  // Monta o grid
+  const hoje = new Date();
+  hoje.setHours(0,0,0,0);
+  const primeiroDia = new Date(welcomeCalAno, welcomeCalMes, 1);
+  const ultimoDia = new Date(welcomeCalAno, welcomeCalMes+1, 0).getDate();
+  const dowPrimeiro = primeiroDia.getDay(); // 0=dom
+
+  // Cabeçalho dias da semana
+  let html = '<div style="display:grid;grid-template-columns:repeat(7,1fr);background:var(--surface2);border-bottom:.5px solid var(--border)">';
+  DIAS_SEM.forEach(d => {
+    html += `<div style="padding:8px;text-align:center;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace">${d}</div>`;
+  });
+  html += '</div>';
+
+  // Células
+  html += '<div style="display:grid;grid-template-columns:repeat(7,1fr)">';
+
+  // Espaços vazios antes do primeiro dia
+  for(let i = 0; i < dowPrimeiro; i++) {
+    html += '<div style="min-height:78px;background:#FAFBFD;border-right:.5px solid var(--border);border-bottom:.5px solid var(--border)"></div>';
+  }
+
+  for(let dia = 1; dia <= ultimoDia; dia++) {
+    const dtCelula = new Date(welcomeCalAno, welcomeCalMes, dia);
+    const dowCelula = dtCelula.getDay();
+    const ehFimSemana = (dowCelula === 0 || dowCelula === 6);
+    const ehHoje = dtCelula.getTime() === hoje.getTime();
+    const ehPassado = dtCelula < hoje;
+
+    const ps = postsPorDia[dia] || [];
+    const ds = datasPorDia[dia] || [];
+
+    // Decide cor de fundo
+    let bgCor = '#fff', borderCor = 'var(--border)';
+    if(ds.length > 0) { bgCor = '#FCE7F3'; borderCor = '#F9A8D4'; }
+    if(ps.length > 0) {
+      const todosPostados = ps.every(p => p.pubStatus === 'postado');
+      const algumAtrasado = ehPassado && ps.some(p => p.pubStatus !== 'postado');
+      if(todosPostados) { bgCor = '#D1FAE5'; borderCor = '#6EE7B7'; }
+      else if(algumAtrasado) { bgCor = '#FEE2E2'; borderCor = '#FCA5A5'; }
+      else { bgCor = '#DBEAFE'; borderCor = '#93C5FD'; }
+    }
+    if(ehFimSemana && ps.length === 0 && ds.length === 0) bgCor = '#FAFBFD';
+
+    // Tooltip pra ver no hover
+    const tooltipParts = [];
+    if(ps.length > 0) tooltipParts.push(`${ps.length} post(s): ${ps.map(p => (TIPOS.find(t=>t.id===p.tipoId)||TIPOS[0]).name).join(', ')}`);
+    if(ds.length > 0) tooltipParts.push(`Datas: ${ds.map(d => d.titulo).join(', ')}`);
+    const tooltip = tooltipParts.join(' · ').replace(/"/g, '&quot;');
+
+    const clicavel = ps.length > 0 || ds.length > 0;
+    const onClick = clicavel ? `window.welcomeCalClicarDia(${dia})` : '';
+
+    html += `<div ${onClick?`onclick="${onClick}"`:''} title="${tooltip}" style="min-height:78px;padding:6px 8px;background:${bgCor};border-right:.5px solid var(--border);border-bottom:.5px solid var(--border);position:relative;${clicavel?'cursor:pointer;':''}transition:filter .15s${ehHoje?';box-shadow:inset 0 0 0 2px var(--nibo1)':''}" ${clicavel?'onmouseover="this.style.filter=\'brightness(.96)\'" onmouseout="this.style.filter=\'none\'"':''}>
+      <div style="font-size:12px;font-weight:${ehHoje?'700':'600'};color:${ehHoje?'var(--nibo1)':'var(--text)'};font-family:'DM Mono',monospace;display:flex;align-items:center;gap:4px">
+        ${String(dia).padStart(2,'0')}
+        ${ehHoje?'<span style="font-size:8px;background:var(--nibo1);color:#fff;padding:1px 5px;border-radius:99px;font-weight:700;font-family:\'DM Sans\',sans-serif">hoje</span>':''}
+      </div>
+      ${ps.length > 0 ? `<div style="font-size:9px;color:var(--text2);margin-top:3px;line-height:1.3;display:flex;flex-direction:column;gap:1px">
+        ${ps.slice(0,2).map(p => {
+          const tipo = (TIPOS.find(t=>t.id===p.tipoId)||TIPOS[0]).name;
+          const icon = p.pubStatus === 'postado' ? '✓' : (p.pubStatus === 'agendado' ? '📅' : '○');
+          return `<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b>${icon}</b> ${escapeHtml(tipo)}</div>`;
+        }).join('')}
+        ${ps.length > 2 ? `<div style="font-size:8px;color:var(--text3)">+${ps.length-2}</div>` : ''}
+      </div>` : ''}
+      ${ds.length > 0 ? `<div style="position:absolute;bottom:4px;left:6px;right:6px;font-size:9px;font-weight:600;color:#9F1239;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${ds.map(d=>d.titulo).join(', ').replace(/"/g,'&quot;')}">${ds.length === 1 ? '📌 '+escapeHtml(ds[0].titulo) : `📌 ${ds.length} datas`}</div>` : ''}
+    </div>`;
+  }
+
+  // Preencher últimos espaços vazios
+  const totalCels = dowPrimeiro + ultimoDia;
+  const sobra = (7 - (totalCels % 7)) % 7;
+  for(let i = 0; i < sobra; i++) {
+    html += '<div style="min-height:78px;background:#FAFBFD;border-right:.5px solid var(--border);border-bottom:.5px solid var(--border)"></div>';
+  }
+  html += '</div>';
+
+  grid.innerHTML = html;
+};
+
+// Clicar num dia do grid: vai pra Social Media → Calendário no mês certo
+window.welcomeCalClicarDia = function(dia) {
+  // Garante que esse mês está na lista de months
+  const idxMes = months.findIndex(mo => mo.y === welcomeCalAno && mo.m === welcomeCalMes);
+  if(idxMes < 0) {
+    alert('Esse mês ainda não está no calendário. Adicione em "+ mês" primeiro.');
+    return;
+  }
+  // Vai pra Social Media
+  window.switchMainTab('social');
+  setTimeout(() => {
+    const sub = document.getElementById('stab-calendario');
+    if(sub && !sub.classList.contains('active')) sub.click();
+    // Seleciona o mês
+    window.setMonth(idxMes);
+    // Scroll até o post do dia (se houver)
+    setTimeout(() => {
+      const posts = rows.filter(r => r.y === welcomeCalAno && r.m === welcomeCalMes && r.date && r.date.split('/')[0] === String(dia).padStart(2,'0'));
+      if(posts.length > 0) {
+        const el = document.getElementById('row-' + posts[0].key);
+        if(el) {
+          el.scrollIntoView({behavior:'smooth', block:'center'});
+          // Destaca rapidamente
+          el.style.transition = 'box-shadow .3s';
+          el.style.boxShadow = '0 0 0 2px var(--nibo2)';
+          setTimeout(() => el.style.boxShadow = '', 1800);
+        }
+      }
+    }, 250);
+  }, 100);
+};
+
 window.renderDatasWelcome = function() {
   const lista = document.getElementById('welcome-datas-lista');
   if(!lista) return;
