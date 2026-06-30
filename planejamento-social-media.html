@@ -1500,6 +1500,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
             <option value="fiscal">⚖ Fiscal</option>
             <option value="comemorativa">🎉 Comemorativa</option>
             <option value="campanha">📣 Campanha</option>
+            <option value="oportunidade">💡 Oportunidade</option>
             <option value="outro">📌 Outro</option>
           </select>
         </div>
@@ -1517,6 +1518,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
           <option value="fiscal">⚖ Fiscais</option>
           <option value="comemorativa">🎉 Comemorativas</option>
           <option value="campanha">📣 Campanhas</option>
+          <option value="oportunidade">💡 Oportunidades</option>
           <option value="outro">📌 Outras</option>
         </select>
         <select id="data-filtro-tempo" onchange="window.renderDatasModal()" style="font-size:11px;padding:4px 10px;border-radius:99px;border:.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif">
@@ -3515,7 +3517,57 @@ const DATAS_BASE = [
   {data:'2026-11-27', titulo:'Black Friday', desc:'Última sexta de novembro', tipo:'campanha'},
   {data:'2026-12-20', titulo:'DCTFWeb Anual do 13º', desc:'Prazo final', tipo:'fiscal'},
   {data:'2026-12-25', titulo:'Natal', desc:'', tipo:'comemorativa'},
-  // RECORRÊNCIAS MENSAIS (apenas adiciona pra cada mês como referência - será gerado dinamicamente)
+
+  // 💡 OPORTUNIDADES DE CAMPANHA (ancoradas em datas fiscais reais)
+  // Cada uma vira um POST quando você clicar em "Criar post"
+  {
+    data:'2026-04-25', titulo:'Campanha pré-ECD — Nibo Obrigações',
+    desc:'~30 dias antes da ECD (29/05). Momento de ouro pra falar de robôs de leitura automática e Conferência.',
+    tipo:'oportunidade',
+    produto:'obrigacoes', tipoPost:'produto',
+    briefingSugerido:'Mockup do Nibo Obrigações com destaque pra Conferência e Robôs de leitura automática. Texto da arte: "Faltam 30 dias pra ECD. Já tá em dia?" — fundo branco, navy nas bordas, badge "ECD 29/MAI" no canto.',
+    copySugerida:'Contador, a ECD chega em 30 dias e quem deixou pra última hora sabe o tamanho do problema. Os Robôs de leitura automática do Nibo Obrigações leem documentos, identificam cliente e obrigação em segundos, e te livram da conferência manual. Conheça no link da bio.'
+  },
+  {
+    data:'2026-06-25', titulo:'Campanha pré-ECF — Nibo Obrigações',
+    desc:'~30 dias antes da ECF (31/07). Reforçar controle de prazo e Protocolos com rastreio.',
+    tipo:'oportunidade',
+    produto:'obrigacoes', tipoPost:'produto',
+    briefingSugerido:'Visual de calendário com a data ECF 31/07 destacada. Mostrar o painel de Protocolos do Nibo Obrigações lateral, com indicadores "quem recebeu, quem abriu". Texto da arte: "ECF em 30 dias. Você sabe quem do seu cliente ainda não abriu?"',
+    copySugerida:'Contador, a ECF de 31 de julho é a obrigação mais fiscalizada pela Receita. Com os Protocolos do Nibo Obrigações você sabe em tempo real quem recebeu, quem abriu e quem ainda não visualizou cada documento. Conheça no link da bio.'
+  },
+  {
+    data:'2026-04-15', titulo:'Campanha IRPF — Nibo BPO',
+    desc:'Momento de empresário sobrecarregado com tributos. Oportunidade pra falar de BPO Financeiro.',
+    tipo:'oportunidade',
+    produto:'bpo', tipoPost:'produto',
+    briefingSugerido:'Cena de empresário cansado vs cena organizada com o painel do Nibo BPO. Texto da arte: "Enquanto seu cliente foca no negócio, o BPO cuida do financeiro."',
+    copySugerida:'BPO financeiro, abril é o mês em que o empresário sente o peso da rotina fiscal. O Painel operacional do Nibo BPO consolida todos os seus clientes numa tela, com Triagem automática de notas e Conciliação multi-cliente. Solicite uma demonstração no link da bio.'
+  },
+  {
+    data:'2026-05-15', titulo:'Campanha ECD — Gestão Financeira',
+    desc:'Empresário acordando pro caos contábil. Vender Gestão Financeira como base pra ECD limpa.',
+    tipo:'oportunidade',
+    produto:'gestao', tipoPost:'produto',
+    briefingSugerido:'Antes/depois: planilha bagunçada vs tela do Nibo Gestão Financeira com Conciliação Bancária Inteligente. Texto da arte: "Sua ECD vai refletir o ano inteiro. Como está o seu?"',
+    copySugerida:'Empresário, a ECD que seu contador entrega em maio é a fotografia da sua empresa pro Fisco. Com o Nibo Gestão Financeira você tem Conciliação Bancária Inteligente, Fluxo de caixa em tempo real e DRE pronta. Teste grátis no link da bio.'
+  },
+  {
+    data:'2026-11-10', titulo:'Black Friday — Ecossistema Nibo',
+    desc:'2-3 semanas antes da Black Friday (27/11). Aquecimento.',
+    tipo:'oportunidade',
+    produto:'ecossistema', tipoPost:'produto',
+    briefingSugerido:'Composição dos 4 produtos principais (Obrigações, BPO, GF, Radar) com selo "Black Nibo". Visual escuro com detalhes nas cores Nibo. Texto da arte: "A Black Nibo está chegando."',
+    copySugerida:'Contador, em novembro o Nibo prepara uma das maiores ofertas do ano pro Ecossistema completo. Comece a se preparar: agende uma demonstração agora e garanta condições especiais quando a Black Nibo abrir. Acesse o link na bio.'
+  },
+  {
+    data:'2026-04-15', titulo:'Campanha Dia do Contador — Obrigações',
+    desc:'~1 semana antes do Dia do Contador (22/04). Tom de homenagem + produto.',
+    tipo:'oportunidade',
+    produto:'obrigacoes', tipoPost:'editorial',
+    briefingSugerido:'Carrossel 5-7 slides. Capa: "Pra quem ganhou o ano inteiro com prazos apertados." Slides celebrando o papel do contador + mostrando como o Nibo Obrigações ajuda. Tom respeitoso, sem ser piegas.',
+    copySugerida:'SLIDE 1 — CAPA: Pra quem aguenta o ano todo com prazos apertados.\n---\nSLIDE 2 — CONTEXTO: Em 22/04 a gente celebra o Dia do Contador, mas a verdade é que esse profissional não escolhe um dia: ele é cobrado todo dia útil.\n---\nSLIDE 3 — PROBLEMA: ECD, ECF, DEFIS, eSocial, EFD-Reinf. A cadeia é longa e qualquer atraso na primeira etapa derruba todas as outras.\n---\nSLIDE 4 — SOLUÇÃO: O Nibo Obrigações Plus tem robôs de leitura automática, Caixa Postal integrada e Protocolos com rastreio em tempo real.\n---\nSLIDE 5 — CTA: Conheça o Nibo Obrigações no link da bio e tire pelo menos uma camada de pressão do seu escritório.'
+  },
 ];
 
 let datasImportantes = [];
@@ -3562,11 +3614,101 @@ window.removerData = async function(id) {
   await setDoc(doc(db,'config','datas'), {list: novas}, {merge: true});
 };
 
+// Cria um post no calendário a partir de uma oportunidade de campanha
+window.criarPostDeOportunidade = async function(idDate) {
+  const opp = datasImportantes.find(d => d.id === idDate);
+  if(!opp) { alert('Oportunidade não encontrada.'); return; }
+  if(opp.tipo !== 'oportunidade') { alert('Esta data não é uma oportunidade de campanha.'); return; }
+
+  const dt = new Date(opp.data + 'T00:00:00');
+  const y = dt.getFullYear();
+  const m = dt.getMonth();
+  const dia = dt.getDate();
+
+  // Garante que o mês está na lista de months
+  const idxMes = months.findIndex(mo => mo.y === y && mo.m === m);
+  if(idxMes < 0) {
+    if(!confirm(`O mês ${MES_NAMES[m]}/${y} ainda não está no calendário. Adicionar?`)) return;
+    const novosMonths = [...months, {y, m}].sort((a,b) => a.y!==b.y ? a.y-b.y : a.m-b.m);
+    await setDoc(doc(db,'config','months'), {list: novosMonths}, {merge: true});
+    // Espera 600ms pro listener atualizar
+    await new Promise(r => setTimeout(r, 600));
+  }
+
+  // Calcula semana e dia
+  const { week, di } = calcularSemanaEDia(y, m, dia);
+
+  // Confere se já existe post nessa mesma data com o mesmo tipo (evita duplicação acidental)
+  const dataStr = `${String(dia).padStart(2,'0')}/${String(m+1).padStart(2,'0')}`;
+  const existente = rows.find(r => r.y === y && r.m === m && r.date === dataStr && r.tipoId === (opp.tipoPost||'produto'));
+  if(existente) {
+    const ok = confirm(`Já existe um post de ${(TIPOS.find(t=>t.id===existente.tipoId)||TIPOS[0]).name} em ${dataStr}.\n\nQuer abrir o existente ao invés de criar duplicado?`);
+    if(ok) {
+      document.getElementById('modal-datas')?.classList.remove('open');
+      window.openModal(existente.key, 'social');
+      return;
+    }
+    if(!confirm('Criar um post novo na mesma data mesmo assim?')) return;
+  }
+
+  // Cria a row
+  const key = 'opp-' + Date.now();
+  const idxMesFinal = months.findIndex(mo => mo.y === y && mo.m === m);
+  const order = idxMesFinal*1000 + dia*10 + di;
+  const tipoId = opp.tipoPost || 'produto';
+  const produto = opp.produto || '';
+
+  const novaRow = {
+    key, y, m,
+    week, di,
+    date: dataStr,
+    tipoId,
+    corIdx: 0,
+    status: 'pendente',
+    social: opp.copySugerida || '',
+    design: opp.briefingSugerido || '',
+    legenda: '',
+    marisObs: '',
+    isTrial: false,
+    isSat: false,
+    produto,
+    order,
+  };
+
+  await setDoc(doc(db,'rows',key), novaRow);
+
+  // Fecha modal de datas se aberto
+  document.getElementById('modal-datas')?.classList.remove('open');
+
+  // Vai pra Social Media → Calendário, mês certo, e abre o modal do post novo
+  window.switchMainTab('social');
+  setTimeout(() => {
+    const sub = document.getElementById('stab-calendario');
+    if(sub && !sub.classList.contains('active')) sub.click();
+    const idxFinal = months.findIndex(mo => mo.y === y && mo.m === m);
+    if(idxFinal >= 0) window.setMonth(idxFinal);
+    setTimeout(() => {
+      window.openModal(key, 'social');
+      // Toast confirmando
+      const toast = document.createElement('div');
+      toast.style.cssText = `position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:10001;
+        background:#1a1a2e;color:#fff;padding:14px 22px;border-radius:12px;font-size:13px;
+        font-family:'DM Sans',sans-serif;box-shadow:0 12px 32px rgba(0,0,0,.25);max-width:380px;line-height:1.5`;
+      toast.innerHTML = `<div style="font-weight:700;margin-bottom:4px">💡 Post criado a partir da oportunidade</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.85)">Copy e briefing pré-preenchidos. Edite o que precisar.</div>`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.style.opacity = '0', 4000);
+      setTimeout(() => toast.remove(), 4500);
+    }, 300);
+  }, 200);
+};
+
 function tipoBadge(tipo) {
   const m = {
     fiscal:       {label:'⚖ Fiscal',       bg:'#FEF3C7', color:'#92400E', border:'#FDE68A'},
     comemorativa: {label:'🎉 Comemorativa', bg:'#FCE7F3', color:'#9F1239', border:'#FBCFE8'},
     campanha:     {label:'📣 Campanha',     bg:'#DBEAFE', color:'#1D4ED8', border:'#93C5FD'},
+    oportunidade: {label:'💡 Oportunidade', bg:'#FFEDD5', color:'#9A3412', border:'#FDBA74'},
     outro:        {label:'📌 Outro',        bg:'#F3F4F6', color:'#374151', border:'#E5E7EB'},
   };
   return m[tipo] || m.outro;
@@ -3774,6 +3916,7 @@ window.renderDatasWelcome = function() {
         </div>
         ${d.desc?`<div style="font-size:11px;color:var(--text2);line-height:1.4">${escapeHtml(d.desc)}</div>`:''}
       </div>
+      ${d.tipo === 'oportunidade' ? `<button onclick="window.criarPostDeOportunidade('${d.id}')" title="Criar post a partir desta oportunidade" style="flex-shrink:0;font-size:11px;padding:6px 12px;border-radius:99px;border:.5px solid #FDBA74;background:#FFEDD5;color:#9A3412;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;white-space:nowrap" onmouseover="this.style.background='#FED7AA'" onmouseout="this.style.background='#FFEDD5'">+ Criar post</button>` : ''}
       <div style="flex-shrink:0">${badge}</div>
     </div>`;
   }).join('');
@@ -3813,6 +3956,7 @@ window.renderDatasModal = function() {
         <div style="font-size:12px;font-weight:600;color:var(--text)">${escapeHtml(d.titulo)}</div>
         ${d.desc?`<div style="font-size:11px;color:var(--text2)">${escapeHtml(d.desc)}</div>`:''}
       </div>
+      ${d.tipo === 'oportunidade' ? `<button onclick="window.criarPostDeOportunidade('${d.id}')" title="Criar post" style="flex-shrink:0;font-size:10px;padding:4px 10px;border-radius:99px;border:.5px solid #FDBA74;background:#FFEDD5;color:#9A3412;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600">+ Post</button>` : ''}
       <span style="font-size:10px;color:${corDias};font-weight:600;font-family:'DM Mono',monospace;flex-shrink:0">${dias < 0 ? 'há '+Math.abs(dias)+'d' : (dias === 0 ? 'HOJE' : 'em '+dias+'d')}</span>
       <button onclick="window.removerData('${d.id}')" title="Remover" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;flex-shrink:0">×</button>
     </div>`;
@@ -5156,12 +5300,13 @@ let midiaProdutoData = [];
 let emailProdutoData = [];
 
 // ── LISTENERS FIRESTORE ──
-onSnapshot(collection(db,'midia-produto'), snap => {
-  midiaProdutoData = [];
-  snap.forEach(d => midiaProdutoData.push({key:d.id,...d.data()}));
-  midiaProdutoData.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  window.renderMidiaProduto();
-});
+// Listener midia-produto desligado (aba Produto está escondida)
+// onSnapshot(collection(db,'midia-produto'), snap => {
+//   midiaProdutoData = [];
+//   snap.forEach(d => midiaProdutoData.push({key:d.id,...d.data()}));
+//   midiaProdutoData.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+//   window.renderMidiaProduto();
+// });
 
 
 
@@ -5403,11 +5548,12 @@ let epCellEditKey = null;
 let epCellEditColor = 'cinza';
 
 // Listener firestore
-onSnapshot(collection(db,'email-produto-cal'), snap => {
-  emailProdutoData = [];
-  snap.forEach(d => emailProdutoData.push({key:d.id,...d.data()}));
-  window.renderEmailProduto();
-});
+// Listener email-produto-cal desligado (aba Produto está escondida)
+// onSnapshot(collection(db,'email-produto-cal'), snap => {
+//   emailProdutoData = [];
+//   snap.forEach(d => emailProdutoData.push({key:d.id,...d.data()}));
+//   window.renderEmailProduto();
+// });
 
 window.epPrevMonth = function() {
   epCalMonth--;
