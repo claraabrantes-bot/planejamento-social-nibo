@@ -1526,6 +1526,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="modal-tabs">
       <button class="modal-tab active" onclick="switchMTab('social',this)">Social Media</button>
       <button class="modal-tab" onclick="switchMTab('design',this)">Design</button>
+      <button class="modal-tab" onclick="switchMTab('artes',this)">🎨 Artes finais<span id="modal-artes-badge" style="display:none;margin-left:6px;font-size:10px;font-weight:700;background:linear-gradient(135deg,#ff40b3,#7c3aed);color:#fff;border-radius:99px;padding:1px 7px;min-width:18px;align-items:center;justify-content:center"></span></button>
       <button class="modal-tab" onclick="switchMTab('refs',this)">🔗 Referências<span id="modal-refs-badge" style="display:none;margin-left:6px;font-size:10px;font-weight:700;background:#ff40b3;color:#fff;border-radius:99px;padding:1px 7px;min-width:18px;display:none;align-items:center;justify-content:center"></span></button>
       <button class="modal-tab" id="modal-tab-maris" onclick="switchMTab('maris',this)">Obs. Maris</button>
       <button class="modal-tab" onclick="switchMTab('historico',this)">🕐 Histórico</button>
@@ -1545,6 +1546,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div id="modal-pane-design" class="modal-pane">
         <div class="modal-label">Briefing para o designer</div>
         <textarea id="modal-design" placeholder="Layout, referências visuais, elementos gráficos, formato..." rows="5"></textarea>
+      </div>
+      <div id="modal-pane-artes" class="modal-pane">
+        <div class="modal-label">Artes finais entregues</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.4">Cole links do Canva, Drive ou ferramentas similares. Pode ter várias artes (carrossel, variações, formatos diferentes). A primeira fica como "principal".</div>
+
+        <!-- Formulário pra adicionar arte -->
+        <div style="background:var(--surface2);border-radius:var(--radius);padding:12px;margin-bottom:10px">
+          <input id="arte-link" type="url" placeholder="https://www.canva.com/... ou https://drive.google.com/..." style="width:100%;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;outline:none;background:var(--bg);color:var(--text);margin-bottom:6px" />
+          <input id="arte-desc" type="text" placeholder='Descrição (opcional): ex. "v1", "carrossel slide 3", "formato story"' style="width:100%;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;outline:none;background:var(--bg);color:var(--text);margin-bottom:6px" />
+          <div style="display:flex;justify-content:flex-end">
+            <button class="btn btn-primary" onclick="window.adicionarArte()" style="font-size:12px;padding:6px 14px">+ Adicionar arte</button>
+          </div>
+        </div>
+
+        <!-- Lista de artes já adicionadas -->
+        <div id="artes-list" style="display:flex;flex-direction:column;gap:8px"></div>
       </div>
       <div id="modal-pane-refs" class="modal-pane">
         <div class="modal-label">Referências e trends pra este post</div>
@@ -3222,7 +3239,7 @@ function renderCalendar(){
           <option value="carrossel"${p.formato==='carrossel'?' selected':''}>Carrossel</option>
         </select>
         <span class="idea-cell${p.social?' filled':''}" onclick="window.openModal('${p.key}','social')" title="${(p.social||'').replace(/"/g,'&quot;')}${(p.postRefs||[]).length?` · ${(p.postRefs||[]).length} ref(s)`:''}">${sSnip}${(p.postRefs||[]).length?` <span style="font-size:9px;color:var(--nibo2);font-weight:700" onclick="event.stopPropagation();window.openModal('${p.key}','refs')" title="${(p.postRefs||[]).length} referência(s) vinculada(s)">🔗${(p.postRefs||[]).length}</span>`:''}</span>
-        <span class="idea-cell${p.design?' filled':''}" onclick="window.openModal('${p.key}','design')" title="${(p.design||'').replace(/"/g,'&quot;')}">${dSnip}</span>
+        <span class="idea-cell${p.design?' filled':''}" onclick="window.openModal('${p.key}','design')" title="${(p.design||'').replace(/"/g,'&quot;')}${(p.artesFinais||[]).length?` · ${(p.artesFinais||[]).length} arte(s)`:''}">${dSnip}${(p.artesFinais||[]).length?` <span style="font-size:10px;color:#fff;background:linear-gradient(135deg,#ff40b3,#7c3aed);font-weight:700;padding:2px 7px;border-radius:99px;cursor:pointer;display:inline-flex;align-items:center;gap:2px;margin-left:4px" onclick="event.stopPropagation();window.abrirArtesPost('${p.key}',event)" title="${(p.artesFinais||[]).length} arte(s) finais — clique pra abrir">🎨${(p.artesFinais||[]).length}</span>`:''}</span>
         <div class="cor-selector">${corBtns}</div>
         <div class="status-cell" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
           ${(currentUserEmail()==='mariana.araujo@nibo.com.br'||currentUserEmail()==='clara.abrantes@nibo.com.br')
@@ -3309,8 +3326,9 @@ window.openModal=function(key,tab='social'){
   // mostrar/esconder aba maris conforme permissão
   const marisTab = document.getElementById('modal-tab-maris');
   if(marisTab) marisTab.style.display = (currentUserEmail()==='mariana.araujo@nibo.com.br'||currentUserEmail()==='clara.abrantes@nibo.com.br') ? '' : 'none';
-  // Atualiza badge de refs
+  // Atualiza badge de refs e de artes
   window.atualizarRefsBadge();
+  window.atualizarArtesBadge();
   window.switchMTab(tab);
   document.getElementById('modal').classList.add('open');
   setTimeout(()=>document.getElementById('modal-'+tab).focus(),80);
@@ -3329,12 +3347,26 @@ window.atualizarRefsBadge = function() {
     badge.style.display = 'none';
   }
 };
+
+window.atualizarArtesBadge = function() {
+  const badge = document.getElementById('modal-artes-badge');
+  if(!badge || !editingKey) return;
+  const r = rows.find(r => r.key === editingKey);
+  const n = (r?.artesFinais || []).length;
+  if(n > 0) {
+    badge.textContent = n;
+    badge.style.display = 'inline-flex';
+  } else {
+    badge.style.display = 'none';
+  }
+};
 window.switchMTab=function(tab){
   mTab=tab;
-  document.querySelectorAll('.modal-tab').forEach((b,i)=>b.classList.toggle('active',['social','design','refs','maris','historico'][i]===tab));
+  document.querySelectorAll('.modal-tab').forEach((b,i)=>b.classList.toggle('active',['social','design','artes','refs','maris','historico'][i]===tab));
   document.querySelectorAll('.modal-pane').forEach(p=>p.classList.remove('active'));
   document.getElementById('modal-pane-'+tab).classList.add('active');
   if(tab==='refs') window.renderPostRefs();
+  if(tab==='artes') window.renderArtes();
   if(tab==='historico') window.renderHistorico();
 }
 window.closeModal=function(){document.getElementById('modal').classList.remove('open');editingKey=null;}
@@ -3515,6 +3547,148 @@ window.renderHistorico = function() {
       ${linhas}
     </div>`;
   }).join('');
+};
+
+// ── ARTES FINAIS ──
+function detectarHostArte(url) {
+  try {
+    const h = new URL(url).hostname.toLowerCase().replace('www.','');
+    if (h.includes('canva')) return {nome:'Canva', icone:'🎨', cor:'#00C4CC'};
+    if (h.includes('drive.google') || h.includes('docs.google')) return {nome:'Drive', icone:'📁', cor:'#1A73E8'};
+    if (h.includes('figma'))  return {nome:'Figma', icone:'🎭', cor:'#A259FF'};
+    if (h.includes('dropbox')) return {nome:'Dropbox', icone:'📦', cor:'#0061FF'};
+    if (h.includes('miro'))   return {nome:'Miro', icone:'📋', cor:'#FFD02F'};
+    return {nome: h, icone:'🔗', cor:'var(--nibo2)'};
+  } catch(_) {
+    return {nome:'Link', icone:'🔗', cor:'var(--nibo2)'};
+  }
+}
+
+window.adicionarArte = async function() {
+  if(!editingKey) return;
+  const linkEl = document.getElementById('arte-link');
+  const descEl = document.getElementById('arte-desc');
+  const link = (linkEl.value||'').trim();
+  const desc = (descEl.value||'').trim();
+  if(!link) { alert('Cole o link da arte primeiro.'); linkEl.focus(); return; }
+  // Valida URL
+  try { new URL(link); } catch(_) { alert('Link inválido. Cole uma URL completa começando com https://'); return; }
+  const r = rows.find(x => x.key === editingKey);
+  if(!r) return;
+  const atuais = Array.isArray(r.artesFinais) ? r.artesFinais : [];
+  const nova = {
+    id: 'arte-' + Date.now(),
+    link, desc,
+    author: currentUserEmail().split('@')[0] || 'anon',
+    ts: new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),
+  };
+  await saveRow(editingKey, {artesFinais: [...atuais, nova]});
+  linkEl.value = '';
+  descEl.value = '';
+  window.renderArtes();
+  window.atualizarArtesBadge();
+};
+
+window.removerArte = async function(arteId) {
+  if(!editingKey) return;
+  if(!confirm('Remover esta arte?')) return;
+  const r = rows.find(x => x.key === editingKey);
+  if(!r) return;
+  const novas = (r.artesFinais||[]).filter(a => a.id !== arteId);
+  await saveRow(editingKey, {artesFinais: novas});
+  window.renderArtes();
+  window.atualizarArtesBadge();
+};
+
+window.renderArtes = function() {
+  const lista = document.getElementById('artes-list');
+  if(!lista || !editingKey) return;
+  window.atualizarArtesBadge();
+  const r = rows.find(x => x.key === editingKey);
+  const artes = r?.artesFinais || [];
+  if(artes.length === 0) {
+    lista.innerHTML = '<div style="font-size:12px;color:var(--text3);font-style:italic;text-align:center;padding:14px 0">Nenhuma arte adicionada ainda. Cole o link de cima e clique em "+ Adicionar arte".</div>';
+    return;
+  }
+  lista.innerHTML = artes.map((a, idx) => {
+    const host = detectarHostArte(a.link);
+    const ehPrincipal = idx === 0;
+    return `<div style="background:var(--surface);border:.5px solid ${ehPrincipal?'#FCA5E8':'var(--border2)'};border-left:4px solid ${ehPrincipal?'#ff40b3':host.cor};border-radius:var(--radius);padding:12px 14px;display:flex;gap:10px;align-items:flex-start">
+      <div style="flex-shrink:0;font-size:22px;line-height:1">${host.icone}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap">
+          <span style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace">Arte ${idx+1}</span>
+          <span style="font-size:10px;padding:1px 7px;border-radius:99px;background:${ehPrincipal?'#FDF2F8':'var(--surface2)'};color:${ehPrincipal?'#9F1239':'var(--text2)'};font-weight:600">${ehPrincipal?'⭐ Principal':host.nome}</span>
+          ${a.desc?`<span style="font-size:11px;color:var(--text)">${escapeHtml(a.desc)}</span>`:''}
+        </div>
+        <a href="${a.link}" target="_blank" rel="noopener" style="font-size:12px;color:var(--nibo2);text-decoration:none;word-break:break-all;display:block;font-weight:500">${a.link}</a>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;font-family:'DM Mono',monospace">por ${escapeHtml(a.author||'—')} · ${escapeHtml(a.ts||'')}</div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0">
+        <a href="${a.link}" target="_blank" rel="noopener" title="Abrir arte" style="width:26px;height:26px;border-radius:50%;background:var(--surface2);color:var(--text2);text-decoration:none;display:flex;align-items:center;justify-content:center;font-size:12px">↗</a>
+        <button onclick="window.removerArte('${a.id}')" title="Remover arte" style="width:26px;height:26px;border-radius:50%;background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px">×</button>
+      </div>
+    </div>`;
+  }).join('');
+};
+
+// Atalho pra abrir arte direto do calendário
+window.abrirArtesPost = function(key, evt) {
+  const r = rows.find(x => x.key === key);
+  if(!r) return;
+  const artes = r.artesFinais || [];
+  if(artes.length === 0) return;
+  // Se tiver só 1, abre direto
+  if(artes.length === 1) {
+    window.open(artes[0].link, '_blank', 'noopener');
+    return;
+  }
+  // Se tiver várias, abre um menu flutuante
+  window.mostrarMenuArtes(key, evt);
+};
+
+// Menu flutuante com lista de artes (pra posts com várias)
+window.mostrarMenuArtes = function(key, evt) {
+  const r = rows.find(x => x.key === key);
+  if(!r) return;
+  const artes = r.artesFinais || [];
+  // Remove menu anterior se houver
+  document.getElementById('artes-menu-popover')?.remove();
+  const rect = evt.target.getBoundingClientRect();
+  const menu = document.createElement('div');
+  menu.id = 'artes-menu-popover';
+  menu.style.cssText = `position:fixed;top:${rect.bottom+6}px;left:${Math.max(8, rect.left-100)}px;
+    z-index:10000;background:var(--surface);border:.5px solid var(--border2);
+    border-radius:var(--radius);box-shadow:0 8px 32px rgba(0,45,114,.18);
+    padding:6px;min-width:260px;max-width:360px;font-family:'DM Sans',sans-serif`;
+  menu.innerHTML = `
+    <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:6px 10px 4px">🎨 ${artes.length} artes finais</div>
+    ${artes.map((a,idx) => {
+      const host = detectarHostArte(a.link);
+      return `<a href="${a.link}" target="_blank" rel="noopener" onclick="document.getElementById('artes-menu-popover')?.remove()" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;text-decoration:none;color:var(--text);font-size:12px;line-height:1.4" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
+        <span style="font-size:16px;flex-shrink:0">${host.icone}</span>
+        <span style="flex:1;min-width:0">
+          <div style="font-weight:600;${idx===0?'color:#9F1239':''}">${idx===0?'⭐ Principal':'Arte '+(idx+1)} <span style="font-weight:400;color:var(--text2);font-size:11px">· ${host.nome}</span></div>
+          ${a.desc?`<div style="font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(a.desc)}</div>`:''}
+        </span>
+        <span style="font-size:11px;color:var(--text3)">↗</span>
+      </a>`;
+    }).join('')}
+    <div style="border-top:.5px solid var(--border);margin-top:4px;padding-top:4px">
+      <button onclick="document.getElementById('artes-menu-popover').remove();window.openModal('${key}','artes')" style="width:100%;text-align:left;padding:6px 10px;border-radius:6px;border:none;background:transparent;font-size:11px;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">⚙ Gerenciar artes</button>
+    </div>
+  `;
+  document.body.appendChild(menu);
+  // Fecha ao clicar fora
+  setTimeout(() => {
+    const fechar = (e) => {
+      if(!menu.contains(e.target)) {
+        menu.remove();
+        document.removeEventListener('click', fechar);
+      }
+    };
+    document.addEventListener('click', fechar);
+  }, 50);
 };
 
 window.renderPostRefs = function() {
