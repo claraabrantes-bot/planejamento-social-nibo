@@ -3358,14 +3358,31 @@ function renderCalendar(){
           <option value="carrossel"${p.formato==='carrossel'?' selected':''}>Carrossel</option>
         </select>
         <span class="idea-cell${p.social?' filled':''}" onclick="window.openModal('${p.key}','social')" title="${(p.social||'').replace(/"/g,'&quot;')}${(p.postRefs||[]).length?` · ${(p.postRefs||[]).length} ref(s)`:''}">${sSnip}${(p.postRefs||[]).length?` <span style="font-size:9px;color:var(--nibo2);font-weight:700" onclick="event.stopPropagation();window.openModal('${p.key}','refs')" title="${(p.postRefs||[]).length} referência(s) vinculada(s)">🔗${(p.postRefs||[]).length}</span>`:''}</span>
-        <span class="idea-cell${p.design?' filled':''}" onclick="window.openModal('${p.key}','design')" title="${(p.design||'').replace(/"/g,'&quot;')}${(p.artesFinais||[]).length?` · ${(p.artesFinais||[]).length} arte(s)`:''}">${dSnip}${(p.artesFinais||[]).length?` <span style="font-size:10px;color:#fff;background:linear-gradient(135deg,#ff40b3,#7c3aed);font-weight:700;padding:2px 7px;border-radius:99px;cursor:pointer;display:inline-flex;align-items:center;gap:2px;margin-left:4px" onclick="event.stopPropagation();window.abrirArtesPost('${p.key}',event)" title="${(p.artesFinais||[]).length} arte(s) finais — clique pra abrir">🎨${(p.artesFinais||[]).length}</span>`:''}</span>
+        ${(() => {
+          const desTexto = (p.design||'').trim();
+          const ehLink = /^https?:\/\//i.test(desTexto);
+          const temArtes = (p.artesFinais||[]).length;
+          const badgeArtes = temArtes ? ` <span style="font-size:10px;color:#fff;background:linear-gradient(135deg,#ff40b3,#7c3aed);font-weight:700;padding:2px 7px;border-radius:99px;cursor:pointer;display:inline-flex;align-items:center;gap:2px;margin-left:4px" onclick="event.stopPropagation();window.abrirArtesPost('${p.key}',event)" title="${temArtes} arte(s) finais — clique pra abrir">🎨${temArtes}</span>` : '';
+          if (ehLink) {
+            // Pega primeira URL do texto (caso tenha múltiplas)
+            const url = desTexto.split(/\s+/)[0];
+            const titleAttr = `Abrir arte: ${url}`.replace(/"/g,'&quot;');
+            return `<div style="display:flex;align-items:center;gap:4px;min-width:0">
+              <a href="${url}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="${titleAttr}" style="flex:1;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:600;padding:5px 10px;border-radius:99px;background:#EFF6FF;color:var(--nibo1);text-decoration:none;border:.5px solid #93C5FD;transition:all .12s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" onmouseover="this.style.background='var(--nibo1)';this.style.color='#fff'" onmouseout="this.style.background='#EFF6FF';this.style.color='var(--nibo1)'">Abrir arte ↗</a>
+              <button onclick="window.openModal('${p.key}','design')" title="Ver/editar briefing" style="flex-shrink:0;width:22px;height:22px;border-radius:50%;border:.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-size:11px;display:inline-flex;align-items:center;justify-content:center" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">✏</button>
+              ${badgeArtes}
+            </div>`;
+          }
+          // Comportamento normal (texto)
+          return `<span class="idea-cell${p.design?' filled':''}" onclick="window.openModal('${p.key}','design')" title="${(p.design||'').replace(/"/g,'&quot;')}${temArtes?` · ${temArtes} arte(s)`:''}">${dSnip}${badgeArtes}</span>`;
+        })()}
         <div class="cor-selector">${corBtns}</div>
         <div class="status-cell" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
           ${(currentUserEmail()==='mariana.araujo@nibo.com.br'||currentUserEmail()==='clara.abrantes@nibo.com.br')
             ? `<span class="status-badge ${p.status||'pendente'}" onclick="window.cycleStatus('${p.key}')">${STATUS_LABEL[p.status||'pendente']}</span>`
             : `<span class="status-badge ${p.status||'pendente'}" style="cursor:default;pointer-events:none">${STATUS_LABEL[p.status||'pendente']}</span>`
           }
-          ${p.arteStatus==='pronto'?`<span title="Arte pronta pra revisão" style="font-size:10px;padding:1px 6px;border-radius:99px;background:#D1FAE5;color:#065F46;border:.5px solid #6EE7B7;font-weight:700">🎨 Pronta</span>`:''}
+          ${p.arteStatus==='pronto'?`<span title="Arte pronta pra revisão" style="font-size:10px;padding:1px 6px;border-radius:99px;background:#F3E8FF;color:#6D28D9;border:.5px solid #C4B5FD;font-weight:700">🎨 Pronta</span>`:''}
         </div>
         <div style="display:flex;align-items:center;gap:3px">
           ${(currentUserEmail()==='mariana.araujo@nibo.com.br'||currentUserEmail()==='clara.abrantes@nibo.com.br')
@@ -3503,38 +3520,47 @@ const DATAS_BASE = [
   {data:'2026-03-08', titulo:'Dia Internacional da Mulher', desc:'', tipo:'comemorativa'},
   {data:'2026-03-31', titulo:'DEFIS', desc:'Declaração de Informações Socioeconômicas e Fiscais (Simples Nacional)', tipo:'fiscal'},
   {data:'2026-04-22', titulo:'Dia do Contador (BR)', desc:'', tipo:'comemorativa'},
-  {data:'2026-04-30', titulo:'DCTFWeb Anual', desc:'Última data útil de abril', tipo:'fiscal'},
-  {data:'2026-05-29', titulo:'ECD', desc:'Escrituração Contábil Digital - prazo final', tipo:'fiscal'},
-  {data:'2026-05-29', titulo:'IRPF', desc:'Imposto de Renda Pessoa Física - prazo final', tipo:'fiscal'},
+  {data:'2026-04-30', titulo:'DCTFWeb Mensal (Abr)', desc:'Último dia útil', tipo:'fiscal'},
+  {data:'2026-05-29', titulo:'DIRPF 2026', desc:'Imposto de Renda Pessoa Física - prazo final', tipo:'fiscal'},
+  {data:'2026-05-29', titulo:'DCTFWeb Mensal (Mai)', desc:'Último dia útil de maio', tipo:'fiscal'},
+  {data:'2026-05-31', titulo:'DASN-SIMEI', desc:'Declaração Anual do MEI - ano-base 2025', tipo:'fiscal'},
   {data:'2026-05-25', titulo:'Dia da Indústria', desc:'', tipo:'comemorativa'},
   {data:'2026-06-12', titulo:'Dia dos Namorados', desc:'', tipo:'comemorativa'},
-  {data:'2026-07-31', titulo:'ECF', desc:'Escrituração Contábil Fiscal - prazo final', tipo:'fiscal'},
+  {data:'2026-06-30', titulo:'ECD 2026', desc:'Escrituração Contábil Digital (Lucro Real e Presumido) - ano-base 2025', tipo:'fiscal'},
+  {data:'2026-06-30', titulo:'DCTFWeb Mensal (Jun)', desc:'Último dia útil', tipo:'fiscal'},
+  {data:'2026-07-31', titulo:'ECF 2026', desc:'Escrituração Contábil Fiscal - prazo final', tipo:'fiscal'},
+  {data:'2026-07-31', titulo:'DCTFWeb Mensal (Jul)', desc:'Último dia útil', tipo:'fiscal'},
   {data:'2026-08-09', titulo:'Dia dos Pais', desc:'Segundo domingo de agosto', tipo:'comemorativa'},
+  {data:'2026-08-31', titulo:'DCTFWeb Mensal (Ago)', desc:'Último dia útil', tipo:'fiscal'},
   {data:'2026-09-25', titulo:'Dia do Trânsito', desc:'', tipo:'comemorativa'},
+  {data:'2026-09-30', titulo:'DCTFWeb Mensal (Set)', desc:'Último dia útil', tipo:'fiscal'},
   {data:'2026-10-12', titulo:'Dia das Crianças', desc:'', tipo:'comemorativa'},
   {data:'2026-10-28', titulo:'Dia do Funcionário Público', desc:'', tipo:'comemorativa'},
+  {data:'2026-10-30', titulo:'DCTFWeb Mensal (Out)', desc:'Último dia útil', tipo:'fiscal'},
   {data:'2026-11-15', titulo:'Proclamação da República', desc:'Feriado nacional', tipo:'comemorativa'},
   {data:'2026-11-27', titulo:'Black Friday', desc:'Última sexta de novembro', tipo:'campanha'},
-  {data:'2026-12-20', titulo:'DCTFWeb Anual do 13º', desc:'Prazo final', tipo:'fiscal'},
+  {data:'2026-11-30', titulo:'DCTFWeb Mensal (Nov)', desc:'Último dia útil', tipo:'fiscal'},
+  {data:'2026-12-20', titulo:'DCTFWeb Anual do 13º', desc:'Prazo final - confessar débitos do 13º salário', tipo:'fiscal'},
   {data:'2026-12-25', titulo:'Natal', desc:'', tipo:'comemorativa'},
+  {data:'2026-12-31', titulo:'DCTFWeb Mensal (Dez)', desc:'Último dia útil', tipo:'fiscal'},
 
   // 💡 OPORTUNIDADES DE CAMPANHA (ancoradas em datas fiscais reais)
   // Cada uma vira um POST quando você clicar em "Criar post"
   {
-    data:'2026-04-25', titulo:'Campanha pré-ECD — Nibo Obrigações',
-    desc:'~30 dias antes da ECD (29/05). Momento de ouro pra falar de robôs de leitura automática e Conferência.',
+    data:'2026-05-25', titulo:'Campanha pré-ECD — Nibo Obrigações',
+    desc:'~35 dias antes da ECD (30/06). Robôs de leitura automática + Conferência.',
     tipo:'oportunidade',
     produto:'obrigacoes', tipoPost:'produto',
-    briefingSugerido:'Mockup do Nibo Obrigações com destaque pra Conferência e Robôs de leitura automática. Texto da arte: "Faltam 30 dias pra ECD. Já tá em dia?" — fundo branco, navy nas bordas, badge "ECD 29/MAI" no canto.',
-    copySugerida:'Contador, a ECD chega em 30 dias e quem deixou pra última hora sabe o tamanho do problema. Os Robôs de leitura automática do Nibo Obrigações leem documentos, identificam cliente e obrigação em segundos, e te livram da conferência manual. Conheça no link da bio.'
+    briefingSugerido:'Mockup do Nibo Obrigações com destaque pra Conferência e Robôs de leitura automática. Texto da arte: "Faltam 35 dias pra ECD. Já tá em dia?" — fundo branco, navy nas bordas, badge "ECD 30/JUN" no canto.',
+    copySugerida:'Contador, a ECD chega em 35 dias e quem deixou pra última hora sabe o tamanho do problema. Sem ECD entregue, a ECF de julho não passa.\n\nOs Robôs de leitura automática do Nibo Obrigações leem documentos, identificam cliente e obrigação em segundos. Acesse no link da bio.'
   },
   {
     data:'2026-06-25', titulo:'Campanha pré-ECF — Nibo Obrigações',
-    desc:'~30 dias antes da ECF (31/07). Reforçar controle de prazo e Protocolos com rastreio.',
+    desc:'~35 dias antes da ECF (31/07). Reforçar Protocolos com rastreio.',
     tipo:'oportunidade',
     produto:'obrigacoes', tipoPost:'produto',
-    briefingSugerido:'Visual de calendário com a data ECF 31/07 destacada. Mostrar o painel de Protocolos do Nibo Obrigações lateral, com indicadores "quem recebeu, quem abriu". Texto da arte: "ECF em 30 dias. Você sabe quem do seu cliente ainda não abriu?"',
-    copySugerida:'Contador, a ECF de 31 de julho é a obrigação mais fiscalizada pela Receita. Com os Protocolos do Nibo Obrigações você sabe em tempo real quem recebeu, quem abriu e quem ainda não visualizou cada documento. Conheça no link da bio.'
+    briefingSugerido:'Visual de calendário com data ECF 31/07 destacada. Mostrar painel de Protocolos do Nibo Obrigações lateral, com indicadores "quem recebeu, quem abriu". Texto da arte: "ECF em 35 dias. Você sabe quem do seu cliente ainda não abriu?"',
+    copySugerida:'Contador, a ECF de 31 de julho é a obrigação mais fiscalizada pela Receita. Empresa do Lucro Real ou Presumido sem ECF transmitida vira pendência automática.\n\nCom os Protocolos do Nibo Obrigações você sabe em tempo real quem recebeu, quem abriu e quem ainda não visualizou cada documento. Acesse no link da bio.'
   },
   {
     data:'2026-04-15', titulo:'Campanha IRPF — Nibo BPO',
@@ -3568,6 +3594,62 @@ const DATAS_BASE = [
     briefingSugerido:'Carrossel 5-7 slides. Capa: "Pra quem ganhou o ano inteiro com prazos apertados." Slides celebrando o papel do contador + mostrando como o Nibo Obrigações ajuda. Tom respeitoso, sem ser piegas.',
     copySugerida:'SLIDE 1 — CAPA: Pra quem aguenta o ano todo com prazos apertados.\n---\nSLIDE 2 — CONTEXTO: Em 22/04 a gente celebra o Dia do Contador, mas a verdade é que esse profissional não escolhe um dia: ele é cobrado todo dia útil.\n---\nSLIDE 3 — PROBLEMA: ECD, ECF, DEFIS, eSocial, EFD-Reinf. A cadeia é longa e qualquer atraso na primeira etapa derruba todas as outras.\n---\nSLIDE 4 — SOLUÇÃO: O Nibo Obrigações Plus tem robôs de leitura automática, Caixa Postal integrada e Protocolos com rastreio em tempo real.\n---\nSLIDE 5 — CTA: Conheça o Nibo Obrigações no link da bio e tire pelo menos uma camada de pressão do seu escritório.'
   },
+
+  // ── DEFIS (31/03) ──
+  {
+    data:'2026-03-01', titulo:'Campanha pré-DEFIS — Nibo Obrigações',
+    desc:'~30 dias antes da DEFIS (31/03). Foco em escritórios contábeis que atendem Simples Nacional.',
+    tipo:'oportunidade',
+    produto:'obrigacoes', tipoPost:'produto',
+    briefingSugerido:'Mockup do Nibo Obrigações filtrando clientes do Simples Nacional. Mostrar lista de clientes com status DEFIS (verde=entregue, amarelo=pendente, vermelho=atrasado). Texto da arte: "31 dias até DEFIS. Quantos dos seus clientes ainda faltam?"',
+    copySugerida:'Contador, sua carteira de Simples Nacional precisa entregar a DEFIS até 31 de março. O Nibo Obrigações lista todos os seus clientes com o status de entrega em tempo real e dispara lembretes automáticos via Atendimento integrado.\n\nSem planilha, sem lista paralela, sem cliente esquecido. Acesse o link na bio.'
+  },
+  {
+    data:'2026-03-20', titulo:'Reta final DEFIS — Nibo Obrigações',
+    desc:'~10 dias antes da DEFIS. Urgência + Caixa Postal automatizada.',
+    tipo:'oportunidade',
+    produto:'obrigacoes', tipoPost:'produto',
+    briefingSugerido:'Contagem regressiva visual: "DEFIS em 10 dias". Foto/ilustração de contador organizado vs caótico. Destaque pra Caixa Postal automatizada do Nibo Obrigações.',
+    copySugerida:'Contador, em 10 dias o prazo da DEFIS encerra. Empresas que perderem o prazo entram em risco de exclusão do Simples Nacional.\n\nA Caixa Postal automatizada do Nibo Obrigações lê mensagens do e-CAC e cria tarefas em segundos. Você sabe exatamente o que ainda falta. Acesse no link da bio.'
+  },
+
+  // ── DASN-SIMEI (31/05) ──
+  {
+    data:'2026-04-30', titulo:'Campanha DASN-SIMEI — Nibo Obrigações',
+    desc:'~30 dias antes da DASN-SIMEI (31/05). Para escritórios com carteira MEI.',
+    tipo:'oportunidade',
+    produto:'obrigacoes', tipoPost:'produto',
+    briefingSugerido:'Visual focado em escritório com carteira de MEIs. Destacar volume de declarações + automação. Texto da arte: "Tem 200 MEIs na carteira? São 200 DASN. Não dá pra fazer no braço."',
+    copySugerida:'Contador, escritório com carteira MEI sabe: a DASN-SIMEI é o maior volume de declarações simples do ano — mas perder qualquer uma vira problema pro cliente.\n\nNo Nibo Obrigações você acompanha o status de cada MEI em uma única tela, com Comunicados em massa via Portal do Cliente. Acesse no link da bio.'
+  },
+
+  // ── DCTFWeb MENSAL ──
+  {
+    data:'2026-02-20', titulo:'Campanha DCTFWeb mensal — Nibo Obrigações',
+    desc:'~7 dias antes do último dia útil de fevereiro. Cadeia eSocial→Reinf→DCTFWeb.',
+    tipo:'oportunidade',
+    produto:'obrigacoes', tipoPost:'produto',
+    briefingSugerido:'Fluxograma simples: eSocial (dia 7) → EFD-Reinf (dia 15) → DCTFWeb (último dia útil). Mostrar como o Nibo Obrigações orquestra a sequência. Texto da arte: "Cadeia mensal. Um elo travado, todos param."',
+    copySugerida:'Contador, eSocial, EFD-Reinf e DCTFWeb formam uma cadeia: se um trava, todos param. Cruzamento automático entre os três = qualquer divergência vira passivo automático no e-CAC.\n\nO Nibo Obrigações organiza essa sequência mensal com Tarefas e processos com seguidores. Acesse no link da bio.'
+  },
+  {
+    data:'2026-08-22', titulo:'Campanha agosto tranquilo — Nibo BPO',
+    desc:'Período mais leve do calendário. Aproveitar pra prospectar BPO.',
+    tipo:'oportunidade',
+    produto:'bpo', tipoPost:'produto',
+    briefingSugerido:'Visual de empresário tranquilo enquanto painel do Nibo BPO mostra fluxo de pagamentos automático. Texto da arte: "Agosto trabalha por você."',
+    copySugerida:'BPO financeiro, agosto é o respiro do calendário fiscal. Mas é também quando seu cliente percebe quem realmente trabalhou por ele.\n\nO Nibo BPO automatiza Programação de pagamentos, Conciliação multi-cliente e Triagem de notas. Solicite uma demonstração no link da bio.'
+  },
+
+  // ── DCTFWeb 13º (20/12) ──
+  {
+    data:'2026-11-25', titulo:'Campanha DCTFWeb 13º — Nibo Obrigações',
+    desc:'~25 dias antes da DCTFWeb 13º (20/12). Especificidade do final do ano.',
+    tipo:'oportunidade',
+    produto:'obrigacoes', tipoPost:'produto',
+    briefingSugerido:'Visual com calendário dezembro destacando 20/12. Painel do Nibo Obrigações mostrando obrigação "DCTFWeb 13º" com cliente atribuído. Texto da arte: "DCTFWeb do 13º em 25 dias. Tá no seu controle?"',
+    copySugerida:'Contador, dezembro vem com a DCTFWeb específica do 13º salário em 20/12 — e ela tem regras próprias diferentes da mensal.\n\nNo Nibo Obrigações cada obrigação aparece com seu vencimento próprio, separada das mensais, com Tarefas e processos por cliente. Acesse no link da bio.'
+  },
 ];
 
 let datasImportantes = [];
@@ -3576,25 +3658,25 @@ let datasImportantes = [];
 onSnapshot(doc(db,'config','datas'), snap => {
   if(snap.exists() && Array.isArray(snap.data().list)) {
     datasImportantes = snap.data().list;
-    // ── MIGRAÇÃO: adicionar oportunidades novas que ainda não estão no Firebase ──
-    // Compara por título — se uma data da DATAS_BASE com tipo 'oportunidade' não existe,
-    // adiciona ao Firebase (só roda uma vez por sessão, e só pra oportunidades)
-    if(!localStorage.getItem('migr-oportunidades-v1')) {
+    // ── MIGRAÇÃO v2: adicionar oportunidades novas + corrigir prazos fiscais ──
+    if(!localStorage.getItem('migr-oportunidades-v2')) {
+      // Atualiza datas fiscais corrigidas (ECD pra 30/06, adiciona DASN, DCTFWeb mensais)
+      // E adiciona oportunidades de campanha novas
       const titulosExistentes = new Set(datasImportantes.map(d => d.titulo));
-      const novasOportunidades = DATAS_BASE
-        .filter(d => d.tipo === 'oportunidade' && !titulosExistentes.has(d.titulo))
-        .map((d, i) => ({...d, id: 'opp-base-' + Date.now() + '-' + i}));
-      if(novasOportunidades.length > 0) {
-        const atualizadas = [...datasImportantes, ...novasOportunidades];
+      // Adiciona quaisquer fiscais E oportunidades novas que estão na BASE mas não no Firebase
+      const novas = DATAS_BASE
+        .filter(d => !titulosExistentes.has(d.titulo))
+        .map((d, i) => ({...d, id: 'opp-base-v2-' + Date.now() + '-' + i}));
+      if(novas.length > 0) {
+        const atualizadas = [...datasImportantes, ...novas];
         setDoc(doc(db,'config','datas'), {list: atualizadas}, {merge: true})
           .then(() => {
-            localStorage.setItem('migr-oportunidades-v1', '1');
-            console.log(`✓ Adicionadas ${novasOportunidades.length} oportunidades à base de datas`);
+            localStorage.setItem('migr-oportunidades-v2', '1');
+            console.log(`✓ Migração v2: adicionadas ${novas.length} datas/oportunidades`);
           })
-          .catch(err => console.warn('Erro ao migrar oportunidades:', err));
+          .catch(err => console.warn('Erro ao migrar v2:', err));
       } else {
-        // Nenhuma oportunidade pra migrar — marca como feito
-        localStorage.setItem('migr-oportunidades-v1', '1');
+        localStorage.setItem('migr-oportunidades-v2', '1');
       }
     }
   } else {
