@@ -3576,6 +3576,27 @@ let datasImportantes = [];
 onSnapshot(doc(db,'config','datas'), snap => {
   if(snap.exists() && Array.isArray(snap.data().list)) {
     datasImportantes = snap.data().list;
+    // ── MIGRAÇÃO: adicionar oportunidades novas que ainda não estão no Firebase ──
+    // Compara por título — se uma data da DATAS_BASE com tipo 'oportunidade' não existe,
+    // adiciona ao Firebase (só roda uma vez por sessão, e só pra oportunidades)
+    if(!localStorage.getItem('migr-oportunidades-v1')) {
+      const titulosExistentes = new Set(datasImportantes.map(d => d.titulo));
+      const novasOportunidades = DATAS_BASE
+        .filter(d => d.tipo === 'oportunidade' && !titulosExistentes.has(d.titulo))
+        .map((d, i) => ({...d, id: 'opp-base-' + Date.now() + '-' + i}));
+      if(novasOportunidades.length > 0) {
+        const atualizadas = [...datasImportantes, ...novasOportunidades];
+        setDoc(doc(db,'config','datas'), {list: atualizadas}, {merge: true})
+          .then(() => {
+            localStorage.setItem('migr-oportunidades-v1', '1');
+            console.log(`✓ Adicionadas ${novasOportunidades.length} oportunidades à base de datas`);
+          })
+          .catch(err => console.warn('Erro ao migrar oportunidades:', err));
+      } else {
+        // Nenhuma oportunidade pra migrar — marca como feito
+        localStorage.setItem('migr-oportunidades-v1', '1');
+      }
+    }
   } else {
     // Primeira vez: salva a base
     datasImportantes = [...DATAS_BASE].map((d, i) => ({...d, id: 'data-base-' + i}));
@@ -3887,10 +3908,15 @@ window.welcomeCalClicarDia = function(dia) {
 window.renderDatasWelcome = function() {
   const lista = document.getElementById('welcome-datas-lista');
   if(!lista) return;
-  const futuras = datasImportantes
+  const todasFuturas = datasImportantes
     .filter(d => diasAteData(d.data) >= 0)
-    .sort((a,b) => a.data.localeCompare(b.data))
-    .slice(0,5);
+    .sort((a,b) => a.data.localeCompare(b.data));
+  // Garantir que oportunidades apareçam: pega até 3 próximas oportunidades + completar com outras
+  const oportunidades = todasFuturas.filter(d => d.tipo === 'oportunidade').slice(0, 3);
+  const oppIds = new Set(oportunidades.map(o => o.id));
+  const outras = todasFuturas.filter(d => !oppIds.has(d.id)).slice(0, 5);
+  // Junta e ordena por data novamente
+  const futuras = [...oportunidades, ...outras].sort((a,b) => a.data.localeCompare(b.data));
   if(futuras.length === 0) {
     lista.innerHTML = '<div style="font-size:12px;color:var(--text3);font-style:italic;text-align:center;padding:18px;background:var(--surface);border-radius:var(--radius);border:.5px dashed var(--border)">Nenhuma data cadastrada. Clique em "⚙ Gerenciar" pra adicionar.</div>';
     return;
