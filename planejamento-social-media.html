@@ -866,6 +866,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="welcome-card-sub">Painel de demandas pendentes e aprovações do mês</div>
     </div>
   </div>
+
+  <!-- Bloco de datas importantes -->
+  <div id="welcome-datas" style="max-width:860px;width:100%;margin-top:32px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:'DM Mono',monospace">📆 Próximas datas importantes</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">Datas fiscais e comemorativas pra o radar do conteúdo</div>
+      </div>
+      <button onclick="window.abrirGerenciadorDatas()" style="font-size:11px;padding:6px 14px;border-radius:99px;border:.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif">⚙ Gerenciar</button>
+    </div>
+    <div id="welcome-datas-lista" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
 </div>
 
 <div id="page-calendario" class="page">
@@ -1436,6 +1448,59 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="document.getElementById('modal-postar').classList.remove('open')">Cancelar</button>
       <button class="btn btn-primary" onclick="window.copiarEAbrirBusinessSuite()">📋 Copiar e abrir Business Suite</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GERENCIAR DATAS IMPORTANTES -->
+<div class="modal-overlay" id="modal-datas">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-head">
+      <h3>📆 Datas importantes</h3>
+      <p>Datas fiscais e comemorativas para guiar o planejamento. Adicione, edite ou remova à vontade.</p>
+    </div>
+    <div class="modal-body" style="padding:1rem 1.4rem">
+      <!-- Formulário pra adicionar -->
+      <div style="background:var(--surface2);border-radius:var(--radius);padding:12px;margin-bottom:14px">
+        <div style="display:grid;grid-template-columns:90px 1fr 100px;gap:8px;margin-bottom:6px">
+          <input id="data-input" type="date" style="font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;outline:none;background:var(--bg);color:var(--text)" />
+          <input id="data-titulo" type="text" placeholder="Título (ex: ECD, Dia do Contador)" style="font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;outline:none;background:var(--bg);color:var(--text)" />
+          <select id="data-tipo" style="font-size:12px;padding:8px 10px;border-radius:var(--radius);border:.5px solid var(--border2);background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif">
+            <option value="fiscal">⚖ Fiscal</option>
+            <option value="comemorativa">🎉 Comemorativa</option>
+            <option value="campanha">📣 Campanha</option>
+            <option value="outro">📌 Outro</option>
+          </select>
+        </div>
+        <input id="data-desc" type="text" placeholder="Descrição opcional (ex: Escrituração Contábil Digital)" style="width:100%;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;outline:none;background:var(--bg);color:var(--text);margin-bottom:6px" />
+        <div style="display:flex;justify-content:flex-end">
+          <button class="btn btn-primary" onclick="window.adicionarData()" style="font-size:12px;padding:6px 14px">+ Adicionar data</button>
+        </div>
+      </div>
+
+      <!-- Filtro -->
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+        <span style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em">Mostrar:</span>
+        <select id="data-filtro-tipo" onchange="window.renderDatasModal()" style="font-size:11px;padding:4px 10px;border-radius:99px;border:.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif">
+          <option value="">Todas</option>
+          <option value="fiscal">⚖ Fiscais</option>
+          <option value="comemorativa">🎉 Comemorativas</option>
+          <option value="campanha">📣 Campanhas</option>
+          <option value="outro">📌 Outras</option>
+        </select>
+        <select id="data-filtro-tempo" onchange="window.renderDatasModal()" style="font-size:11px;padding:4px 10px;border-radius:99px;border:.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif">
+          <option value="futuras">Próximas</option>
+          <option value="todas">Todas (inclusive passadas)</option>
+          <option value="mes">Este mês</option>
+          <option value="passadas">Já passaram</option>
+        </select>
+        <span id="datas-count" style="font-size:11px;color:var(--text3);margin-left:auto"></span>
+      </div>
+
+      <div id="datas-lista-modal" style="display:flex;flex-direction:column;gap:6px;max-height:46vh;overflow-y:auto"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-datas').classList.remove('open')">Fechar</button>
     </div>
   </div>
 </div>
@@ -3372,6 +3437,277 @@ window.switchMTab=function(tab){
 window.closeModal=function(){document.getElementById('modal').classList.remove('open');editingKey=null;}
 
 // Copiar link permalink do post atual
+// ══════════════════════════════════════════════════════════
+// DATAS IMPORTANTES (fiscais + comemorativas) + LEMBRETES
+// ══════════════════════════════════════════════════════════
+
+// Base inicial de datas (carregada uma vez se Firestore estiver vazio)
+const DATAS_BASE = [
+  // FISCAIS 2026
+  {data:'2026-01-31', titulo:'Opção Simples Nacional/SIMEI', desc:'Prazo final para opção pelo Simples Nacional ou SIMEI', tipo:'fiscal'},
+  {data:'2026-02-27', titulo:'Carnaval', desc:'Feriado nacional', tipo:'comemorativa'},
+  {data:'2026-03-08', titulo:'Dia Internacional da Mulher', desc:'', tipo:'comemorativa'},
+  {data:'2026-03-31', titulo:'DEFIS', desc:'Declaração de Informações Socioeconômicas e Fiscais (Simples Nacional)', tipo:'fiscal'},
+  {data:'2026-04-22', titulo:'Dia do Contador (BR)', desc:'', tipo:'comemorativa'},
+  {data:'2026-04-30', titulo:'DCTFWeb Anual', desc:'Última data útil de abril', tipo:'fiscal'},
+  {data:'2026-05-29', titulo:'ECD', desc:'Escrituração Contábil Digital - prazo final', tipo:'fiscal'},
+  {data:'2026-05-29', titulo:'IRPF', desc:'Imposto de Renda Pessoa Física - prazo final', tipo:'fiscal'},
+  {data:'2026-05-25', titulo:'Dia da Indústria', desc:'', tipo:'comemorativa'},
+  {data:'2026-06-12', titulo:'Dia dos Namorados', desc:'', tipo:'comemorativa'},
+  {data:'2026-07-31', titulo:'ECF', desc:'Escrituração Contábil Fiscal - prazo final', tipo:'fiscal'},
+  {data:'2026-08-09', titulo:'Dia dos Pais', desc:'Segundo domingo de agosto', tipo:'comemorativa'},
+  {data:'2026-09-25', titulo:'Dia do Trânsito', desc:'', tipo:'comemorativa'},
+  {data:'2026-10-12', titulo:'Dia das Crianças', desc:'', tipo:'comemorativa'},
+  {data:'2026-10-28', titulo:'Dia do Funcionário Público', desc:'', tipo:'comemorativa'},
+  {data:'2026-11-15', titulo:'Proclamação da República', desc:'Feriado nacional', tipo:'comemorativa'},
+  {data:'2026-11-27', titulo:'Black Friday', desc:'Última sexta de novembro', tipo:'campanha'},
+  {data:'2026-12-20', titulo:'DCTFWeb Anual do 13º', desc:'Prazo final', tipo:'fiscal'},
+  {data:'2026-12-25', titulo:'Natal', desc:'', tipo:'comemorativa'},
+  // RECORRÊNCIAS MENSAIS (apenas adiciona pra cada mês como referência - será gerado dinamicamente)
+];
+
+let datasImportantes = [];
+
+// Listener Firestore pra datas
+onSnapshot(doc(db,'config','datas'), snap => {
+  if(snap.exists() && Array.isArray(snap.data().list)) {
+    datasImportantes = snap.data().list;
+  } else {
+    // Primeira vez: salva a base
+    datasImportantes = [...DATAS_BASE].map((d, i) => ({...d, id: 'data-base-' + i}));
+    setDoc(doc(db,'config','datas'), {list: datasImportantes}, {merge: true})
+      .catch(err => console.warn('Erro ao salvar base de datas:', err));
+  }
+  // Re-render do card welcome
+  window.renderDatasWelcome && window.renderDatasWelcome();
+  // Re-render do modal se aberto
+  if(document.getElementById('modal-datas')?.classList.contains('open')) window.renderDatasModal();
+});
+
+window.abrirGerenciadorDatas = function() {
+  document.getElementById('modal-datas').classList.add('open');
+  window.renderDatasModal();
+};
+
+window.adicionarData = async function() {
+  const data = document.getElementById('data-input').value;
+  const titulo = document.getElementById('data-titulo').value.trim();
+  const desc = document.getElementById('data-desc').value.trim();
+  const tipo = document.getElementById('data-tipo').value;
+  if(!data || !titulo) { alert('Preencha a data e o título.'); return; }
+  const nova = {id: 'data-' + Date.now(), data, titulo, desc, tipo};
+  const novas = [...datasImportantes, nova];
+  await setDoc(doc(db,'config','datas'), {list: novas}, {merge: true});
+  document.getElementById('data-input').value = '';
+  document.getElementById('data-titulo').value = '';
+  document.getElementById('data-desc').value = '';
+};
+
+window.removerData = async function(id) {
+  if(!confirm('Remover esta data?')) return;
+  const novas = datasImportantes.filter(d => d.id !== id);
+  await setDoc(doc(db,'config','datas'), {list: novas}, {merge: true});
+};
+
+function tipoBadge(tipo) {
+  const m = {
+    fiscal:       {label:'⚖ Fiscal',       bg:'#FEF3C7', color:'#92400E', border:'#FDE68A'},
+    comemorativa: {label:'🎉 Comemorativa', bg:'#FCE7F3', color:'#9F1239', border:'#FBCFE8'},
+    campanha:     {label:'📣 Campanha',     bg:'#DBEAFE', color:'#1D4ED8', border:'#93C5FD'},
+    outro:        {label:'📌 Outro',        bg:'#F3F4F6', color:'#374151', border:'#E5E7EB'},
+  };
+  return m[tipo] || m.outro;
+}
+
+function diasAteData(dataStr) {
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const d = new Date(dataStr+'T00:00:00');
+  return Math.round((d - hoje) / (1000*60*60*24));
+}
+
+function formatarDataPt(dataStr) {
+  const d = new Date(dataStr+'T00:00:00');
+  const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  return `${String(d.getDate()).padStart(2,'0')} ${meses[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// Card no welcome — mostra próximas 5 datas
+window.renderDatasWelcome = function() {
+  const lista = document.getElementById('welcome-datas-lista');
+  if(!lista) return;
+  const futuras = datasImportantes
+    .filter(d => diasAteData(d.data) >= 0)
+    .sort((a,b) => a.data.localeCompare(b.data))
+    .slice(0,5);
+  if(futuras.length === 0) {
+    lista.innerHTML = '<div style="font-size:12px;color:var(--text3);font-style:italic;text-align:center;padding:18px;background:var(--surface);border-radius:var(--radius);border:.5px dashed var(--border)">Nenhuma data cadastrada. Clique em "⚙ Gerenciar" pra adicionar.</div>';
+    return;
+  }
+  lista.innerHTML = futuras.map(d => {
+    const dias = diasAteData(d.data);
+    const t = tipoBadge(d.tipo);
+    let badge;
+    if(dias === 0) badge = '<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:#FEE2E2;color:#991B1B;font-weight:700">HOJE</span>';
+    else if(dias === 1) badge = '<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:#FEE2E2;color:#991B1B;font-weight:700">amanhã</span>';
+    else if(dias <= 7) badge = `<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:#FEF3C7;color:#92400E;font-weight:700">em ${dias} dias</span>`;
+    else if(dias <= 30) badge = `<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:#F3F4F6;color:#6B7280;font-weight:600">em ${dias} dias</span>`;
+    else badge = `<span style="font-size:10px;padding:2px 8px;border-radius:99px;background:#F3F4F6;color:#9CA3AF;font-weight:500">em ${dias} dias</span>`;
+    return `<div style="background:var(--surface);border:.5px solid var(--border);border-left:4px solid ${t.color};border-radius:var(--radius);padding:10px 14px;display:flex;align-items:center;gap:14px">
+      <div style="text-align:center;flex-shrink:0;min-width:62px">
+        <div style="font-size:18px;font-weight:700;color:var(--text);line-height:1;font-family:'DM Mono',monospace">${String(new Date(d.data+'T00:00:00').getDate()).padStart(2,'0')}</div>
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">${['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'][new Date(d.data+'T00:00:00').getMonth()]}</div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;flex-wrap:wrap">
+          <span style="font-size:13px;font-weight:600;color:var(--text)">${escapeHtml(d.titulo)}</span>
+          <span style="font-size:9px;padding:1px 7px;border-radius:99px;background:${t.bg};color:${t.color};border:.5px solid ${t.border};font-weight:600">${t.label}</span>
+        </div>
+        ${d.desc?`<div style="font-size:11px;color:var(--text2);line-height:1.4">${escapeHtml(d.desc)}</div>`:''}
+      </div>
+      <div style="flex-shrink:0">${badge}</div>
+    </div>`;
+  }).join('');
+};
+
+// Lista completa do modal
+window.renderDatasModal = function() {
+  const lista = document.getElementById('datas-lista-modal');
+  if(!lista) return;
+  const fTipo  = document.getElementById('data-filtro-tipo').value;
+  const fTempo = document.getElementById('data-filtro-tempo').value;
+  let filtradas = [...datasImportantes];
+  if(fTipo) filtradas = filtradas.filter(d => d.tipo === fTipo);
+  if(fTempo === 'futuras') filtradas = filtradas.filter(d => diasAteData(d.data) >= 0);
+  else if(fTempo === 'passadas') filtradas = filtradas.filter(d => diasAteData(d.data) < 0);
+  else if(fTempo === 'mes') {
+    const hoje = new Date();
+    filtradas = filtradas.filter(d => {
+      const dt = new Date(d.data+'T00:00:00');
+      return dt.getFullYear()===hoje.getFullYear() && dt.getMonth()===hoje.getMonth();
+    });
+  }
+  filtradas.sort((a,b) => a.data.localeCompare(b.data));
+  document.getElementById('datas-count').textContent = `${filtradas.length} data(s)`;
+  if(filtradas.length === 0) {
+    lista.innerHTML = '<div style="font-size:12px;color:var(--text3);font-style:italic;text-align:center;padding:18px">Nenhuma data com este filtro.</div>';
+    return;
+  }
+  lista.innerHTML = filtradas.map(d => {
+    const t = tipoBadge(d.tipo);
+    const dias = diasAteData(d.data);
+    const corDias = dias < 0 ? 'var(--text3)' : (dias <= 7 ? '#991B1B' : (dias <= 30 ? '#92400E' : 'var(--text3)'));
+    return `<div style="background:var(--surface2);border-radius:6px;padding:8px 12px;display:flex;align-items:center;gap:10px">
+      <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text);font-weight:600;min-width:90px;flex-shrink:0">${formatarDataPt(d.data)}</div>
+      <span style="font-size:9px;padding:1px 7px;border-radius:99px;background:${t.bg};color:${t.color};border:.5px solid ${t.border};font-weight:600;flex-shrink:0">${t.label}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;color:var(--text)">${escapeHtml(d.titulo)}</div>
+        ${d.desc?`<div style="font-size:11px;color:var(--text2)">${escapeHtml(d.desc)}</div>`:''}
+      </div>
+      <span style="font-size:10px;color:${corDias};font-weight:600;font-family:'DM Mono',monospace;flex-shrink:0">${dias < 0 ? 'há '+Math.abs(dias)+'d' : (dias === 0 ? 'HOJE' : 'em '+dias+'d')}</span>
+      <button onclick="window.removerData('${d.id}')" title="Remover" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;flex-shrink:0">×</button>
+    </div>`;
+  }).join('');
+};
+
+// ══════════════════════════════════════════════════════════
+// LEMBRETES 3X AO DIA (10h, 14h, 18h)
+// Mostra pop-up quando tem post pra hoje sem marcar como postado
+// ══════════════════════════════════════════════════════════
+
+const HORARIOS_LEMBRETE = [10, 14, 18];
+
+function postsHojeNaoPostados() {
+  const hoje = new Date();
+  const dd = String(hoje.getDate()).padStart(2,'0');
+  const mm = String(hoje.getMonth()+1).padStart(2,'0');
+  const dataStr = `${dd}/${mm}`;
+  return rows.filter(r =>
+    r.y === hoje.getFullYear() &&
+    r.m === hoje.getMonth() &&
+    r.date === dataStr &&
+    r.pubStatus !== 'postado' &&
+    !r.isSat
+  );
+}
+
+function checarLembrete() {
+  if(currentUserEmail() !== 'clara.abrantes@nibo.com.br') return; // só pra Clara
+  const agora = new Date();
+  const hora = agora.getHours();
+  // Verifica se a hora atual é uma das janelas (com tolerância de até 30 minutos pra dentro da hora)
+  const janelaAtual = HORARIOS_LEMBRETE.find(h => hora === h);
+  if(janelaAtual === undefined) return;
+
+  // Chave única por dia + janela pra não disparar várias vezes na mesma janela
+  const chave = `lembrete-${agora.toDateString()}-${janelaAtual}h`;
+  if(localStorage.getItem(chave)) return;
+
+  // Verifica se tem posts pendentes pra hoje
+  const pendentes = postsHojeNaoPostados();
+  if(pendentes.length === 0) {
+    // Mesmo sem pendentes, marca como visto pra não rechecar essa janela
+    localStorage.setItem(chave, '1');
+    return;
+  }
+
+  // Marca como disparado e mostra
+  localStorage.setItem(chave, '1');
+  mostrarPopupLembrete(pendentes);
+}
+
+function mostrarPopupLembrete(posts) {
+  // Tenta notificação nativa do SO (se permitido)
+  if('Notification' in window && Notification.permission === 'granted') {
+    try {
+      new Notification('📅 Post de hoje', {
+        body: posts.length === 1
+          ? `Você tem 1 post pra publicar: ${posts[0].social?.slice(0,60) || posts[0].date}`
+          : `Você tem ${posts.length} posts pra publicar hoje`,
+        icon: '/favicon.ico',
+        tag: 'lembrete-post-hoje',
+      });
+    } catch(_){}
+  }
+
+  // Pop-up in-page (toast grande, fica até fechar)
+  const existing = document.getElementById('lembrete-popup');
+  if(existing) existing.remove();
+  const pop = document.createElement('div');
+  pop.id = 'lembrete-popup';
+  pop.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:10001;max-width:380px;
+    background:#fff;border:.5px solid var(--border);border-radius:14px;
+    box-shadow:0 16px 40px rgba(0,45,114,.22);padding:18px 20px;
+    font-family:'DM Sans',sans-serif;animation:slideInToast .35s ease-out`;
+  const lista = posts.slice(0,5).map(p => {
+    const tipo = (TIPOS.find(t => t.id === p.tipoId) || TIPOS[0]).name;
+    const snippet = (p.social || p.design || '').slice(0,80);
+    return `<div onclick="document.getElementById('lembrete-popup').remove();window.openModal('${p.key}','social')" style="padding:8px 10px;background:var(--surface2);border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:12px;line-height:1.4" onmouseover="this.style.background='#EFF6FF'" onmouseout="this.style.background='var(--surface2)'">
+      <div style="font-weight:600;color:var(--text)">${p.date} · ${tipo}</div>
+      ${snippet?`<div style="color:var(--text2);font-size:11px;margin-top:2px">${escapeHtml(snippet)}${snippet.length>=80?'...':''}</div>`:''}
+    </div>`;
+  }).join('');
+  pop.innerHTML = `
+    <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:10px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:#ff40b3;text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace">⏰ Lembrete</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-top:2px">${posts.length === 1 ? 'Você tem 1 post pra postar hoje' : `Você tem ${posts.length} posts pra postar hoje`}</div>
+      </div>
+      <button onclick="document.getElementById('lembrete-popup').remove()" title="Fechar" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;padding:0;margin-left:8px">×</button>
+    </div>
+    ${lista}
+    ${posts.length > 5 ? `<div style="font-size:11px;color:var(--text3);text-align:center;margin-top:4px">+ ${posts.length-5} outros posts</div>` : ''}
+    <div style="display:flex;gap:6px;margin-top:12px">
+      <button onclick="document.getElementById('lembrete-popup').remove()" style="flex:1;font-size:12px;padding:8px 14px;border-radius:99px;border:.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif">Depois</button>
+      <button onclick="document.getElementById('lembrete-popup').remove();switchMainTab('social');setTimeout(()=>{const sub=document.getElementById('stab-calendario');if(sub&&!sub.classList.contains('active'))sub.click();},80)" style="flex:1;font-size:12px;padding:8px 14px;border-radius:99px;border:none;background:linear-gradient(135deg,#ff40b3,#7c3aed);color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600">Ver calendário</button>
+    </div>
+  `;
+  document.body.appendChild(pop);
+}
+
+// Checa ao carregar o app e a cada 5 min (pega janelas no minuto certo)
+setTimeout(() => checarLembrete(), 4000); // espera 4s pra rows e auth carregarem
+setInterval(() => checarLembrete(), 5 * 60 * 1000); // a cada 5min
+
 window.copiarLinkPost = async function() {
   if(!editingKey) return;
   // Monta URL atual + parâmetro ?post=KEY
