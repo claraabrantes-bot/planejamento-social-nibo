@@ -823,6 +823,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <!-- SUB-ABAS SOCIAL MEDIA -->
 <nav class="page-tabs" id="subtabs-social" style="display:none">
   <button class="page-tab active" id="stab-calendario" onclick="showPage('calendario',this)">Calendário</button>
+  <button class="page-tab" id="stab-grid-visual" onclick="showPage('grid-visual',this)">🗓 Grid Visual</button>
   <button class="page-tab" id="stab-ia" onclick="showPage('ia',this)">IA Criativa</button>
 </nav>
 
@@ -1042,6 +1043,40 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
   </div>
   <div class="grid-legend">💡 <b>Arraste</b> para reordenar · <b>Clique</b> na imagem para opções · Novos posts aparecem no <b>topo esquerdo</b></div>
+</div>
+
+<!-- ══ GRID VISUAL (calendário estilo Meta) ══ -->
+<div id="page-grid-visual" class="page">
+  <!-- Header: navegação mês + legenda + botão criar -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <button onclick="window.gridVisualNavegarMes(-1)" title="Mês anterior" style="width:32px;height:32px;border-radius:99px;border:.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:16px">‹</button>
+      <span id="grid-visual-titulo" style="font-size:18px;font-weight:700;color:var(--text);min-width:160px;text-align:center;font-family:'DM Sans',sans-serif"></span>
+      <button onclick="window.gridVisualNavegarMes(1)" title="Próximo mês" style="width:32px;height:32px;border-radius:99px;border:.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:16px">›</button>
+      <button onclick="window.gridVisualIrHoje()" style="margin-left:8px;font-size:11px;padding:6px 14px;border-radius:99px;border:.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif">Hoje</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <select id="grid-visual-filter" onchange="window.renderGridVisual()" style="font-size:12px;padding:6px 12px;border-radius:99px;border:.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif">
+        <option value="">Todos os posts</option>
+        <option value="pendente">⏳ Pendentes</option>
+        <option value="aprovado">✓ Aprovados</option>
+        <option value="postado">✅ Postados</option>
+        <option value="atrasado">⚠ Atrasados</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Legenda -->
+  <div style="display:flex;align-items:center;gap:14px;font-size:10px;color:var(--text3);margin-bottom:10px;flex-wrap:wrap">
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:#F3F4F6;border:.5px solid #E5E7EB"></span> Sem post</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:#DBEAFE;border:.5px solid #93C5FD"></span> Pendente Maris</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:#D1FAE5;border:.5px solid #6EE7B7"></span> Postado</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:#FEE2E2;border:.5px solid #FCA5A5"></span> Atrasado</span>
+    <span style="display:flex;align-items:center;gap:4px;margin-left:auto;color:var(--text3);font-style:italic">Clique num dia vazio pra criar post · Arraste posts entre dias</span>
+  </div>
+
+  <!-- Grid do calendário -->
+  <div id="grid-visual-container" style="background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);overflow:hidden"></div>
 </div>
 
 <!-- ══ IA CRIATIVA ══ -->
@@ -1922,6 +1957,8 @@ onSnapshot(collection(db,'rows'), snap=>{
   if(document.getElementById('page-fila')?.classList.contains('active')) window.renderFila && window.renderFila();
   // Re-render do calendário visual no Início
   window.renderWelcomeCalendario && window.renderWelcomeCalendario();
+  // Re-render do grid visual se estiver visível
+  if(document.getElementById('page-grid-visual')?.classList.contains('active')) window.renderGridVisual && window.renderGridVisual();
   // Tenta resolver deep-link (?post=KEY) após carregar rows
   setTimeout(() => window.tryResolveDeepLink && window.tryResolveDeepLink(), 100);
   // ── MIGRAÇÃO ÚNICA: remover post 20/05/2026 ──
@@ -2328,6 +2365,7 @@ window.showPage=function(id,btn){
   if(id==='grid'){renderGridTabs();renderGrid();}
   if(id==='refs') window.renderRefs();
   if(id==='fila') window.renderFila();
+  if(id==='grid-visual') window.renderGridVisual && window.renderGridVisual();
   if(id==='midia-produto') window.renderMidiaProduto();
   if(id==='email-produto') window.renderEmailProduto();
 }
@@ -3841,6 +3879,251 @@ window.welcomeCalNavegarMes = function(delta) {
   if(welcomeCalMes < 0) { welcomeCalMes = 11; welcomeCalAno--; }
   else if(welcomeCalMes > 11) { welcomeCalMes = 0; welcomeCalAno++; }
   window.renderWelcomeCalendario();
+};
+
+// ══════════════════════════════════════════════════════════
+// GRID VISUAL — calendário estilo Meta com cards de posts
+// ══════════════════════════════════════════════════════════
+let gvAno = new Date().getFullYear();
+let gvMes = new Date().getMonth();
+
+window.gridVisualNavegarMes = function(delta) {
+  gvMes += delta;
+  if(gvMes < 0) { gvMes = 11; gvAno--; }
+  else if(gvMes > 11) { gvMes = 0; gvAno++; }
+  window.renderGridVisual();
+};
+
+window.gridVisualIrHoje = function() {
+  gvAno = new Date().getFullYear();
+  gvMes = new Date().getMonth();
+  window.renderGridVisual();
+};
+
+// Cores por tipo de post
+function corDoTipoPost(tipoId) {
+  const t = TIPOS.find(x => x.id === tipoId);
+  return t?.color || 'var(--nibo1)';
+}
+
+// Cor de fundo do post no grid conforme status
+function corDoPostNoGrid(p) {
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const dataPost = parseDataPost(p);
+  const ehAtrasado = dataPost && dataPost < hoje && p.pubStatus !== 'postado';
+  if(p.pubStatus === 'postado')     return {bg:'#D1FAE5', border:'#6EE7B7', text:'#065F46'};
+  if(ehAtrasado)                     return {bg:'#FEE2E2', border:'#FCA5A5', text:'#991B1B'};
+  if(p.status === 'aprovado')        return {bg:'#DBEAFE', border:'#93C5FD', text:'#1D4ED8'};
+  if(p.status === 'reprovado')       return {bg:'#FEF3C7', border:'#FCD34D', text:'#92400E'};
+  return {bg:'#F3F4F6', border:'#E5E7EB', text:'#4B5563'};
+}
+
+window.renderGridVisual = function() {
+  const container = document.getElementById('grid-visual-container');
+  const titulo    = document.getElementById('grid-visual-titulo');
+  if(!container || !titulo) return;
+
+  const MESES_NOMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const DIAS_SEM = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  titulo.textContent = `${MESES_NOMES[gvMes]} ${gvAno}`;
+
+  // Filtro
+  const filtro = document.getElementById('grid-visual-filter')?.value || '';
+
+  // Posts do mês indexados por dia
+  const postsDoMes = rows.filter(r => r.y === gvAno && r.m === gvMes && !r.isSat);
+  const postsPorDia = {};
+  postsDoMes.forEach(r => {
+    if(!r.date || !r.date.includes('/')) return;
+    const dia = parseInt(r.date.split('/')[0]);
+    if(isNaN(dia) || dia < 1 || dia > 31) return;
+    // Aplicar filtro
+    if(filtro === 'pendente' && r.status !== 'pendente' && r.status) return;
+    if(filtro === 'aprovado' && r.status !== 'aprovado') return;
+    if(filtro === 'postado'  && r.pubStatus !== 'postado') return;
+    if(filtro === 'atrasado') {
+      const hoje = new Date(); hoje.setHours(0,0,0,0);
+      const dt = parseDataPost(r);
+      if(!(dt && dt < hoje && r.pubStatus !== 'postado')) return;
+    }
+    if(!postsPorDia[dia]) postsPorDia[dia] = [];
+    postsPorDia[dia].push(r);
+  });
+
+  // Datas importantes do mês
+  const datasPorDia = {};
+  datasImportantes.forEach(d => {
+    const dt = new Date(d.data+'T00:00:00');
+    if(dt.getFullYear() === gvAno && dt.getMonth() === gvMes) {
+      const dia = dt.getDate();
+      if(!datasPorDia[dia]) datasPorDia[dia] = [];
+      datasPorDia[dia].push(d);
+    }
+  });
+
+  const hoje = new Date();
+  hoje.setHours(0,0,0,0);
+  const primeiroDia = new Date(gvAno, gvMes, 1);
+  const ultimoDia = new Date(gvAno, gvMes+1, 0).getDate();
+  const dowPrimeiro = primeiroDia.getDay();
+
+  // Cabeçalho
+  let html = '<div style="display:grid;grid-template-columns:repeat(7,1fr);background:var(--surface2);border-bottom:.5px solid var(--border)">';
+  DIAS_SEM.forEach(d => {
+    html += `<div style="padding:10px;text-align:center;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace">${d}</div>`;
+  });
+  html += '</div>';
+
+  html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);min-height:100px">';
+
+  // Espaços vazios antes do primeiro dia
+  for(let i = 0; i < dowPrimeiro; i++) {
+    html += '<div style="min-height:130px;background:#FAFBFD;border-right:.5px solid var(--border);border-bottom:.5px solid var(--border)"></div>';
+  }
+
+  for(let dia = 1; dia <= ultimoDia; dia++) {
+    const dtCelula = new Date(gvAno, gvMes, dia);
+    const dowCelula = dtCelula.getDay();
+    const ehFimSemana = (dowCelula === 0 || dowCelula === 6);
+    const ehHoje = dtCelula.getTime() === hoje.getTime();
+    const ps = postsPorDia[dia] || [];
+    const ds = datasPorDia[dia] || [];
+    const bgCelula = ehHoje ? '#FFFBEB' : (ehFimSemana ? '#FAFBFD' : '#fff');
+    const badgeHoje = ehHoje ? ' <span style="font-size:8px;background:var(--nibo1);color:#fff;padding:1px 5px;border-radius:99px;font-weight:700;font-family:sans-serif;vertical-align:middle;margin-left:3px">hoje</span>' : '';
+
+    html += `<div class="gv-cell" data-dia="${dia}"
+      onclick="if(event.target.classList.contains('gv-cell')||event.target.classList.contains('gv-cell-header')||event.target.classList.contains('gv-cell-add'))window.gridVisualCriarPost(${dia})"
+      ondragover="window.gvDragOver(event)"
+      ondragleave="window.gvDragLeave(event)"
+      ondrop="window.gvDrop(event,${dia})"
+      style="min-height:130px;background:${bgCelula};border-right:.5px solid var(--border);border-bottom:.5px solid var(--border);position:relative;padding:6px;cursor:pointer;display:flex;flex-direction:column;gap:3px${ehHoje?';box-shadow:inset 0 0 0 2px var(--nibo1)':''}">
+      <div class="gv-cell-header" style="display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:${ehHoje?'700':'600'};color:${ehHoje?'var(--nibo1)':'var(--text)'};font-family:'DM Mono',monospace;pointer-events:none">
+        <span>${String(dia).padStart(2,'0')}${badgeHoje}</span>
+        ${ps.length===0 && !ehFimSemana ? '<span class="gv-cell-add" style="font-size:14px;color:var(--text3);opacity:0;transition:opacity .15s;pointer-events:none">+</span>' : ''}
+      </div>
+      ${ds.length > 0 ? ds.slice(0,1).map(d => `<div style="font-size:9px;font-weight:600;color:#9F1239;background:#FCE7F3;padding:2px 5px;border-radius:4px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none" title="${escapeHtml(d.titulo)}">📌 ${escapeHtml(d.titulo)}</div>`).join('') : ''}
+      ${ps.map(p => {
+        const tipo = TIPOS.find(t => t.id === p.tipoId) || TIPOS[0];
+        const produtoLabel = (NIBO_PRODUTO_OPTS.find(([v]) => v === p.produto) || [,''])[1];
+        const cor = corDoPostNoGrid(p);
+        const corTipo = corDoTipoPost(p.tipoId);
+        const snip = (p.social || '').slice(0,42);
+        const temArte = p.arteStatus === 'pronto';
+        return `<div draggable="true"
+          ondragstart="window.gvDragStart(event,'${p.key}')"
+          ondragend="window.gvDragEnd(event)"
+          onclick="event.stopPropagation();window.openModal('${p.key}','social')"
+          title="${(p.social||'').replace(/"/g,'&quot;').slice(0,120)}"
+          style="background:${cor.bg};border:.5px solid ${cor.border};border-left:3px solid ${corTipo};border-radius:4px;padding:4px 6px;cursor:grab;font-size:10px;color:${cor.text};line-height:1.35;position:relative;transition:all .12s" 
+          onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 8px rgba(0,45,114,.15)'"
+          onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+          <div style="display:flex;align-items:center;gap:3px;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:.04em">
+            <span>${tipo.name}</span>
+            ${p.pubStatus === 'postado' ? '<span style="margin-left:auto">✓</span>' : (p.pubStatus === 'agendado' ? '<span style="margin-left:auto">📅</span>' : '')}
+            ${temArte ? '<span title="Arte pronta">🎨</span>' : ''}
+          </div>
+          ${produtoLabel ? `<div style="font-size:9px;color:${cor.text};opacity:.75;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(produtoLabel)}</div>` : ''}
+          ${snip ? `<div style="font-size:10px;color:${cor.text};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px">${escapeHtml(snip)}${p.social && p.social.length>42?'…':''}</div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  // Preencher últimos espaços
+  const totalCels = dowPrimeiro + ultimoDia;
+  const sobra = (7 - (totalCels % 7)) % 7;
+  for(let i = 0; i < sobra; i++) {
+    html += '<div style="min-height:130px;background:#FAFBFD;border-right:.5px solid var(--border);border-bottom:.5px solid var(--border)"></div>';
+  }
+  html += '</div>';
+
+  // Adiciona hover CSS pro "+"
+  html += `<style>.gv-cell:hover .gv-cell-add{opacity:.6!important}</style>`;
+
+  container.innerHTML = html;
+};
+
+// ── DRAG & DROP no Grid Visual ──
+let gvDraggingKey = null;
+window.gvDragStart = function(evt, key) {
+  gvDraggingKey = key;
+  evt.dataTransfer.effectAllowed = 'move';
+  evt.dataTransfer.setData('text/plain', key);
+  setTimeout(() => evt.target.style.opacity = '0.4', 0);
+};
+window.gvDragEnd = function(evt) {
+  evt.target.style.opacity = '1';
+  gvDraggingKey = null;
+  document.querySelectorAll('.gv-cell').forEach(c => c.style.background = c.dataset.origBg || '');
+};
+window.gvDragOver = function(evt) {
+  evt.preventDefault();
+  evt.dataTransfer.dropEffect = 'move';
+  const cell = evt.currentTarget;
+  if(!cell.dataset.origBg) cell.dataset.origBg = cell.style.background;
+  cell.style.background = '#FEF3C7';
+};
+window.gvDragLeave = function(evt) {
+  const cell = evt.currentTarget;
+  if(cell.dataset.origBg !== undefined) cell.style.background = cell.dataset.origBg;
+};
+window.gvDrop = async function(evt, novoDia) {
+  evt.preventDefault();
+  const cell = evt.currentTarget;
+  if(cell.dataset.origBg !== undefined) cell.style.background = cell.dataset.origBg;
+  if(!gvDraggingKey) return;
+  const r = rows.find(x => x.key === gvDraggingKey);
+  if(!r) return;
+  // Nova data
+  const novaDate = `${String(novoDia).padStart(2,'0')}/${String(gvMes+1).padStart(2,'0')}`;
+  if(r.date === novaDate) return; // não mudou
+  const { week, di } = calcularSemanaEDia(gvAno, gvMes, novoDia);
+  const idxMes = months.findIndex(mo => mo.y === gvAno && mo.m === gvMes);
+  const novoOrder = (idxMes >= 0 ? idxMes : 0)*1000 + novoDia*10 + di;
+  await saveRow(gvDraggingKey, {date: novaDate, week, di, order: novoOrder});
+  gvDraggingKey = null;
+};
+
+// ── CRIAR POST clicando num dia vazio ──
+window.gridVisualCriarPost = async function(dia) {
+  // Determina tipo default pelo dia da semana (segue lógica dos TIPOS)
+  const dt = new Date(gvAno, gvMes, dia);
+  const dow = dt.getDay();
+  let tipoId = 'produto';
+  if(dow === 1) tipoId = 'produto';
+  else if(dow === 2) tipoId = 'editorial';
+  else if(dow === 3) tipoId = 'webinar';
+  else if(dow === 4) tipoId = 'depoimento';
+  else if(dow === 5) tipoId = 'curiosidade';
+
+  // Garante que o mês está na lista de months
+  const idxMes = months.findIndex(mo => mo.y === gvAno && mo.m === gvMes);
+  if(idxMes < 0) {
+    const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    if(!confirm(`O mês ${MESES[gvMes]}/${gvAno} não está no calendário. Adicionar?`)) return;
+    const novosMonths = [...months, {y:gvAno, m:gvMes}].sort((a,b) => a.y!==b.y ? a.y-b.y : a.m-b.m);
+    await setDoc(doc(db,'config','months'), {list: novosMonths}, {merge: true});
+    await new Promise(r => setTimeout(r, 500));
+  }
+  const idxMesFinal = months.findIndex(mo => mo.y === gvAno && mo.m === gvMes);
+  const { week, di } = calcularSemanaEDia(gvAno, gvMes, dia);
+  const key = 'gv-' + Date.now();
+  const dataStr = `${String(dia).padStart(2,'0')}/${String(gvMes+1).padStart(2,'0')}`;
+  const novaRow = {
+    key, y:gvAno, m:gvMes,
+    week, di,
+    date: dataStr,
+    tipoId,
+    corIdx: 0,
+    status: 'pendente',
+    social: '', design: '', legenda: '', marisObs: '',
+    isTrial: false, isSat: false,
+    produto: '',
+    order: (idxMesFinal >= 0 ? idxMesFinal : 0)*1000 + dia*10 + di,
+  };
+  await setDoc(doc(db,'rows',key), novaRow);
+  // Abre modal pra editar
+  setTimeout(() => window.openModal(key, 'social'), 400);
 };
 
 window.renderWelcomeCalendario = function() {
