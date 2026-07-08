@@ -4018,7 +4018,7 @@ window.renderGridVisual = function() {
           onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 8px rgba(0,45,114,.15)'"
           onmouseout="this.style.transform='none';this.style.boxShadow='none'">
           <div style="display:flex;align-items:center;gap:3px;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:.04em">
-            <span>${tipo.name}</span>
+            <span onclick="event.stopPropagation();window.gvAbrirMenuTipo('${p.key}',event)" title="Clique pra trocar o tipo" style="cursor:pointer;padding:1px 4px;border-radius:3px;transition:background .12s" onmouseover="this.style.background='rgba(0,0,0,.08)'" onmouseout="this.style.background='transparent'">${tipo.name}</span>
             ${p.pubStatus === 'postado' ? '<span style="margin-left:auto">✓</span>' : (p.pubStatus === 'agendado' ? '<span style="margin-left:auto">📅</span>' : '')}
             ${temArte ? '<span title="Arte pronta">🎨</span>' : ''}
           </div>
@@ -4085,6 +4085,50 @@ window.gvDrop = async function(evt, novoDia) {
 };
 
 // ── CRIAR POST clicando num dia vazio ──
+// Menu flutuante pra trocar o tipo de post rapidamente
+window.gvAbrirMenuTipo = function(key, evt) {
+  document.getElementById('gv-menu-tipo-popover')?.remove();
+  const r = rows.find(x => x.key === key);
+  if(!r) return;
+  const rect = evt.target.getBoundingClientRect();
+  const menu = document.createElement('div');
+  menu.id = 'gv-menu-tipo-popover';
+  const top = rect.bottom + 4;
+  const left = Math.max(8, Math.min(rect.left, window.innerWidth - 200));
+  menu.style.cssText = `position:fixed;top:${top}px;left:${left}px;z-index:10000;
+    background:var(--surface);border:.5px solid var(--border2);border-radius:var(--radius);
+    box-shadow:0 8px 32px rgba(0,45,114,.18);padding:6px;min-width:180px;
+    font-family:'DM Sans',sans-serif`;
+  menu.innerHTML = `
+    <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:6px 10px 4px">Trocar tipo</div>
+    ${TIPOS.map(t => {
+      const ativo = t.id === r.tipoId;
+      return `<button onclick="window.gvSelecionarTipo('${key}','${t.id}')" style="width:100%;display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;border:none;background:${ativo?'var(--surface2)':'transparent'};cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);text-align:left" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='${ativo?'var(--surface2)':'transparent'}'">
+        <span style="width:12px;height:12px;border-radius:50%;background:${t.color};flex-shrink:0"></span>
+        <span style="flex:1;font-weight:${ativo?'700':'500'}">${t.name}</span>
+        ${ativo?'<span style="font-size:11px;color:var(--nibo2)">✓</span>':''}
+      </button>`;
+    }).join('')}
+  `;
+  document.body.appendChild(menu);
+  setTimeout(() => {
+    const fechar = (e) => {
+      if(!menu.contains(e.target)) {
+        menu.remove();
+        document.removeEventListener('click', fechar);
+      }
+    };
+    document.addEventListener('click', fechar);
+  }, 50);
+};
+
+window.gvSelecionarTipo = async function(key, novoTipoId) {
+  document.getElementById('gv-menu-tipo-popover')?.remove();
+  const r = rows.find(x => x.key === key);
+  if(!r || r.tipoId === novoTipoId) return;
+  await saveRow(key, {tipoId: novoTipoId});
+};
+
 window.gridVisualCriarPost = async function(dia) {
   // Determina tipo default pelo dia da semana (segue lógica dos TIPOS)
   const dt = new Date(gvAno, gvMes, dia);
