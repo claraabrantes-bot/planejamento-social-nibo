@@ -131,10 +131,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .post-row.trial:hover{background:#FFFBEB}
 
 /* Estados de publicação na linha inteira */
-.post-row.pub-postado{background:#F0FDF4}
-.post-row.pub-postado:hover{background:#DCFCE7}
-.post-row.pub-atrasado{background:#FEF2F2}
-.post-row.pub-atrasado:hover{background:#FEE2E2}
+.post-row.pub-postado{background:#DCFCE7;box-shadow:inset 4px 0 0 #16A34A}
+.post-row.pub-postado:hover{background:#BBF7D0}
+.post-row.pub-postado .idea-cell,
+.post-row.pub-postado .post-date-input{opacity:.72}
+.post-row.pub-atrasado{background:#FEE2E2;box-shadow:inset 4px 0 0 #DC2626}
+.post-row.pub-atrasado:hover{background:#FECACA}
 
 /* Indicador de cor: barra lateral grossa na esquerda + fundo super sutil */
 .post-row[data-cor]{position:relative;padding-left:18px}
