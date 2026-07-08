@@ -3968,17 +3968,17 @@ window.renderGridVisual = function() {
   const dowPrimeiro = primeiroDia.getDay();
 
   // Cabeçalho
-  let html = '<div style="display:grid;grid-template-columns:repeat(7,1fr);background:var(--surface2);border-bottom:.5px solid var(--border)">';
+  let html = '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:var(--surface2);border-bottom:.5px solid var(--border)">';
   DIAS_SEM.forEach(d => {
-    html += `<div style="padding:10px;text-align:center;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace">${d}</div>`;
+    html += `<div style="padding:10px;text-align:center;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace;box-sizing:border-box;min-width:0">${d}</div>`;
   });
   html += '</div>';
 
-  html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);min-height:100px">';
+  html += '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));min-height:100px">';
 
   // Espaços vazios antes do primeiro dia
   for(let i = 0; i < dowPrimeiro; i++) {
-    html += '<div style="min-height:130px;background:#FAFBFD;border-right:.5px solid var(--border);border-bottom:.5px solid var(--border)"></div>';
+    html += '<div style="min-height:130px;background:#FAFBFD;border-right:.5px solid var(--border);border-bottom:.5px solid var(--border);box-sizing:border-box;min-width:0;overflow:hidden"></div>';
   }
 
   for(let dia = 1; dia <= ultimoDia; dia++) {
@@ -3988,7 +3988,7 @@ window.renderGridVisual = function() {
     const ehHoje = dtCelula.getTime() === hoje.getTime();
     const ps = postsPorDia[dia] || [];
     const ds = datasPorDia[dia] || [];
-    const bgCelula = ehHoje ? '#FFFBEB' : (ehFimSemana ? '#FAFBFD' : '#fff');
+    const bgCelula = ehHoje ? '#EFF6FF' : (ehFimSemana ? '#FAFBFD' : '#fff');
     const badgeHoje = ehHoje ? ' <span style="font-size:8px;background:var(--nibo1);color:#fff;padding:1px 5px;border-radius:99px;font-weight:700;font-family:sans-serif;vertical-align:middle;margin-left:3px">hoje</span>' : '';
 
     html += `<div class="gv-cell" data-dia="${dia}"
@@ -3996,7 +3996,7 @@ window.renderGridVisual = function() {
       ondragover="window.gvDragOver(event)"
       ondragleave="window.gvDragLeave(event)"
       ondrop="window.gvDrop(event,${dia})"
-      style="min-height:130px;background:${bgCelula};border-right:.5px solid var(--border);border-bottom:.5px solid var(--border);position:relative;padding:6px;cursor:pointer;display:flex;flex-direction:column;gap:3px${ehHoje?';box-shadow:inset 0 0 0 2px var(--nibo1)':''}">
+      style="min-height:130px;background:${bgCelula};border-right:.5px solid var(--border);border-bottom:.5px solid var(--border);position:relative;padding:6px;cursor:pointer;display:flex;flex-direction:column;gap:3px;box-sizing:border-box;min-width:0;overflow:hidden${ehHoje?';box-shadow:inset 0 0 0 2px var(--nibo2)':''}">
       <div class="gv-cell-header" style="display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:${ehHoje?'700':'600'};color:${ehHoje?'var(--nibo1)':'var(--text)'};font-family:'DM Mono',monospace;pointer-events:none">
         <span>${String(dia).padStart(2,'0')}${badgeHoje}</span>
         ${ps.length===0 && !ehFimSemana ? '<span class="gv-cell-add" style="font-size:14px;color:var(--text3);opacity:0;transition:opacity .15s;pointer-events:none">+</span>' : ''}
@@ -4033,7 +4033,7 @@ window.renderGridVisual = function() {
   const totalCels = dowPrimeiro + ultimoDia;
   const sobra = (7 - (totalCels % 7)) % 7;
   for(let i = 0; i < sobra; i++) {
-    html += '<div style="min-height:130px;background:#FAFBFD;border-right:.5px solid var(--border);border-bottom:.5px solid var(--border)"></div>';
+    html += '<div style="min-height:130px;background:#FAFBFD;border-right:.5px solid var(--border);border-bottom:.5px solid var(--border);box-sizing:border-box;min-width:0;overflow:hidden"></div>';
   }
   html += '</div>';
 
