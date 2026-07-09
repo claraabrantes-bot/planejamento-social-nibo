@@ -3462,7 +3462,10 @@ function renderCalendar(){
             ? `<span class="status-badge ${p.status||'pendente'}" onclick="window.cycleStatus('${p.key}')">${STATUS_LABEL[p.status||'pendente']}</span>`
             : `<span class="status-badge ${p.status||'pendente'}" style="cursor:default;pointer-events:none">${STATUS_LABEL[p.status||'pendente']}</span>`
           }
-          ${p.arteStatus==='pronto'?`<span title="Arte pronta pra revisão" style="font-size:10px;padding:1px 6px;border-radius:99px;background:#F3E8FF;color:#6D28D9;border:.5px solid #C4B5FD;font-weight:700">🎨 Pronta</span>`:''}
+          ${p.arteStatus==='pronto'
+            ? `<span onclick="window.marcarArteStatus('${p.key}','pendente')" title="Clique pra desmarcar (arte volta pra pendente)" style="cursor:pointer;font-size:10px;padding:1px 6px;border-radius:99px;background:#F3E8FF;color:#6D28D9;border:.5px solid #C4B5FD;font-weight:700;transition:opacity .12s" onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'">🎨 Pronta</span>`
+            : `<span onclick="window.marcarArteStatus('${p.key}','pronto')" title="Marcar arte como pronta pra revisão" style="cursor:pointer;font-size:10px;padding:1px 6px;border-radius:99px;background:transparent;color:var(--text3);border:.5px dashed var(--border2);font-weight:600;transition:all .12s" onmouseover="this.style.background='#F3E8FF';this.style.color='#6D28D9';this.style.borderColor='#C4B5FD';this.style.borderStyle='solid'" onmouseout="this.style.background='transparent';this.style.color='var(--text3)';this.style.borderColor='var(--border2)';this.style.borderStyle='dashed'">🎨 marcar pronta</span>`
+          }
         </div>
         <div style="display:flex;align-items:center;gap:3px">
           ${(currentUserEmail()==='mariana.araujo@nibo.com.br'||currentUserEmail()==='clara.abrantes@nibo.com.br')
