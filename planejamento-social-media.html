@@ -4088,7 +4088,10 @@ window.renderGridVisual = function() {
               ${temArtesFinais ? `<span onclick="event.stopPropagation();window.abrirArtesPost('${p.key}',event)" title="Abrir arte final (${artesFinais.length})" style="cursor:pointer;background:linear-gradient(135deg,#ff40b3,#7c3aed);color:#fff;font-weight:700;padding:1px 5px;border-radius:99px;font-size:8px;display:inline-flex;align-items:center;gap:2px;transition:transform .12s" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">↗${artesFinais.length>1?artesFinais.length:''}</span>` : ''}
             </span>
           </div>
-          ${produtoLabel ? `<div style="font-size:9px;color:${cor.text};opacity:.75;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(produtoLabel)}</div>` : ''}
+          <div onclick="event.stopPropagation();window.gvAbrirMenuProduto('${p.key}',event)" title="${produtoLabel?'Trocar produto':'Escolher produto'}" style="cursor:pointer;padding:1px 4px;border-radius:3px;transition:background .12s;font-size:9px;color:${cor.text};opacity:${produtoLabel?'.75':'.5'};font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:2px" onmouseover="this.style.background='rgba(0,0,0,.06)'" onmouseout="this.style.background='transparent'">
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${produtoLabel ? escapeHtml(produtoLabel) : '+ produto'}</span>
+            <span style="opacity:.5;font-size:8px;flex-shrink:0">▾</span>
+          </div>
           ${snip ? `<div style="font-size:10px;color:${cor.text};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px">${escapeHtml(snip)}${p.social && p.social.length>42?'…':''}</div>` : ''}
         </div>`;
       }).join('')}
@@ -4269,6 +4272,51 @@ window.gvSelecionarTipo = async function(key, novoTipoId) {
   const r = rows.find(x => x.key === key);
   if(!r || r.tipoId === novoTipoId) return;
   await saveRow(key, {tipoId: novoTipoId});
+};
+
+// Menu flutuante pra trocar/escolher produto Nibo
+window.gvAbrirMenuProduto = function(key, evt) {
+  document.getElementById('gv-menu-produto-popover')?.remove();
+  const r = rows.find(x => x.key === key);
+  if(!r) return;
+  const rect = evt.currentTarget.getBoundingClientRect();
+  const menu = document.createElement('div');
+  menu.id = 'gv-menu-produto-popover';
+  const top = rect.bottom + 4;
+  const left = Math.max(8, Math.min(rect.left, window.innerWidth - 220));
+  menu.style.cssText = `position:fixed;top:${top}px;left:${left}px;z-index:10000;
+    background:var(--surface);border:.5px solid var(--border2);border-radius:var(--radius);
+    box-shadow:0 8px 32px rgba(0,45,114,.18);padding:6px;min-width:200px;max-height:340px;overflow-y:auto;
+    font-family:'DM Sans',sans-serif`;
+  const opcoes = [['', '— Sem produto —'], ...NIBO_PRODUTO_OPTS];
+  menu.innerHTML = `
+    <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:6px 10px 4px">Produto Nibo</div>
+    ${opcoes.map(([v, label]) => {
+      const ativo = (r.produto || '') === v;
+      return `<button onclick="window.gvSelecionarProduto('${key}','${v}')" style="width:100%;display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;border:none;background:${ativo?'var(--surface2)':'transparent'};cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;color:${v?'var(--text)':'var(--text3)'};text-align:left" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='${ativo?'var(--surface2)':'transparent'}'">
+        <span style="flex:1;font-weight:${ativo?'700':'500'}">${escapeHtml(label)}</span>
+        ${ativo?'<span style="font-size:11px;color:var(--nibo2)">✓</span>':''}
+      </button>`;
+    }).join('')}
+  `;
+  document.body.appendChild(menu);
+  setTimeout(() => {
+    const fechar = (e) => {
+      if(!menu.contains(e.target)) {
+        menu.remove();
+        document.removeEventListener('click', fechar);
+      }
+    };
+    document.addEventListener('click', fechar);
+  }, 50);
+};
+
+window.gvSelecionarProduto = async function(key, produto) {
+  document.getElementById('gv-menu-produto-popover')?.remove();
+  const r = rows.find(x => x.key === key);
+  if(!r) return;
+  if((r.produto || '') === produto) return;
+  await saveRow(key, {produto});
 };
 
 window.gvExcluirPost = async function(key) {
