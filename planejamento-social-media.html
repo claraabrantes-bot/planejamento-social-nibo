@@ -4067,7 +4067,7 @@ window.renderGridVisual = function() {
         const tipo = TIPOS.find(t => t.id === p.tipoId) || TIPOS[0];
         const produtoLabel = (NIBO_PRODUTO_OPTS.find(([v]) => v === p.produto) || [,''])[1];
         const cor = corDoPostNoGrid(p);
-        const corTipo = corDoTipoPost(p.tipoId);
+        const corTipo = p.corCustom || corDoTipoPost(p.tipoId);
         const snip = (p.social || '').slice(0,42);
         const temArte = p.arteStatus === 'pronto';
         const artesFinais = p.artesFinais || [];
@@ -4240,6 +4240,13 @@ window.gvAbrirMenuTipo = function(key, evt) {
       </button>`;
     }).join('')}
     <div style="border-top:.5px solid var(--border);margin:6px 0 4px"></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text)">
+      <span style="width:12px;height:12px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center">🎨</span>
+      <span style="flex:1">Cor específica</span>
+      <input type="color" value="${r.corCustom || corDoTipoPost(r.tipoId)}" onchange="window.gvDefinirCorCustom('${key}',this.value)" title="Cor específica deste post" style="width:26px;height:26px;padding:0;border:.5px solid var(--border2);border-radius:6px;cursor:pointer;background:transparent" />
+      ${r.corCustom ? `<button onclick="window.gvLimparCorCustom('${key}')" title="Voltar pra cor do tipo" style="width:22px;height:22px;border-radius:50%;border:.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-size:11px;display:inline-flex;align-items:center;justify-content:center" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">↺</button>` : ''}
+    </div>
+    <div style="border-top:.5px solid var(--border);margin:6px 0 4px"></div>
     <button onclick="window.gvExcluirPost('${key}')" style="width:100%;display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;border:none;background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;color:#DC2626;text-align:left" onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='transparent'">
       <span style="width:12px;height:12px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center">🗑</span>
       <span style="flex:1">Excluir post</span>
@@ -4267,6 +4274,19 @@ window.gvSelecionarTipo = async function(key, novoTipoId) {
 window.gvExcluirPost = async function(key) {
   document.getElementById('gv-menu-tipo-popover')?.remove();
   await window.deleteRow(key);
+};
+
+window.gvDefinirCorCustom = async function(key, cor) {
+  const r = rows.find(x => x.key === key);
+  if(!r) return;
+  await saveRow(key, {corCustom: cor});
+  // Reabre o menu pra refletir estado (com botão ↺)
+  document.getElementById('gv-menu-tipo-popover')?.remove();
+};
+
+window.gvLimparCorCustom = async function(key) {
+  await saveRow(key, {corCustom: ''});
+  document.getElementById('gv-menu-tipo-popover')?.remove();
 };
 
 window.gridVisualCriarPost = async function(dia) {
