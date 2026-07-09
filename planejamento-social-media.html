@@ -4230,7 +4230,7 @@ window.gvAbrirMenuTipo = function(key, evt) {
   // Cria escondido primeiro pra medir depois
   menu.style.cssText = `position:fixed;top:-9999px;left:${left}px;z-index:10000;
     background:var(--surface);border:.5px solid var(--border2);border-radius:var(--radius);
-    box-shadow:0 8px 32px rgba(0,45,114,.18);padding:6px;min-width:180px;
+    box-shadow:0 8px 32px rgba(0,45,114,.18);padding:6px;min-width:200px;
     max-height:calc(100vh - 40px);overflow-y:auto;
     font-family:'DM Sans',sans-serif`;
   menu.innerHTML = `
@@ -4244,11 +4244,30 @@ window.gvAbrirMenuTipo = function(key, evt) {
       </button>`;
     }).join('')}
     <div style="border-top:.5px solid var(--border);margin:6px 0 4px"></div>
-    <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text)">
-      <span style="width:12px;height:12px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center">🎨</span>
-      <span style="flex:1">Cor específica</span>
-      <input type="color" value="${r.corCustom || corDoTipoPost(r.tipoId)}" onchange="window.gvDefinirCorCustom('${key}',this.value)" title="Cor específica deste post" style="width:26px;height:26px;padding:0;border:.5px solid var(--border2);border-radius:6px;cursor:pointer;background:transparent" />
-      ${r.corCustom ? `<button onclick="window.gvLimparCorCustom('${key}')" title="Voltar pra cor do tipo" style="width:22px;height:22px;border-radius:50%;border:.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-size:11px;display:inline-flex;align-items:center;justify-content:center" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">↺</button>` : ''}
+    <div style="padding:6px 10px 4px;font-family:'DM Sans',sans-serif">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:flex;align-items:center;gap:6px">
+        <span>🎨 Cor da barra lateral</span>
+        ${r.corCustom ? `<button onclick="window.gvLimparCorCustom('${key}')" title="Voltar pra cor do tipo" style="margin-left:auto;font-size:10px;padding:2px 8px;border-radius:99px;border:.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-family:'DM Sans',sans-serif">↺ Cor do tipo</button>` : ''}
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;padding-bottom:4px">
+        ${[
+          {cor:'#002d72', nome:'Navy Nibo'},
+          {cor:'#0072ce', nome:'Azul Nibo'},
+          {cor:'#41b6e6', nome:'Azul claro'},
+          {cor:'#185FA5', nome:'Azul médio'},
+          {cor:'#7b96c2', nome:'Azul acinzentado'},
+          {cor:'#FFE800', nome:'Amarelo Nibo'},
+          {cor:'#ff40b3', nome:'Rosa Nibo'},
+          {cor:'#7c3aed', nome:'Roxo'},
+          {cor:'#16A34A', nome:'Verde'},
+          {cor:'#DC2626', nome:'Vermelho'},
+          {cor:'#F97316', nome:'Laranja'},
+          {cor:'#6B7280', nome:'Cinza'},
+        ].map(c => {
+          const ativo = (r.corCustom || '').toLowerCase() === c.cor.toLowerCase();
+          return `<button onclick="window.gvDefinirCorCustom('${key}','${c.cor}')" title="${c.nome}" style="width:22px;height:22px;border-radius:50%;background:${c.cor};cursor:pointer;border:${ativo?'2px solid var(--text)':'.5px solid rgba(0,0,0,.15)'};padding:0;transition:transform .12s;box-shadow:${ativo?'0 0 0 2px var(--surface),0 0 0 3px var(--text)':'0 1px 2px rgba(0,0,0,.08)'}" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></button>`;
+        }).join('')}
+      </div>
     </div>
     <div style="border-top:.5px solid var(--border);margin:6px 0 4px"></div>
     <button onclick="window.gvExcluirPost('${key}')" style="width:100%;display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;border:none;background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;color:#DC2626;text-align:left" onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='transparent'">
