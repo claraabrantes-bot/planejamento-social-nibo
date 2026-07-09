@@ -4226,11 +4226,12 @@ window.gvAbrirMenuTipo = function(key, evt) {
   const rect = evt.target.getBoundingClientRect();
   const menu = document.createElement('div');
   menu.id = 'gv-menu-tipo-popover';
-  const top = rect.bottom + 4;
   const left = Math.max(8, Math.min(rect.left, window.innerWidth - 200));
-  menu.style.cssText = `position:fixed;top:${top}px;left:${left}px;z-index:10000;
+  // Cria escondido primeiro pra medir depois
+  menu.style.cssText = `position:fixed;top:-9999px;left:${left}px;z-index:10000;
     background:var(--surface);border:.5px solid var(--border2);border-radius:var(--radius);
     box-shadow:0 8px 32px rgba(0,45,114,.18);padding:6px;min-width:180px;
+    max-height:calc(100vh - 40px);overflow-y:auto;
     font-family:'DM Sans',sans-serif`;
   menu.innerHTML = `
     <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:6px 10px 4px">Trocar tipo</div>
@@ -4256,6 +4257,24 @@ window.gvAbrirMenuTipo = function(key, evt) {
     </button>
   `;
   document.body.appendChild(menu);
+  // Posicionamento inteligente: embaixo se cabe, senão em cima
+  const menuH = menu.offsetHeight;
+  const espacoBaixo = window.innerHeight - rect.bottom - 12;
+  const espacoCima = rect.top - 12;
+  if (menuH <= espacoBaixo) {
+    menu.style.top = (rect.bottom + 4) + 'px';
+  } else if (menuH <= espacoCima) {
+    menu.style.top = (rect.top - menuH - 4) + 'px';
+  } else {
+    // Não cabe nem embaixo nem em cima: coloca no maior espaço com scroll interno
+    if (espacoBaixo >= espacoCima) {
+      menu.style.top = (rect.bottom + 4) + 'px';
+      menu.style.maxHeight = espacoBaixo + 'px';
+    } else {
+      menu.style.top = '12px';
+      menu.style.maxHeight = espacoCima + 'px';
+    }
+  }
   setTimeout(() => {
     const fechar = (e) => {
       if(!menu.contains(e.target)) {
@@ -4282,11 +4301,11 @@ window.gvAbrirMenuProduto = function(key, evt) {
   const rect = evt.currentTarget.getBoundingClientRect();
   const menu = document.createElement('div');
   menu.id = 'gv-menu-produto-popover';
-  const top = rect.bottom + 4;
   const left = Math.max(8, Math.min(rect.left, window.innerWidth - 220));
-  menu.style.cssText = `position:fixed;top:${top}px;left:${left}px;z-index:10000;
+  menu.style.cssText = `position:fixed;top:-9999px;left:${left}px;z-index:10000;
     background:var(--surface);border:.5px solid var(--border2);border-radius:var(--radius);
-    box-shadow:0 8px 32px rgba(0,45,114,.18);padding:6px;min-width:200px;max-height:340px;overflow-y:auto;
+    box-shadow:0 8px 32px rgba(0,45,114,.18);padding:6px;min-width:200px;
+    max-height:calc(100vh - 40px);overflow-y:auto;
     font-family:'DM Sans',sans-serif`;
   const opcoes = [['', '— Sem produto —'], ...NIBO_PRODUTO_OPTS];
   menu.innerHTML = `
@@ -4300,6 +4319,23 @@ window.gvAbrirMenuProduto = function(key, evt) {
     }).join('')}
   `;
   document.body.appendChild(menu);
+  // Posicionamento inteligente
+  const menuH = menu.offsetHeight;
+  const espacoBaixo = window.innerHeight - rect.bottom - 12;
+  const espacoCima = rect.top - 12;
+  if (menuH <= espacoBaixo) {
+    menu.style.top = (rect.bottom + 4) + 'px';
+  } else if (menuH <= espacoCima) {
+    menu.style.top = (rect.top - menuH - 4) + 'px';
+  } else {
+    if (espacoBaixo >= espacoCima) {
+      menu.style.top = (rect.bottom + 4) + 'px';
+      menu.style.maxHeight = espacoBaixo + 'px';
+    } else {
+      menu.style.top = '12px';
+      menu.style.maxHeight = espacoCima + 'px';
+    }
+  }
   setTimeout(() => {
     const fechar = (e) => {
       if(!menu.contains(e.target)) {
