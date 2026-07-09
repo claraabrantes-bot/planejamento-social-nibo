@@ -4011,6 +4011,8 @@ window.renderGridVisual = function() {
         const corTipo = corDoTipoPost(p.tipoId);
         const snip = (p.social || '').slice(0,42);
         const temArte = p.arteStatus === 'pronto';
+        const artesFinais = p.artesFinais || [];
+        const temArtesFinais = artesFinais.length > 0;
         return `<div draggable="true"
           ondragstart="window.gvDragStart(event,'${p.key}')"
           ondragend="window.gvDragEnd(event)"
@@ -4020,9 +4022,12 @@ window.renderGridVisual = function() {
           onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 8px rgba(0,45,114,.15)'"
           onmouseout="this.style.transform='none';this.style.boxShadow='none'">
           <div style="display:flex;align-items:center;gap:3px;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:.04em">
-            <span onclick="event.stopPropagation();window.gvAbrirMenuTipo('${p.key}',event)" title="Clique pra trocar o tipo" style="cursor:pointer;padding:1px 4px;border-radius:3px;transition:background .12s" onmouseover="this.style.background='rgba(0,0,0,.08)'" onmouseout="this.style.background='transparent'">${tipo.name}</span>
-            ${p.pubStatus === 'postado' ? '<span style="margin-left:auto">✓</span>' : (p.pubStatus === 'agendado' ? '<span style="margin-left:auto">📅</span>' : '')}
-            ${temArte ? '<span title="Arte pronta">🎨</span>' : ''}
+            <span onclick="event.stopPropagation();window.gvAbrirMenuTipo('${p.key}',event)" title="Clique pra trocar o tipo" style="cursor:pointer;padding:1px 4px;border-radius:3px;transition:background .12s;display:inline-flex;align-items:center;gap:2px" onmouseover="this.style.background='rgba(0,0,0,.08)'" onmouseout="this.style.background='transparent'">${tipo.name}<span style="opacity:.5;font-size:8px">▾</span></span>
+            <span style="margin-left:auto;display:inline-flex;align-items:center;gap:3px">
+              ${p.pubStatus === 'postado' ? '<span>✓</span>' : (p.pubStatus === 'agendado' ? '<span>📅</span>' : '')}
+              ${temArte ? '<span title="Arte pronta">🎨</span>' : ''}
+              ${temArtesFinais ? `<span onclick="event.stopPropagation();window.abrirArtesPost('${p.key}',event)" title="Abrir arte final (${artesFinais.length})" style="cursor:pointer;background:linear-gradient(135deg,#ff40b3,#7c3aed);color:#fff;font-weight:700;padding:1px 5px;border-radius:99px;font-size:8px;display:inline-flex;align-items:center;gap:2px;transition:transform .12s" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">↗${artesFinais.length>1?artesFinais.length:''}</span>` : ''}
+            </span>
           </div>
           ${produtoLabel ? `<div style="font-size:9px;color:${cor.text};opacity:.75;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(produtoLabel)}</div>` : ''}
           ${snip ? `<div style="font-size:10px;color:${cor.text};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px">${escapeHtml(snip)}${p.social && p.social.length>42?'…':''}</div>` : ''}
