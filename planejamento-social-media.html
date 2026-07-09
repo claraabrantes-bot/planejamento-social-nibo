@@ -4085,9 +4085,9 @@ window.renderGridVisual = function() {
           onmouseout="this.style.transform='none';this.style.boxShadow='none'">
           <div style="display:flex;align-items:center;gap:3px;font-weight:700;font-size:9px;text-transform:uppercase;letter-spacing:.04em">
             <span onclick="event.stopPropagation();window.gvAbrirMenuTipo('${p.key}',event)" title="Clique pra trocar o tipo" style="cursor:pointer;padding:1px 4px;border-radius:3px;transition:background .12s;display:inline-flex;align-items:center;gap:2px" onmouseover="this.style.background='rgba(0,0,0,.08)'" onmouseout="this.style.background='transparent'">${tipo.name}<span style="opacity:.5;font-size:8px">▾</span></span>
-            <span style="margin-left:auto;display:inline-flex;align-items:center;gap:3px">
-              ${p.pubStatus === 'postado' ? '<span>✓</span>' : (p.pubStatus === 'agendado' ? '<span>📅</span>' : '')}
-              ${temArte ? '<span title="Arte pronta">🎨</span>' : ''}
+            <span style="margin-left:auto;display:inline-flex;align-items:center;gap:4px">
+              <span onclick="event.stopPropagation();window.gvTogglePostado('${p.key}')" title="${p.pubStatus === 'postado' ? 'Marcado como postado (clique pra desmarcar)' : 'Marcar como postado'}" style="cursor:pointer;font-size:11px;line-height:1;padding:1px 4px;border-radius:99px;background:${p.pubStatus === 'postado' ? '#16A34A' : 'transparent'};color:${p.pubStatus === 'postado' ? '#fff' : 'var(--text3)'};opacity:${p.pubStatus === 'postado' ? '1' : '.35'};transition:all .12s;font-weight:700" onmouseover="this.style.opacity='1';if(this.style.background==='transparent')this.style.background='rgba(22,163,74,.15)'" onmouseout="this.style.opacity='${p.pubStatus === 'postado' ? '1' : '.35'}';if('${p.pubStatus}'!=='postado')this.style.background='transparent'">✓</span>
+              <span onclick="event.stopPropagation();window.gvToggleArtePronta('${p.key}')" title="${temArte ? 'Arte pronta (clique pra desmarcar)' : 'Marcar arte como pronta'}" style="cursor:pointer;font-size:11px;line-height:1;padding:1px 4px;border-radius:99px;background:${temArte ? '#F3E8FF' : 'transparent'};opacity:${temArte ? '1' : '.35'};transition:all .12s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='${temArte ? '1' : '.35'}'">🎨</span>
               ${temArtesFinais ? `<span onclick="event.stopPropagation();window.abrirArtesPost('${p.key}',event)" title="Abrir arte final (${artesFinais.length})" style="cursor:pointer;background:linear-gradient(135deg,#ff40b3,#7c3aed);color:#fff;font-weight:700;padding:1px 5px;border-radius:99px;font-size:8px;display:inline-flex;align-items:center;gap:2px;transition:transform .12s" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">↗${artesFinais.length>1?artesFinais.length:''}</span>` : ''}
             </span>
           </div>
@@ -4380,6 +4380,21 @@ window.gvSelecionarProduto = async function(key, produto) {
 window.gvExcluirPost = async function(key) {
   document.getElementById('gv-menu-tipo-popover')?.remove();
   await window.deleteRow(key);
+};
+
+window.gvTogglePostado = async function(key) {
+  const r = rows.find(x => x.key === key);
+  if(!r) return;
+  const novoStatus = r.pubStatus === 'postado' ? 'nao-postado' : 'postado';
+  await saveRow(key, {pubStatus: novoStatus});
+};
+
+window.gvToggleArtePronta = async function(key) {
+  const r = rows.find(x => x.key === key);
+  if(!r) return;
+  const novoStatus = r.arteStatus === 'pronto' ? 'pendente' : 'pronto';
+  // Reusa a função que já dispara notificação pra Clara/Millena
+  await window.marcarArteStatus(key, novoStatus);
 };
 
 window.gvDefinirCorCustom = async function(key, cor) {
