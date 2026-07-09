@@ -4053,14 +4053,13 @@ window.renderGridVisual = function() {
     const badgeHoje = ehHoje ? ' <span style="font-size:8px;background:var(--nibo1);color:#fff;padding:1px 5px;border-radius:99px;font-weight:700;font-family:sans-serif;vertical-align:middle;margin-left:3px">hoje</span>' : '';
 
     html += `<div class="gv-cell" data-dia="${dia}"
-      onclick="if(event.target.classList.contains('gv-cell')||event.target.classList.contains('gv-cell-header')||event.target.classList.contains('gv-cell-add'))window.gridVisualCriarPost(${dia})"
       ondragover="window.gvDragOver(event)"
       ondragleave="window.gvDragLeave(event)"
       ondrop="window.gvDrop(event,${dia})"
-      style="min-height:130px;background:${bgCelula};border-right:.5px solid var(--border);border-bottom:.5px solid var(--border);position:relative;padding:6px;cursor:pointer;display:flex;flex-direction:column;gap:3px;box-sizing:border-box;min-width:0;overflow:hidden${ehHoje?';box-shadow:inset 0 0 0 2px var(--nibo2)':''}">
-      <div class="gv-cell-header" style="display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:${ehHoje?'700':'600'};color:${ehHoje?'var(--nibo1)':'var(--text)'};font-family:'DM Mono',monospace;pointer-events:none">
-        <span>${String(dia).padStart(2,'0')}${badgeHoje}</span>
-        ${ps.length===0 && !ehFimSemana ? '<span class="gv-cell-add" style="font-size:14px;color:var(--text3);opacity:0;transition:opacity .15s;pointer-events:none">+</span>' : ''}
+      style="min-height:130px;background:${bgCelula};border-right:.5px solid var(--border);border-bottom:.5px solid var(--border);position:relative;padding:6px;display:flex;flex-direction:column;gap:3px;box-sizing:border-box;min-width:0;overflow:hidden${ehHoje?';box-shadow:inset 0 0 0 2px var(--nibo2)':''}">
+      <div class="gv-cell-header" style="display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:${ehHoje?'700':'600'};color:${ehHoje?'var(--nibo1)':'var(--text)'};font-family:'DM Mono',monospace">
+        <span onclick="window.gridVisualCriarPost(${dia})" title="Criar post neste dia" style="cursor:pointer;padding:2px 6px;border-radius:4px;transition:background .12s" onmouseover="this.style.background='rgba(0,45,114,.08)'" onmouseout="this.style.background='transparent'">${String(dia).padStart(2,'0')}${badgeHoje}</span>
+        ${ps.length===0 && !ehFimSemana ? `<span class="gv-cell-add" onclick="window.gridVisualCriarPost(${dia})" title="Criar post neste dia" style="font-size:14px;color:var(--text3);opacity:0;transition:opacity .15s;cursor:pointer;padding:0 4px;line-height:1">+</span>` : ''}
       </div>
       ${ds.length > 0 ? ds.slice(0,1).map(d => `<div style="font-size:9px;font-weight:600;color:#9F1239;background:#FCE7F3;padding:2px 5px;border-radius:4px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none" title="${escapeHtml(d.titulo)}">📌 ${escapeHtml(d.titulo)}</div>`).join('') : ''}
       ${ps.map(p => {
