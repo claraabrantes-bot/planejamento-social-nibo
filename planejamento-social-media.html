@@ -3016,13 +3016,22 @@ window.addRow=async function(){
 // ── DELETE ROW ──
 window.deleteRow=async function(key){
   if(!confirm('Remover este post?')) return;
-  // Captura o doc inteiro pra poder restaurar com undo
-  const existing = rows.find(r => r.key === key);
-  if (existing && !isUndoing) {
-    const {key:_, ...data} = existing;
-    pushUndo({type:'delete-row', key, data: {...data, key}});
+  try {
+    // Captura o doc inteiro pra poder restaurar com undo (protegido)
+    const existing = rows.find(r => r.key === key);
+    if (existing && !isUndoing) {
+      try {
+        const {key:_, ...data} = existing;
+        pushUndo({type:'delete-row', key, data: {...data, key}});
+      } catch(errUndo) {
+        console.warn('Erro no undo (segue com delete):', errUndo);
+      }
+    }
+    await deleteDoc(doc(db,'rows',key));
+  } catch(err) {
+    console.error('Erro ao deletar post:', err);
+    alert('Não consegui deletar. Detalhe: ' + (err.message || err));
   }
-  await deleteDoc(doc(db,'rows',key));
 }
 
 // ── UPDATE ROW ──
@@ -4230,6 +4239,11 @@ window.gvAbrirMenuTipo = function(key, evt) {
         ${ativo?'<span style="font-size:11px;color:var(--nibo2)">✓</span>':''}
       </button>`;
     }).join('')}
+    <div style="border-top:.5px solid var(--border);margin:6px 0 4px"></div>
+    <button onclick="window.gvExcluirPost('${key}')" style="width:100%;display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;border:none;background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;color:#DC2626;text-align:left" onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='transparent'">
+      <span style="width:12px;height:12px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center">🗑</span>
+      <span style="flex:1">Excluir post</span>
+    </button>
   `;
   document.body.appendChild(menu);
   setTimeout(() => {
@@ -4248,6 +4262,11 @@ window.gvSelecionarTipo = async function(key, novoTipoId) {
   const r = rows.find(x => x.key === key);
   if(!r || r.tipoId === novoTipoId) return;
   await saveRow(key, {tipoId: novoTipoId});
+};
+
+window.gvExcluirPost = async function(key) {
+  document.getElementById('gv-menu-tipo-popover')?.remove();
+  await window.deleteRow(key);
 };
 
 window.gridVisualCriarPost = async function(dia) {
