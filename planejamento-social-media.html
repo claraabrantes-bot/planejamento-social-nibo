@@ -1077,6 +1077,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <span style="display:flex;align-items:center;gap:4px;margin-left:auto;color:var(--text3);font-style:italic">Clique num dia vazio pra criar post · Arraste posts entre dias</span>
   </div>
 
+  <!-- Legenda de TIPOS (cores das barras laterais dos cards) -->
+  <div style="background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <span style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace">Tipos de post</span>
+    <div id="legenda-tipos" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex:1"></div>
+    <button onclick="window.abrirEditorTipos()" title="Editar nomes e cores dos tipos" style="font-size:11px;padding:5px 12px;border-radius:99px;border:.5px solid var(--border2);background:var(--bg);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif">✏ Editar tipos</button>
+  </div>
+
   <!-- Grid do calendário -->
   <div id="grid-visual-container" style="background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);overflow:hidden"></div>
 </div>
@@ -1520,6 +1527,28 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 
+<!-- MODAL EDITAR TIPOS DE POST -->
+<div class="modal-overlay" id="modal-tipos">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-head">
+      <h3>✏ Editar tipos de post</h3>
+      <p>Renomeie e mude a cor dos tipos. Muda em todo o sistema (grid, calendário, filtros, IA).</p>
+    </div>
+    <div class="modal-body" style="padding:1rem 1.4rem">
+      <div id="tipos-lista-modal" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div style="margin-top:14px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius);font-size:11px;color:var(--text3);line-height:1.5">
+        💡 <b>Dica:</b> o "dia sugerido" e o "id" internos não mudam — só o nome exibido e a cor. Assim seus posts antigos continuam ligados corretamente.
+      </div>
+      <div style="margin-top:10px;display:flex;justify-content:flex-end">
+        <button onclick="window.resetarTipos()" style="font-size:11px;padding:5px 12px;border-radius:99px;border:.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-family:'DM Sans',sans-serif">↺ Restaurar padrão</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-tipos').classList.remove('open')">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL GERENCIAR DATAS IMPORTANTES -->
 <div class="modal-overlay" id="modal-datas">
   <div class="modal" style="max-width:680px">
@@ -1892,13 +1921,16 @@ function showLoginError(msg) {
 
 
 // ── CONSTANTS ──
-const TIPOS=[
+// Base padrão dos tipos - sempre existe como fallback
+const TIPOS_BASE = [
   {id:'produto',    name:'Produto',       color:'#002d72', day:'Seg'},
   {id:'editorial',  name:'Editorial',     color:'#0072ce', day:'Ter'},
   {id:'webinar',    name:'Webinar',       color:'#41b6e6', day:'Qua'},
   {id:'depoimento', name:'Depoimento',    color:'#185FA5', day:'Qui'},
   {id:'curiosidade',name:'Curiosidade',   color:'#7b96c2', day:'Sex'},
 ];
+// TIPOS é uma cópia mutável que pode ser sobrescrita via config/tipos no Firebase
+let TIPOS = TIPOS_BASE.map(t => ({...t}));
 const DAYS_PT=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 const MES_NAMES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const STATUS_CYCLE=['pendente','aprovado','reprovado'];
@@ -2367,7 +2399,7 @@ window.showPage=function(id,btn){
   if(id==='grid'){renderGridTabs();renderGrid();}
   if(id==='refs') window.renderRefs();
   if(id==='fila') window.renderFila();
-  if(id==='grid-visual') window.renderGridVisual && window.renderGridVisual();
+  if(id==='grid-visual') { window.renderGridVisual && window.renderGridVisual(); window.renderLegendaTipos && window.renderLegendaTipos(); }
   if(id==='midia-produto') window.renderMidiaProduto();
   if(id==='email-produto') window.renderEmailProduto();
 }
@@ -3695,6 +3727,24 @@ const DATAS_BASE = [
 let datasImportantes = [];
 
 // Listener Firestore pra datas
+// Listener config/tipos — sobrescreve TIPOS com overrides (nome e cor) definidos no Firebase
+onSnapshot(doc(db,'config','tipos'), snap => {
+  if(snap.exists() && Array.isArray(snap.data().list)) {
+    const overrides = snap.data().list;
+    // Aplica override em cima da base — mantém id/day/qualquer campo não sobrescrito
+    TIPOS = TIPOS_BASE.map(base => {
+      const ov = overrides.find(o => o.id === base.id);
+      return ov ? {...base, name: ov.name || base.name, color: ov.color || base.color} : {...base};
+    });
+  } else {
+    TIPOS = TIPOS_BASE.map(t => ({...t}));
+  }
+  // Re-render tudo que mostra tipos
+  if(typeof renderCalendar === 'function') try{renderCalendar()}catch(_){}
+  if(document.getElementById('page-grid-visual')?.classList.contains('active')) window.renderGridVisual && window.renderGridVisual();
+  window.renderLegendaTipos && window.renderLegendaTipos();
+});
+
 onSnapshot(doc(db,'config','datas'), snap => {
   if(snap.exists() && Array.isArray(snap.data().list)) {
     datasImportantes = snap.data().list;
@@ -4093,6 +4143,70 @@ window.gvDrop = async function(evt, novoDia) {
 
 // ── CRIAR POST clicando num dia vazio ──
 // Menu flutuante pra trocar o tipo de post rapidamente
+// ── LEGENDA e EDIÇÃO DE TIPOS ──
+window.renderLegendaTipos = function() {
+  const el = document.getElementById('legenda-tipos');
+  if(!el) return;
+  el.innerHTML = TIPOS.map(t => `
+    <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text)">
+      <span style="width:14px;height:14px;border-radius:3px;background:${t.color};flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,.08)"></span>
+      <span>${escapeHtml(t.name)}</span>
+    </div>
+  `).join('');
+};
+
+window.abrirEditorTipos = function() {
+  document.getElementById('modal-tipos').classList.add('open');
+  window.renderEditorTipos();
+};
+
+window.renderEditorTipos = function() {
+  const el = document.getElementById('tipos-lista-modal');
+  if(!el) return;
+  el.innerHTML = TIPOS.map((t, idx) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius)">
+      <input type="color" value="${t.color}" onchange="window.atualizarCorTipo('${t.id}',this.value)" title="Escolher cor" style="width:36px;height:36px;padding:0;border:.5px solid var(--border2);border-radius:8px;cursor:pointer;background:transparent;flex-shrink:0" />
+      <div style="flex:1;min-width:0">
+        <input type="text" value="${escapeHtml(t.name).replace(/"/g,'&quot;')}" onchange="window.atualizarNomeTipo('${t.id}',this.value)" placeholder="Nome do tipo" style="width:100%;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;outline:none;background:var(--bg);color:var(--text)" />
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;font-family:'DM Mono',monospace">id: ${t.id} · dia sugerido: ${t.day}</div>
+      </div>
+    </div>
+  `).join('');
+};
+
+async function salvarOverridesTipos() {
+  // Salva SÓ os campos editáveis (name, color)
+  const list = TIPOS.map(t => ({id: t.id, name: t.name, color: t.color}));
+  await setDoc(doc(db,'config','tipos'), {list}, {merge: true});
+}
+
+window.atualizarNomeTipo = async function(id, novoNome) {
+  const t = TIPOS.find(x => x.id === id);
+  if(!t) return;
+  novoNome = (novoNome || '').trim();
+  if(!novoNome) {
+    alert('Nome não pode ficar em branco.');
+    window.renderEditorTipos();
+    return;
+  }
+  t.name = novoNome;
+  await salvarOverridesTipos();
+};
+
+window.atualizarCorTipo = async function(id, novaCor) {
+  const t = TIPOS.find(x => x.id === id);
+  if(!t) return;
+  t.color = novaCor;
+  await salvarOverridesTipos();
+};
+
+window.resetarTipos = async function() {
+  if(!confirm('Restaurar todos os tipos ao padrão original (Produto/Editorial/Webinar/Depoimento/Curiosidade)?')) return;
+  TIPOS = TIPOS_BASE.map(t => ({...t}));
+  await setDoc(doc(db,'config','tipos'), {list: TIPOS.map(t => ({id:t.id, name:t.name, color:t.color}))}, {merge: true});
+  window.renderEditorTipos();
+};
+
 window.gvAbrirMenuTipo = function(key, evt) {
   document.getElementById('gv-menu-tipo-popover')?.remove();
   const r = rows.find(x => x.key === key);
