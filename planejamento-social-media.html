@@ -826,6 +826,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <nav class="page-tabs" id="subtabs-social" style="display:none">
   <button class="page-tab active" id="stab-calendario" onclick="showPage('calendario',this)">Calendário</button>
   <button class="page-tab" id="stab-grid-visual" onclick="showPage('grid-visual',this)">🗓 Grid Visual</button>
+  <button class="page-tab" id="stab-ideias" onclick="showPage('ideias',this)">💡 Minhas Ideias</button>
   <button class="page-tab" id="stab-ia" onclick="showPage('ia',this)">IA Criativa</button>
 </nav>
 
@@ -1085,6 +1086,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
   <!-- Grid do calendário -->
   <div id="grid-visual-container" style="background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);overflow:hidden"></div>
+</div>
+
+<!-- ══ MINHAS IDEIAS DE POSTS (referências pessoais) ══ -->
+<div id="page-ideias" class="page">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+    <div>
+      <h2 style="font-size:20px;font-weight:700;color:var(--text);margin:0">💡 Minhas Ideias de Posts</h2>
+      <p style="font-size:12px;color:var(--text3);margin:4px 0 0">Salve ideias, screenshots, prints de trends e referências. Suporta carrossel (várias imagens numa ideia só).</p>
+    </div>
+    <button onclick="window.abrirModalIdeia()" style="font-size:13px;font-weight:600;padding:10px 20px;border-radius:99px;border:none;background:linear-gradient(135deg,#ff40b3,#7c3aed);color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 4px 12px rgba(124,58,237,.25)">+ Nova ideia</button>
+  </div>
+  <div id="ideias-container" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px"></div>
 </div>
 
 <!-- ══ IA CRIATIVA ══ -->
@@ -1526,6 +1539,77 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 
+<!-- MODAL CRIAR/EDITAR IDEIA DE POST -->
+<div class="modal-overlay" id="modal-ideia">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-head">
+      <h3 id="modal-ideia-titulo">💡 Nova ideia de post</h3>
+      <p>Salve prints, links e descrição. Ideal pra trends e carrossel de referências.</p>
+    </div>
+    <div class="modal-body" style="padding:1rem 1.4rem">
+      <div style="margin-bottom:12px">
+        <div class="modal-label">Título</div>
+        <input id="ideia-titulo" type="text" placeholder="Ex: Trend do áudio X com transição rápida" style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)" />
+      </div>
+      <div style="margin-bottom:12px">
+        <div class="modal-label">Descrição (opcional)</div>
+        <textarea id="ideia-desc" rows="3" placeholder="O que você quer testar, quem podia protagonizar, gancho, etc." style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.5"></textarea>
+      </div>
+      <div style="margin-bottom:12px">
+        <div class="modal-label">Link (opcional)</div>
+        <input id="ideia-link" type="url" placeholder="https://www.tiktok.com/... ou https://www.instagram.com/reel/..." style="width:100%;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)" />
+      </div>
+      <div style="margin-bottom:12px">
+        <div class="modal-label">Imagens (várias — pra carrossel)</div>
+        <div id="ideia-imgs-preview" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;margin-bottom:8px;min-height:20px"></div>
+        <input id="ideia-img-input" type="file" accept="image/*" multiple onchange="window.onIdeiaImgAdd(event)" style="font-size:12px;font-family:'DM Sans',sans-serif" />
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">Suporta múltiplas imagens de uma vez. Máximo ~10 (limite de armazenamento por ideia: 1MB).</div>
+      </div>
+      <div style="margin-bottom:8px">
+        <div class="modal-label">Comentário inicial (opcional)</div>
+        <textarea id="ideia-comentario" rows="2" placeholder="Use @nome pra mencionar alguém (Ex: @millena, @maris)" style="width:100%;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.5"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="window.fecharModalIdeia()">Cancelar</button>
+      <button class="btn btn-primary" onclick="window.salvarIdeia()" style="background:linear-gradient(135deg,#ff40b3,#7c3aed);border-color:transparent">Salvar ideia</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VER IDEIA (carrossel + comentários) -->
+<div class="modal-overlay" id="modal-ideia-view">
+  <div class="modal" style="max-width:760px">
+    <div class="modal-head">
+      <h3 id="modal-ideia-view-titulo">Ideia</h3>
+      <p id="modal-ideia-view-meta" style="font-size:11px;color:var(--text3);margin-top:3px"></p>
+    </div>
+    <div class="modal-body" style="padding:0">
+      <!-- Carrossel -->
+      <div id="ideia-view-carrossel" style="background:#0F172A;padding:20px;position:relative;min-height:280px;display:flex;align-items:center;justify-content:center"></div>
+      <!-- Info -->
+      <div style="padding:14px 20px">
+        <div id="ideia-view-desc" style="font-size:13px;color:var(--text);line-height:1.5;margin-bottom:10px;white-space:pre-wrap"></div>
+        <div id="ideia-view-link" style="margin-bottom:14px"></div>
+      </div>
+      <!-- Comentários -->
+      <div style="border-top:.5px solid var(--border);padding:14px 20px">
+        <div class="modal-label" style="margin-bottom:8px">Comentários</div>
+        <div id="ideia-view-comments" style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;margin-bottom:12px"></div>
+        <div style="display:flex;gap:6px">
+          <textarea id="ideia-view-novo-comment" rows="1" placeholder="Comente aqui... use @nome pra mencionar" style="flex:1;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.4"></textarea>
+          <button onclick="window.adicionarComentarioIdeia()" style="flex-shrink:0;padding:0 14px;font-size:12px;font-weight:600;border-radius:var(--radius);border:none;background:linear-gradient(135deg,#ff40b3,#7c3aed);color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif">Enviar</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="window.deletarIdeia()" style="margin-right:auto;color:#DC2626">🗑 Excluir</button>
+      <button class="btn btn-ghost" onclick="window.editarIdeia()">✏ Editar</button>
+      <button class="btn btn-primary" onclick="document.getElementById('modal-ideia-view').classList.remove('open')">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL EDITAR TIPOS DE POST -->
 <div class="modal-overlay" id="modal-tipos">
   <div class="modal" style="max-width:540px">
@@ -1770,7 +1854,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getFirestore, doc, setDoc, onSnapshot, collection, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, onSnapshot, collection, deleteDoc, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -1845,6 +1929,29 @@ onAuthStateChanged(auth, user => {
     listenProfile(user.uid);
     listenNotifications(user.uid);
     pedirPermissaoNotif();
+
+    // Força re-fetch manual de rows após login — corrige caso o listener original 
+    // tenha rodado sem token de auth (usuários novos ou com cache limpo)
+    setTimeout(async () => {
+      try {
+        const snap = await getDocs(collection(db,'rows'));
+        if(snap.size > 0 && rows.length === 0) {
+          // Listener original falhou mas agora com token deu certo — recarrega
+          console.log(`✓ Re-fetch pós-login: ${snap.size} posts carregados`);
+          rows = [];
+          snap.forEach(d => rows.push({key:d.id, ...d.data()}));
+          rows.sort((a,b) => (a.order||0) - (b.order||0));
+          // Remove banner de erro se existir
+          document.getElementById('firebase-error-banner')?.remove();
+          renderCalendar();
+          setConn();
+          window.renderWelcomeCalendario && window.renderWelcomeCalendario();
+          window.renderGridVisual && window.renderGridVisual();
+        }
+      } catch(err) {
+        console.error('Erro no re-fetch pós-login:', err);
+      }
+    }, 1500);
     // Restaura a última tab que o usuário estava (a menos que tenha ?post=... pra abrir)
     const params = new URLSearchParams(window.location.search);
     if (!params.get('post')) {
@@ -2425,6 +2532,7 @@ window.showPage=function(id,btn){
   if(id==='refs') window.renderRefs();
   if(id==='fila') window.renderFila();
   if(id==='grid-visual') { window.renderGridVisual && window.renderGridVisual(); window.renderLegendaTipos && window.renderLegendaTipos(); }
+  if(id==='ideias') window.renderIdeias && window.renderIdeias();
   if(id==='midia-produto') window.renderMidiaProduto();
   if(id==='email-produto') window.renderEmailProduto();
 }
@@ -2729,6 +2837,293 @@ onSnapshot(collection(db,'refs'), snap => {
   refsData.sort((a,b) => (b.ts||'').localeCompare(a.ts||''));
   window.renderRefs();
 });
+
+// ══════════════════════════════════════════════════════════
+// MINHAS IDEIAS DE POSTS — coleção `ideias-post`
+// Estrutura: {key, title, desc, link, imagens:[base64,...], author, authorFull, ts, comments:[{id,author,text,ts}]}
+// ══════════════════════════════════════════════════════════
+let ideiasData = [];
+let ideiaEditingKey = null;
+let ideiaViewingKey = null;
+let ideiaImgsTemp = []; // imagens novas em edição (array de base64)
+let ideiaCarrosselIdx = 0;
+
+onSnapshot(collection(db,'ideias-post'), snap => {
+  ideiasData = [];
+  snap.forEach(d => ideiasData.push({key:d.id, ...d.data()}));
+  ideiasData.sort((a,b) => (b.ts||'').localeCompare(a.ts||''));
+  window.renderIdeias && window.renderIdeias();
+  // Se o modal de view está aberto, re-render pra atualizar comentários
+  if(ideiaViewingKey && document.getElementById('modal-ideia-view')?.classList.contains('open')) {
+    window.renderIdeiaView && window.renderIdeiaView();
+  }
+});
+
+window.renderIdeias = function() {
+  const container = document.getElementById('ideias-container');
+  if(!container) return;
+  if(ideiasData.length === 0) {
+    container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;background:var(--surface);border:.5px dashed var(--border2);border-radius:var(--radius);color:var(--text3);font-size:13px">
+      <div style="font-size:42px;margin-bottom:12px">💡</div>
+      <div style="font-weight:600;color:var(--text);margin-bottom:6px">Nenhuma ideia ainda</div>
+      <div>Clique em "+ Nova ideia" pra começar a salvar suas referências e trends.</div>
+    </div>`;
+    return;
+  }
+  container.innerHTML = ideiasData.map(idea => {
+    const imgs = idea.imagens || [];
+    const capa = imgs[0];
+    const nImgs = imgs.length;
+    const nComments = (idea.comments || []).length;
+    return `<div onclick="window.abrirIdeiaView('${idea.key}')" style="background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);cursor:pointer;overflow:hidden;transition:all .15s;display:flex;flex-direction:column" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,45,114,.12)';this.style.borderColor='var(--nibo2)'" onmouseout="this.style.transform='none';this.style.boxShadow='none';this.style.borderColor='var(--border)'">
+      <div style="position:relative;background:#0F172A;aspect-ratio:1/1;overflow:hidden;display:flex;align-items:center;justify-content:center">
+        ${capa
+          ? `<img src="${capa}" style="width:100%;height:100%;object-fit:cover" alt="" />`
+          : `<div style="color:#64748B;font-size:32px">💡</div>`
+        }
+        ${nImgs > 1 ? `<div style="position:absolute;top:8px;right:8px;background:rgba(15,23,42,.85);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;backdrop-filter:blur(4px)">📷 ${nImgs}</div>` : ''}
+      </div>
+      <div style="padding:12px 14px;flex:1;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:13px;font-weight:700;color:var(--text);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${escapeHtml(idea.title || 'Sem título')}</div>
+        ${idea.desc ? `<div style="font-size:11px;color:var(--text2);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${escapeHtml(idea.desc)}</div>` : ''}
+        <div style="display:flex;align-items:center;gap:10px;margin-top:auto;padding-top:6px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace">
+          <span>${escapeHtml(idea.author||'—')}</span>
+          <span>·</span>
+          <span>${escapeHtml(idea.ts||'')}</span>
+          ${nComments > 0 ? `<span style="margin-left:auto;background:#F3E8FF;color:#6D28D9;padding:1px 7px;border-radius:99px;font-weight:700;font-family:'DM Sans',sans-serif">💬 ${nComments}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+};
+
+window.abrirModalIdeia = function(key) {
+  ideiaEditingKey = key || null;
+  ideiaImgsTemp = [];
+  document.getElementById('modal-ideia-titulo').textContent = key ? '✏ Editar ideia' : '💡 Nova ideia de post';
+  document.getElementById('ideia-titulo').value = '';
+  document.getElementById('ideia-desc').value = '';
+  document.getElementById('ideia-link').value = '';
+  document.getElementById('ideia-comentario').value = '';
+  document.getElementById('ideia-img-input').value = '';
+  if(key) {
+    const existente = ideiasData.find(x => x.key === key);
+    if(existente) {
+      document.getElementById('ideia-titulo').value = existente.title || '';
+      document.getElementById('ideia-desc').value = existente.desc || '';
+      document.getElementById('ideia-link').value = existente.link || '';
+      ideiaImgsTemp = [...(existente.imagens || [])];
+    }
+  }
+  window.renderIdeiaImgsPreview();
+  document.getElementById('modal-ideia').classList.add('open');
+  setTimeout(() => document.getElementById('ideia-titulo').focus(), 60);
+};
+
+window.fecharModalIdeia = function() {
+  document.getElementById('modal-ideia').classList.remove('open');
+  ideiaEditingKey = null;
+  ideiaImgsTemp = [];
+};
+
+window.onIdeiaImgAdd = async function(evt) {
+  const files = Array.from(evt.target.files || []);
+  if(files.length === 0) return;
+  for(const file of files) {
+    if(ideiaImgsTemp.length >= 10) {
+      alert('Máximo de 10 imagens por ideia.');
+      break;
+    }
+    try {
+      const compressed = await comprimirImagem(file, 1000, 0.78);
+      ideiaImgsTemp.push(compressed);
+    } catch(err) {
+      console.error('Erro ao comprimir imagem:', err);
+      alert('Erro ao processar imagem: ' + (err.message || err));
+    }
+  }
+  window.renderIdeiaImgsPreview();
+  evt.target.value = '';
+};
+
+window.renderIdeiaImgsPreview = function() {
+  const el = document.getElementById('ideia-imgs-preview');
+  if(!el) return;
+  if(ideiaImgsTemp.length === 0) {
+    el.innerHTML = '<div style="grid-column:1/-1;font-size:11px;color:var(--text3);font-style:italic;padding:8px 0">Nenhuma imagem ainda. Adicione uma ou várias.</div>';
+    return;
+  }
+  el.innerHTML = ideiaImgsTemp.map((img, idx) => `
+    <div style="position:relative;aspect-ratio:1/1;border-radius:6px;overflow:hidden;background:#0F172A">
+      <img src="${img}" style="width:100%;height:100%;object-fit:cover" alt="" />
+      <button onclick="window.removerIdeiaImg(${idx})" title="Remover" style="position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:rgba(220,38,38,.9);color:#fff;border:none;cursor:pointer;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">×</button>
+      ${idx === 0 ? '<div style="position:absolute;bottom:3px;left:3px;background:rgba(15,23,42,.85);color:#fff;font-size:8px;font-weight:700;padding:2px 5px;border-radius:99px">CAPA</div>' : ''}
+    </div>
+  `).join('');
+};
+
+window.removerIdeiaImg = function(idx) {
+  ideiaImgsTemp.splice(idx, 1);
+  window.renderIdeiaImgsPreview();
+};
+
+window.salvarIdeia = async function() {
+  const title = document.getElementById('ideia-titulo').value.trim();
+  const desc = document.getElementById('ideia-desc').value.trim();
+  const link = document.getElementById('ideia-link').value.trim();
+  const comentario = document.getElementById('ideia-comentario').value.trim();
+  if(!title && ideiaImgsTemp.length === 0) {
+    alert('Preencha pelo menos um título ou adicione uma imagem.');
+    return;
+  }
+  const key = ideiaEditingKey || ('ideia-' + Date.now());
+  const author = auth.currentUser ? auth.currentUser.email.split('@')[0] : 'anon';
+  const authorFull = auth.currentUser ? auth.currentUser.email : '';
+  const now = new Date().toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+  const existente = ideiasData.find(x => x.key === key);
+  const comentariosExistentes = existente?.comments || [];
+  const ideiaObj = {
+    key, title, desc, link,
+    imagens: ideiaImgsTemp,
+    author,
+    authorFull,
+    ts: existente?.ts || now,
+    comments: comentariosExistentes,
+  };
+  // Se tem comentário inicial (só em criação nova)
+  if(comentario && !ideiaEditingKey) {
+    const commentObj = {id: Date.now(), author, authorFull, text: comentario, ts: now};
+    ideiaObj.comments.push(commentObj);
+    if(window.detectarMencoes) {
+      window.detectarMencoes(comentario, author, title || 'uma ideia', key, 'ideia');
+    }
+  }
+  const tamanho = JSON.stringify(ideiaObj).length;
+  if(tamanho > 1_000_000) {
+    alert(`A ideia ficou muito grande (${(tamanho/1024).toFixed(0)} KB). Reduza a qualidade ou o número de imagens.`);
+    return;
+  }
+  try {
+    await setDoc(doc(db, 'ideias-post', key), ideiaObj);
+    window.fecharModalIdeia();
+  } catch(err) {
+    console.error('Erro ao salvar ideia:', err);
+    alert('Erro ao salvar:\n\n' + (err?.message || err));
+  }
+};
+
+window.abrirIdeiaView = function(key) {
+  ideiaViewingKey = key;
+  ideiaCarrosselIdx = 0;
+  window.renderIdeiaView();
+  document.getElementById('modal-ideia-view').classList.add('open');
+};
+
+window.renderIdeiaView = function() {
+  const idea = ideiasData.find(x => x.key === ideiaViewingKey);
+  if(!idea) {
+    document.getElementById('modal-ideia-view').classList.remove('open');
+    return;
+  }
+  document.getElementById('modal-ideia-view-titulo').textContent = idea.title || 'Sem título';
+  document.getElementById('modal-ideia-view-meta').innerHTML = `por <b>${escapeHtml(idea.author||'—')}</b> · ${escapeHtml(idea.ts||'')}`;
+  // Carrossel
+  const carr = document.getElementById('ideia-view-carrossel');
+  const imgs = idea.imagens || [];
+  if(imgs.length === 0) {
+    carr.innerHTML = '<div style="color:#64748B;font-size:14px;font-style:italic">Sem imagens</div>';
+  } else {
+    if(ideiaCarrosselIdx >= imgs.length) ideiaCarrosselIdx = 0;
+    const src = imgs[ideiaCarrosselIdx];
+    carr.innerHTML = `
+      <img src="${src}" style="max-width:100%;max-height:440px;object-fit:contain;border-radius:6px" alt="" />
+      ${imgs.length > 1 ? `
+        <button onclick="window.carrosselIdeia(-1)" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.9);color:#0F172A;border:none;cursor:pointer;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.15)">‹</button>
+        <button onclick="window.carrosselIdeia(1)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.9);color:#0F172A;border:none;cursor:pointer;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.15)">›</button>
+        <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:5px">
+          ${imgs.map((_, i) => `<span style="width:8px;height:8px;border-radius:50%;background:${i===ideiaCarrosselIdx?'#fff':'rgba(255,255,255,.4)'}"></span>`).join('')}
+        </div>
+        <div style="position:absolute;top:10px;right:10px;background:rgba(15,23,42,.85);color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px">${ideiaCarrosselIdx+1} / ${imgs.length}</div>
+      ` : ''}
+    `;
+  }
+  // Descrição e link
+  document.getElementById('ideia-view-desc').textContent = idea.desc || '';
+  document.getElementById('ideia-view-desc').style.display = idea.desc ? 'block' : 'none';
+  const linkEl = document.getElementById('ideia-view-link');
+  linkEl.innerHTML = idea.link 
+    ? `<a href="${idea.link}" target="_blank" rel="noopener" style="font-size:12px;color:var(--nibo2);text-decoration:none;padding:6px 12px;background:#EFF6FF;border:.5px solid #93C5FD;border-radius:99px;display:inline-flex;align-items:center;gap:5px">↗ Abrir link</a>`
+    : '';
+  // Comentários
+  const cEl = document.getElementById('ideia-view-comments');
+  const comments = idea.comments || [];
+  if(comments.length === 0) {
+    cEl.innerHTML = '<div style="font-size:11px;color:var(--text3);font-style:italic;text-align:center;padding:10px">Nenhum comentário ainda. Seja a primeira a comentar!</div>';
+  } else {
+    cEl.innerHTML = comments.map(c => `
+      <div style="background:var(--surface2);border-radius:8px;padding:8px 10px">
+        <div style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);margin-bottom:3px;font-family:'DM Mono',monospace">
+          <b style="color:var(--text)">${escapeHtml(c.author||'—')}</b>
+          <span>·</span>
+          <span>${escapeHtml(c.ts||'')}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text);line-height:1.45;white-space:pre-wrap">${escapeHtml(c.text||'')}</div>
+      </div>
+    `).join('');
+  }
+};
+
+window.carrosselIdeia = function(delta) {
+  const idea = ideiasData.find(x => x.key === ideiaViewingKey);
+  if(!idea) return;
+  const total = (idea.imagens || []).length;
+  if(total === 0) return;
+  ideiaCarrosselIdx = (ideiaCarrosselIdx + delta + total) % total;
+  window.renderIdeiaView();
+};
+
+window.adicionarComentarioIdeia = async function() {
+  const idea = ideiasData.find(x => x.key === ideiaViewingKey);
+  if(!idea) return;
+  const textareaEl = document.getElementById('ideia-view-novo-comment');
+  const text = (textareaEl.value || '').trim();
+  if(!text) return;
+  const author = auth.currentUser ? auth.currentUser.email.split('@')[0] : 'anon';
+  const authorFull = auth.currentUser ? auth.currentUser.email : '';
+  const now = new Date().toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+  const novoComment = {id: Date.now(), author, authorFull, text, ts: now};
+  const commentsAtualizados = [...(idea.comments || []), novoComment];
+  try {
+    await setDoc(doc(db, 'ideias-post', ideiaViewingKey), {...idea, comments: commentsAtualizados});
+    textareaEl.value = '';
+    // Menções → notificações
+    if(window.detectarMencoes) {
+      window.detectarMencoes(text, author, idea.title || 'uma ideia', ideiaViewingKey, 'ideia');
+    }
+  } catch(err) {
+    console.error('Erro ao comentar:', err);
+    alert('Erro ao adicionar comentário:\n\n' + (err?.message || err));
+  }
+};
+
+window.editarIdeia = function() {
+  if(!ideiaViewingKey) return;
+  document.getElementById('modal-ideia-view').classList.remove('open');
+  window.abrirModalIdeia(ideiaViewingKey);
+};
+
+window.deletarIdeia = async function() {
+  if(!ideiaViewingKey) return;
+  if(!confirm('Remover esta ideia e todos os comentários? Não dá pra desfazer.')) return;
+  try {
+    await deleteDoc(doc(db, 'ideias-post', ideiaViewingKey));
+    document.getElementById('modal-ideia-view').classList.remove('open');
+    ideiaViewingKey = null;
+  } catch(err) {
+    console.error('Erro ao deletar ideia:', err);
+    alert('Erro ao remover: ' + (err?.message || err));
+  }
+};
 
 // ── FILA DE DESIGN ──
 // Mostra posts aprovados pela Maris esperando arte ser produzida.
