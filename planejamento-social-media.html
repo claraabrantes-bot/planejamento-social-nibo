@@ -2851,7 +2851,14 @@ let ideiaCarrosselIdx = 0;
 onSnapshot(collection(db,'ideias-post'), snap => {
   ideiasData = [];
   snap.forEach(d => ideiasData.push({key:d.id, ...d.data()}));
-  ideiasData.sort((a,b) => (b.ts||'').localeCompare(a.ts||''));
+  // Fallback: pra ideias sem tsNum (antigas), extrai timestamp do key ("ideia-1783689251582")
+  ideiasData.forEach(idea => {
+    if(!idea.tsNum) {
+      const match = (idea.key || '').match(/(\d{13})/);
+      if(match) idea.tsNum = parseInt(match[1]);
+    }
+  });
+  ideiasData.sort((a,b) => (b.tsNum || 0) - (a.tsNum || 0));
   window.renderIdeias && window.renderIdeias();
   // Se o modal de view está aberto, re-render pra atualizar comentários
   if(ideiaViewingKey && document.getElementById('modal-ideia-view')?.classList.contains('open')) {
@@ -2875,7 +2882,8 @@ window.renderIdeias = function() {
     const capa = imgs[0];
     const nImgs = imgs.length;
     const nComments = (idea.comments || []).length;
-    return `<div onclick="window.abrirIdeiaView('${idea.key}')" style="background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);cursor:pointer;overflow:hidden;transition:all .15s;display:flex;flex-direction:column" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,45,114,.12)';this.style.borderColor='var(--nibo2)'" onmouseout="this.style.transform='none';this.style.boxShadow='none';this.style.borderColor='var(--border)'">
+    return `<div class="ideia-card" onclick="window.abrirIdeiaView('${idea.key}')" style="background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);cursor:pointer;overflow:hidden;transition:all .15s;display:flex;flex-direction:column;position:relative" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,45,114,.12)';this.style.borderColor='var(--nibo2)'" onmouseout="this.style.transform='none';this.style.boxShadow='none';this.style.borderColor='var(--border)'">
+      <button class="ideia-del-btn" onclick="event.stopPropagation();window.deletarIdeiaDireto('${idea.key}')" title="Excluir ideia" style="position:absolute;top:8px;left:8px;z-index:2;width:26px;height:26px;border-radius:50%;background:rgba(15,23,42,.85);color:#fff;border:none;cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;opacity:0;transition:all .15s;backdrop-filter:blur(4px)" onmouseover="event.stopPropagation();this.style.background='rgba(220,38,38,.95)'" onmouseout="event.stopPropagation();this.style.background='rgba(15,23,42,.85)'">×</button>
       <div style="position:relative;background:#0F172A;aspect-ratio:1/1;overflow:hidden;display:flex;align-items:center;justify-content:center">
         ${capa
           ? `<img src="${capa}" style="width:100%;height:100%;object-fit:cover" alt="" />`
@@ -2894,7 +2902,19 @@ window.renderIdeias = function() {
         </div>
       </div>
     </div>`;
-  }).join('');
+  }).join('') + '<style>.ideia-card:hover .ideia-del-btn{opacity:1!important}</style>';
+};
+
+window.deletarIdeiaDireto = async function(key) {
+  const idea = ideiasData.find(x => x.key === key);
+  const nome = idea?.title || 'esta ideia';
+  if(!confirm(`Excluir "${nome}"? Isso remove também todos os comentários.`)) return;
+  try {
+    await deleteDoc(doc(db, 'ideias-post', key));
+  } catch(err) {
+    console.error('Erro ao deletar ideia:', err);
+    alert('Erro ao remover: ' + (err?.message || err));
+  }
 };
 
 window.abrirModalIdeia = function(key) {
@@ -2988,6 +3008,7 @@ window.salvarIdeia = async function() {
     author,
     authorFull,
     ts: existente?.ts || now,
+    tsNum: existente?.tsNum || Date.now(),
     comments: comentariosExistentes,
   };
   // Se tem comentário inicial (só em criação nova)
