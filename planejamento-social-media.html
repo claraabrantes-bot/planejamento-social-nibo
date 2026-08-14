@@ -621,7 +621,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .welcome-card.active-card{border-color:var(--nibo1);box-shadow:0 4px 18px rgba(0,45,114,.14)}
 .welcome-card-icon{font-size:42px;line-height:1}
 .welcome-card-title{font-size:17px;font-weight:700;color:var(--nibo1)}
-.welcome-card-sub{font-size:11px;color:var(--text3);line-height:1.5}
+.welcome-card-sub{font-size:11px;color:var(--text3);line-height:1.5;min-height:3em;display:flex;align-items:center;justify-content:center}
 @media(max-width:600px){.welcome-cards{grid-template-columns:1fr}}
 
 #page-welcome.active{display:flex}
@@ -1549,15 +1549,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="modal-body" style="padding:1rem 1.4rem">
       <div style="margin-bottom:12px">
         <div class="modal-label">Título</div>
-        <input id="ideia-titulo" type="text" placeholder="Ex: Trend do áudio X com transição rápida" style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)" />
+        <input id="ideia-titulo" type="text" autocomplete="off" data-lpignore="true" data-form-type="other" placeholder="Ex: Trend do áudio X com transição rápida" style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)" />
       </div>
       <div style="margin-bottom:12px">
         <div class="modal-label">Descrição (opcional)</div>
-        <textarea id="ideia-desc" rows="3" placeholder="O que você quer testar, quem podia protagonizar, gancho, etc." style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.5"></textarea>
+        <textarea id="ideia-desc" autocomplete="off" data-lpignore="true" data-form-type="other" rows="3" placeholder="O que você quer testar, quem podia protagonizar, gancho, etc." style="width:100%;font-size:13px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.5"></textarea>
       </div>
       <div style="margin-bottom:12px">
         <div class="modal-label">Link (opcional)</div>
-        <input id="ideia-link" type="url" placeholder="https://www.tiktok.com/... ou https://www.instagram.com/reel/..." style="width:100%;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)" />
+        <input id="ideia-link" type="url" autocomplete="off" data-lpignore="true" data-form-type="other" placeholder="https://www.tiktok.com/... ou https://www.instagram.com/reel/..." style="width:100%;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;outline:none;background:var(--bg);color:var(--text)" />
       </div>
       <div style="margin-bottom:12px">
         <div class="modal-label">Imagens (várias — pra carrossel)</div>
@@ -1567,7 +1567,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       </div>
       <div style="margin-bottom:8px">
         <div class="modal-label">Comentário inicial (opcional)</div>
-        <textarea id="ideia-comentario" rows="2" placeholder="Use @nome pra mencionar alguém (Ex: @millena, @maris)" style="width:100%;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.5"></textarea>
+        <textarea id="ideia-comentario" autocomplete="off" data-lpignore="true" data-form-type="other" rows="2" placeholder="Use @nome pra mencionar alguém (Ex: @millena, @maris)" style="width:100%;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.5"></textarea>
       </div>
     </div>
     <div class="modal-actions">
@@ -1597,7 +1597,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
         <div class="modal-label" style="margin-bottom:8px">Comentários</div>
         <div id="ideia-view-comments" style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;margin-bottom:12px"></div>
         <div style="display:flex;gap:6px">
-          <textarea id="ideia-view-novo-comment" rows="1" placeholder="Comente aqui... use @nome pra mencionar" style="flex:1;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.4"></textarea>
+          <textarea id="ideia-view-novo-comment" autocomplete="off" data-lpignore="true" data-form-type="other" rows="1" placeholder="Comente aqui... use @nome pra mencionar" style="flex:1;font-size:12px;font-family:'DM Sans',sans-serif;border:.5px solid var(--border2);border-radius:var(--radius);padding:8px 10px;outline:none;background:var(--bg);color:var(--text);resize:vertical;line-height:1.4"></textarea>
           <button onclick="window.adicionarComentarioIdeia()" style="flex-shrink:0;padding:0 14px;font-size:12px;font-weight:600;border-radius:var(--radius);border:none;background:linear-gradient(135deg,#ff40b3,#7c3aed);color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif">Enviar</button>
         </div>
       </div>
